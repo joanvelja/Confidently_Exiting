@@ -18,7 +18,8 @@ The two proposed confidence measures are based on the intuition that the same me
 We call the first `Weighted contrastive decoding`. This method is an adapted version of Auto-contrastive Decoding of [[2]](#1).
 
  
-### JSD contrastive decoding
+### Jensen-Shannon Divergence contrastive decoding
+The `Jensen-Shannon Divergence (JSD) contrastive decoding` is inspired by [[3]](#1).
 
 
 
