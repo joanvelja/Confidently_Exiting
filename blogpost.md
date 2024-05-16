@@ -3,7 +3,7 @@
 
 ### Karim Abdel Sadek, Gabriele Desimini, Matteo Nulli, Joan Velja, Jort Vincenti
 
-In this work we aim to provide an extensive analysis and a new framework on Early-Exiting in Large Language Models. We expand upon [[1]](#1) by adapting [[2]](#2) and [[3]](#3) to an early-exiting process and propose a novel procedure which attains faster generation time, by retaining almost all performance when compared to full model without early-exiting.
+In this work we aim to provide an extensive analysis and a new framework on Early-Exiting in Large Language Models. We expand upon [[1]](#1) by adapting [[2]](#1) and [[3]](#1) to an early-exiting process and propose a novel procedure which attains faster generation time, by retaining almost all performance when compared to full model without early-exiting.
 
 
 ## Introduction
