@@ -16,7 +16,8 @@ Recent advancement in Large Language Models capabilities have come at a computat
 (`Matteo`: From here forward I'll introduce contrastive decoding)
 
 Introduced by [[4]](#1) Contrastive Decoding is a technique used to reduce unwanted behaviours in Large Language Models such as repetition and incoherence. The method is based on the employment two models, a smaller one called amateur and a larger one, called expert. They both perform autoregressive generation on the same data and the final predcted token is selected based on a logits difference between the outpt of the expert and the one of the amateur. While this method is innovative and performant, employing two LLMs is highly inefficient, both in terms of space and compute.
-Alternative methods have been proposed to counter the necessity of using two large models. The two proposed confidence measures in Section [[Contrastive Decoding]](#1) are based on the intuition that the same method can be reproduced between layers of the same model. Deeper layers of the model can benefit from simpler information present in shallower ones. This idea, introduced in [[2]](#1) serves as basis for both our proposed confidence measures. 
+Alternative methods have been proposed to counter the necessity of using two large models. An example of such work is the idea of Auto-Contrastive Decoding, introduced in [[2]](#1). It is based on the intuition that deeper layers of the model can benefit from simpler information present in shallower ones. The two proposed confidence measures in Section [[Contrastive Decoding]](#1) are based on this paper, but adapted to an early-exiting framework and later extended in [[Speed-up applied to Contrastive Decoding]](#1).
+
 
 ##  <a name="Methodology">Methodology</a> 
 
@@ -33,7 +34,7 @@ The `Jensen-Shannon Divergence (JSD) contrastive decoding` is inspired by [[3]](
 
 
 
-### Speed-up applied to Contrastive Decoding
+### <a name="Speed-up applied to Contrastive Decoding">Speed-up applied to Contrastive Decoding</a>
 
 ## Results
 
