@@ -7,23 +7,28 @@
 
 In this work we aim to provide an extensive analysis and a new framework on Early-Exiting in Large Language Models. We expand upon [[1]](#1) by adapting [[2]](#1) and [[3]](#1) to an early-exiting process and propose a novel procedure which attains faster generation time, by retaining almost all performance when compared to full model without early-exiting.
 
+## Related Works
 
-## Softmax speed-up
+## Methodology
 
-## Contrastive Decoding as alternative confidence measure
+### Softmax speed-up
+
+### Contrastive Decoding as alternative confidence measure
 Contrastive decoding [[4]](#1) is used to reduce unwanted behaviours in Large Language Models such as repetition and incoherence. The method is employing two models, a smaller one called amateur and a much larger one, called expert, for autoregressive generation. While this method is innovative and performant, employing two LLMs is highly inefficient. 
 The two proposed confidence measures are based on the intuition that the same method can be reproduced between layers of the same model. Deeper layers of the model can benefit from simpler information present in shallower ones. This idea, introduced in [[2]](#1) is the basis for both our proposed confidence measures. 
 
-### Weighted contrastive decoding
+#### Weighted contrastive decoding
 We call the first `Weighted contrastive decoding`. This method is an adapted version of Auto-contrastive Decoding of [[2]](#1).
 
  
-### Jensen-Shannon Divergence contrastive decoding
+#### Jensen-Shannon Divergence contrastive decoding
 The `Jensen-Shannon Divergence (JSD) contrastive decoding` is inspired by [[3]](#1).
 
 
 
-## Speed-up applied to Contrastive Decoding
+### Speed-up applied to Contrastive Decoding
+
+## Results
 
 ## Conclusions
 
