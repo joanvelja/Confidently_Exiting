@@ -746,6 +746,10 @@ class DeployT5Stack(T5Stack):
         self.deploy_time['time_others'] += (datetime.datetime.now() - start)
         
         return hidden_states, present_key_value_states
+    
+    
+    def func_inverse(self, i, k1, k2, num_layers): # this is the function for doing smoothed pruning
+        return max(k2, int(k1 / (1 + (k1 - k2) / k2 * i / num_layers)))
 
     def forward(
         self,
@@ -982,41 +986,37 @@ class DeployT5Stack(T5Stack):
                         if self.config.use_synchronize: torch.cuda.synchronize()
                         start = datetime.datetime.now()
                         _hidden_states = self.dropout(self.final_layer_norm(hidden_states))
-                        lm_logits = lm_head(_hidden_states) if not self.config.tie_word_embeddings \
-                            else lm_head(_hidden_states * (self.config.d_model ** -0.5))
+
                         
                         # SHRINKING VOCAB PART:
                         if not self.config.type_vocab_reduct: # If we are not using any vocab reduction
-                            lm_logits = lm_head(_hidden_states)
+                            lm_logits = lm_head(_hidden_states) if not self.config.tie_word_embeddings \
+                                else lm_head(_hidden_states * (self.config.d_model ** -0.5))
                         else:
-                            starting_layer = self.config.exit_min_layer if self.config.exit_min_layer is not None else 1 # Start where exit_min_layer is set.
-                            if i == starting_layer: # if it is the first layer
-                                lm_logits = lm_head(_hidden_states)
+                            starting_layer = self.config.exit_min_layer if self.config.exit_min_layer > 1  else 2 # Start where exit_min_layer is set or start at 2.
+                            if i == starting_layer: # if it is the first layer where we compute the logits
+                                lm_logits = lm_head(_hidden_states) if not self.config.tie_word_embeddings \
+                                    else lm_head(_hidden_states * (self.config.d_model ** -0.5))
                                 # Get the top 2500 logits at block 1.
-                                k = 2500 # TO DO: DEFINED THIS AS ARGUMENT self.config.top_k when it works!!!
-                                _, self.top_k_indices = torch.topk(lm_logits, k, largest=True, sorted=True)
-                                self.top_k_indices = self.top_k_indices.flatten() # TO DO: Find a faster way to do this
-                                # print("top_k_indices at block 1 is", self.top_k_indices.shape)
+                                maximum_k_size = 4500 # where 200 is the maximum number of weights to keep ( it actually immediately decreases so it is lower thatn this)
+                                minimum_k_size = 50 # where 50 is the minimum number of weights to keep
+                                num_layers = len(self.block) # This is the number of layers in the model
+                                k = self.func_inverse(i,maximum_k_size, minimum_k_size, num_layers)
+                                self.top_k_indices = torch.topk(lm_logits, k, largest=True, sorted=True)[1][0][0]
                                 selected_weights = lm_head.weight[self.top_k_indices, :] # THis can be done here to win some compute time
                             else: # For all the other layers either use fixed, decaying or adaptive pruning
-                                if self.config.type_vocab_reduct == "fixed": 
+                                if self.config.type_vocab_reduct == "fixed":
                                     # Note: There is no bias in self.lm_head = nn.Linear(config.d_model, config.vocab_size, bias=False)
                                     lm_logits = torch.nn.functional.linear(_hidden_states, selected_weights) # Get new logits with the top-200 weights
                                     # Note: Using nn.functional.linear should always outperform (in terms of time) the lm_head(_hidden_states) as it uses the same function but with the whole data.
                                 elif self.config.type_vocab_reduct == "decaying":  # Smoothed pruning! For all the other layers -> smoothed pruning
-                                    def func_inverse(i, k1, k2, num_layers): # this is the function for doing smoothed pruning
-                                        return max(k2, int(k1 / (1 + (k1 - k2) / k2 * i / num_layers)))
-                                    #maximum_k_size = 200 # where 200 is the maximum number of weights to keep ( it actually immediately decreases so it is lower thatn this)
-                                    #minimum_k_size = 20 # where 20 is the minimum number of weights to keep
-                                    #current_k = func_inverse(i,maximum_k_size, minimum_k_size, 12) # TO DO: 12 is the number of layers in the base model adapt it to either base or large.
-                                    
-                                    top_k_list = [4500, 2500, 2000, 1000, 750, 700, 600, 500, 400, 300, 100, 50] # This is the list of top_k values for each block based on graph.
-                                    selected_weights = lm_head.weight[self.top_k_indices[:top_k_list[i]], :]
+                                    current_k = self.func_inverse(i,maximum_k_size, minimum_k_size, num_layers)
+                                    # top_k_list = [4500, 2500, 2000, 1000, 750, 700, 600, 500, 400, 300, 100, 50] # This is the list of top_k values for each block based on graph for based as an indicator.
+                                    selected_weights = lm_head.weight[self.top_k_indices[:current_k], :]
 
                                     # Use these selected weights to compute the logits for this layer.
                                     lm_logits = torch.nn.functional.linear(hidden_states, selected_weights)
                                 elif self.config.type_vocab_reduct == "adaptive":
-                                    if len(previous_logits > 0):
                                         # TODO experiment with not only the top-1 confidence but combining the top-k confidences
                                         # TODO experiment with taking the top-k not (only) in the starting layer
                                         # TODO experiment with different formulas to go from confidence value to retained indices
@@ -1026,13 +1026,10 @@ class DeployT5Stack(T5Stack):
                                         retained_top_k = int(curr_weights_size * (1 - conf * conf_scaling_factor))
                                         selected_weights = lm_head.weight[self.top_k_indices[:retained_top_k], :]
                                         lm_logits = torch.nn.functional.linear(_hidden_states, selected_weights)
-                                    else: 
-                                        lm_logits = torch.nn.functional.linear(_hidden_states, lm_head.weight)
-
                                 else: 
                                     raise("Please provide a valid type_vocab_reduct argument. Either use fixed, decaying, or adaptive.")
-                        
-                        
+
+                        # END OF SHRINKING VOCAB PART
                         if self.config.exit_conf_type == "contrastive_decoding":
                             
                             skip_mask = get_skip_mask_cd(
@@ -1713,70 +1710,3 @@ class DeployT5ForConditionalGeneration(T5ForConditionalGeneration):
                 )
         else:
             return input_ids
-        
-
-
-
-# Just in case we need to use the prunning in the future
-# FIRST DIFFERENT BATCH SIZE 
-# if i == 1:  # if it is the first layer
-#     lm_logits = self.lm_head(hidden_states)
-#     k = 200  
-#     _, top_k_indices = torch.topk(lm_logits, k, dim=-1, largest=True, sorted=True)
-
-#     b_size = hidden_states.size(0)
-#     top_k_indices = top_k_indices.view(b_size, -1) 
-    
-#     selected_weights = torch.gather(self.lm_head.weight.expand(b_size, -1, -1), 
-#                                     1, top_k_indices.unsqueeze(-1).expand(-1, -1, self.lm_head.weight.size(1)))
-    
-#     self.selected_weights = selected_weights
-
-# else:  # For all the other layers
-#     # Use the selected_weights stored from the first layer
-#     # Assuming hidden_states are [batch_size, seq_length, d_model]
-#     # and selected_weights are [batch_size, top_k, d_model]
-#     lm_logits = torch.bmm(hidden_states, self.selected_weights.transpose(1, 2))
-
-
-# Sanity check
-# if i == 2: 
-#     # With prunning
-#     start1 = time.perf_counter()
-#     lm_logits_prunned = torch.nn.functional.linear(_hidden_states, selected_weights)
-#     end1 = time.perf_counter()
-#     timetaken1 = end1 - start1
-
-#     # WITHOUT PRUNNING
-#     start2 = time.perf_counter()
-#     lm_logits_not_pruned = lm_head(_hidden_states)
-#     lm_logits_not_pruned = lm_logits_not_pruned[:, :, self.top_k_indices]
-#     end2 = time.perf_counter()
-#     timetaken2 = end2 - start2
-
-
-#     # Convert PyTorch tensors to NumPy arrays
-#     pruned_np = lm_logits_prunned.cpu().detach().numpy()
-#     not_pruned_np = lm_logits_not_pruned.cpu().detach().numpy()
-
-#     # Check if the arrays are close
-#     if not np.allclose(pruned_np, not_pruned_np, atol=1e-5): # TO DO: Figure out why when removing atol here you get different logits in some cases. 
-#         # Find where they are not close
-#         diff_mask = np.isclose(pruned_np, not_pruned_np) == False
-#         differing_indices = np.where(diff_mask)
-#         # Extract the differing values
-#         differing_values_pruned = pruned_np[diff_mask]
-#         differing_values_not_pruned = not_pruned_np[diff_mask]
-        
-#         # Print the differing values and their indices
-#         print("Differing indices:", differing_indices)
-#         print("Values in pruned logits at differing indices:", differing_values_pruned)
-#         print("Values in not pruned logits at differing indices:", differing_values_not_pruned)
-        
-#         # Optionally, raise an exception or handle the discrepancy as needed
-#         raise ValueError("The pruned logits are not the same as the non-pruned logits. Differences found at indices.")
-
-
-#     #assert np.allclose(lm_logits_prunned.cpu().detach().numpy(), lm_logits_not_pruned.cpu().detach().numpy()), "The prunned logits are not the same as the non-prunned logits" + str(lm_logits_prunned) + str(lm_logits_not_pruned)
-#     assert timetaken1 < timetaken2, "The prunned logits are taking longer to compute than the non-prunned logits " + str(timetaken1) + " " + str(timetaken2)
-
