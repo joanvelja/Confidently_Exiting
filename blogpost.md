@@ -11,17 +11,18 @@ In this work we aim to provide an extensive analysis and a new framework on Earl
 
 Recent advancement in Large Language Models capabilities have come at a computational time and price. Inference time has severely increased, causing these models to be slower then ever. In recent times different Early-Exiting frameworks [[5]](#1), (another) have been proposed to address this issue... 
 
-(dabi maybe you can revisit this part and add information about softmax)
+(`Matteo`: dabi maybe you can revisit this part and add information about softmax)
 
-From here forward I'll introduce contrastive decoding. 
-Contrastive decoding [[4]](#1) is used to reduce unwanted behaviours in Large Language Models such as repetition and incoherence. The method is employing two models, a smaller one called amateur and a much larger one, called expert, for autoregressive generation. While this method is innovative and performant, employing two LLMs is highly inefficient. 
-The two proposed confidence measures are based on the intuition that the same method can be reproduced between layers of the same model. Deeper layers of the model can benefit from simpler information present in shallower ones. This idea, introduced in [[2]](#1) is the basis for both our proposed confidence measures. 
+(`Matteo`: From here forward I'll introduce contrastive decoding)
 
-## Methodology
+Introduced by [[4]](#1) Contrastive Decoding is a technique used to reduce unwanted behaviours in Large Language Models such as repetition and incoherence. The method is based on the employment two models, a smaller one called amateur and a larger one, called expert. They both perform autoregressive generation on the same data and the final predcted token is selected based on a logits difference between the outpt of the expert and the one of the amateur. While this method is innovative and performant, employing two LLMs is highly inefficient, both in terms of space and compute.
+Alternative methods have been proposed to counter the necessity of using two large models. The two proposed confidence measures in Section [[Contrastive Decoding]](#1) are based on the intuition that the same method can be reproduced between layers of the same model. Deeper layers of the model can benefit from simpler information present in shallower ones. This idea, introduced in [[2]](#1) serves as basis for both our proposed confidence measures. 
+
+##  <a name="Methodology">Methodology</a> 
 
 ### Softmax speed-up
 
-### Contrastive Decoding as alternative confidence measure
+### <a name="Contrastive Decoding ">Contrastive Decoding </a>
 
 #### Weighted contrastive decoding
 We call the first `Weighted contrastive decoding`. This method is an adapted version of Auto-contrastive Decoding of [[2]](#1).
@@ -41,7 +42,7 @@ The `Jensen-Shannon Divergence (JSD) contrastive decoding` is inspired by [[3]](
 
 
 ## References
-<a id="1">[1]</a>
+<a id="1">[1]</a> 
 Bae, Sangmin, Jongwoo Ko, Hwanjun Song, and Se-Young Yun. "Fast and robust early-exiting framework for autoregressive language models with synchronized parallel decoding." arXiv preprint arXiv:2310.05424 (2023).
 
 <a id="1">[2]</a>
