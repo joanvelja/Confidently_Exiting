@@ -1200,7 +1200,7 @@ class DeployT5Stack(T5Stack):
 
             self.graph_top_k_list.append(ranks_at_layers) # Append the ranks at each layer to the list of ranks
             self.graph_top_k_confidence.append(confidences_at_layers) # Append the ranks at each layer to the list of ranks
-            self.graph_top_k_indices.append(max_indices_at_layers)
+            self.graph_top_k_indices.append(max_index_start)
 
 
         if self.config.use_synchronize: torch.cuda.synchronize()

@@ -546,7 +546,17 @@ class DeployLongT5Stack(LongT5Stack):
         self.lm_logits = None  # to prevent calculating logits twice
 
         prev_probits = {}
+
+        if self.is_decoder and self.config.plotting_logits:
+            previous_logits = []
+
         for i, layer_module in enumerate(self.block):
+
+            if self.is_decoder and self.config.plotting_logits:
+                _hidden_states = self.dropout(self.final_layer_norm(hidden_states))
+                _hidden_states = (_hidden_states * (self.config.d_model ** -0.5)) if self.config.tie_word_embeddings else _hidden_states
+                lm_logits = lm_head(_hidden_states)
+                previous_logits.append(lm_logits)
                 
             # Static framework
             if self.is_decoder and self.config.static_exit_layer is not None:
@@ -636,9 +646,12 @@ class DeployLongT5Stack(LongT5Stack):
 
                 # Early-Exit framework
                 elif self.use_early_exit and not skip_mask:
-                    if self.exit_min_layer is not None and i < self.exit_min_layer: 
-                        lm_logits = lm_head(hidden_states) if not self.config.tie_word_embeddings \
-                            else lm_head(hidden_states * (self.config.d_model ** -0.5))
+                    if self.exit_min_layer is not None and i < self.exit_min_layer:
+                        if self.config.use_synchronize: torch.cuda.synchronize()
+
+                        _hidden_states = self.dropout(self.final_layer_norm(hidden_states))
+                        lm_logits = lm_head(_hidden_states) if not self.config.tie_word_embeddings \
+                            else lm_head(_hidden_states * (self.config.d_model ** -0.5))
                         
                         probits = torch.softmax(lm_logits, dim=-1)
                         probits = torch.squeeze(probits)
@@ -648,11 +661,50 @@ class DeployLongT5Stack(LongT5Stack):
                         if self.config.use_synchronize: torch.cuda.synchronize()
                         start = datetime.datetime.now()
                         _hidden_states = self.dropout(self.final_layer_norm(hidden_states))
-                        lm_logits = lm_head(_hidden_states) if not self.config.tie_word_embeddings \
-                            else lm_head(_hidden_states * (self.config.d_model ** -0.5))
-                            
+
+                         # SHRINKING VOCAB PART:
+                        if not self.config.type_vocab_reduct: # If we are not using any vocab reduction
+                            lm_logits = lm_head(_hidden_states) if not self.config.tie_word_embeddings \
+                                else lm_head(_hidden_states * (self.config.d_model ** -0.5))
+                        else:
+                            starting_layer = self.config.exit_min_layer if self.config.exit_min_layer > 1  else 2 # Start where exit_min_layer is set or start at 2.
+                            if i == starting_layer: # if it is the first layer where we compute the logits
+                                lm_logits = lm_head(_hidden_states) if not self.config.tie_word_embeddings \
+                                    else lm_head(_hidden_states * (self.config.d_model ** -0.5))
+                                # Get the top 2500 logits at block 1.
+                                maximum_k_size = 4500 # where 200 is the maximum number of weights to keep ( it actually immediately decreases so it is lower thatn this)
+                                minimum_k_size = 50 # where 50 is the minimum number of weights to keep
+                                num_layers = len(self.block) # This is the number of layers in the model
+                                k = self.func_inverse(i,maximum_k_size, minimum_k_size, num_layers)
+                                self.top_k_indices = torch.topk(lm_logits, k, largest=True, sorted=True)[1][0][0]
+                                selected_weights = lm_head.weight[self.top_k_indices, :] # THis can be done here to win some compute time
+                            else: # For all the other layers either use fixed, decaying or adaptive pruning
+                                if self.config.type_vocab_reduct == "fixed":
+                                    # Note: There is no bias in self.lm_head = nn.Linear(config.d_model, config.vocab_size, bias=False)
+                                    lm_logits = torch.nn.functional.linear(_hidden_states, selected_weights) # Get new logits with the top-200 weights
+                                    # Note: Using nn.functional.linear should always outperform (in terms of time) the lm_head(_hidden_states) as it uses the same function but with the whole data.
+                                elif self.config.type_vocab_reduct == "decaying":  # Smoothed pruning! For all the other layers -> smoothed pruning
+                                    current_k = self.func_inverse(i,maximum_k_size, minimum_k_size, num_layers)
+                                    # top_k_list = [4500, 2500, 2000, 1000, 750, 700, 600, 500, 400, 300, 100, 50] # This is the list of top_k values for each block based on graph for based as an indicator.
+                                    selected_weights = lm_head.weight[self.top_k_indices[:current_k], :]
+
+                                    # Use these selected weights to compute the logits for this layer.
+                                    lm_logits = torch.nn.functional.linear(hidden_states, selected_weights)
+                                elif self.config.type_vocab_reduct == "adaptive":
+                                        # TODO experiment with not only the top-1 confidence but combining the top-k confidences
+                                        # TODO experiment with taking the top-k not (only) in the starting layer
+                                        # TODO experiment with different formulas to go from confidence value to retained indices
+                                        # TODO experiment with non-confidence parameters (and potentialy combinations of params)
+                                        curr_weights_size = lm_head.weight.size(dim=0)
+                                        conf_scaling_factor = 0.9 # TODO experiment with different scaling factors
+                                        retained_top_k = int(curr_weights_size * (1 - conf * conf_scaling_factor))
+                                        selected_weights = lm_head.weight[self.top_k_indices[:retained_top_k], :]
+                                        lm_logits = torch.nn.functional.linear(_hidden_states, selected_weights)
+                                else: 
+                                    raise("Please provide a valid type_vocab_reduct argument. Either use fixed, decaying, or adaptive.")
+
+
                         if self.config.exit_conf_type == "contrastive_decoding":
-                            
                             skip_mask = get_skip_mask_cd(
                                 lm_logits,
                                 _hidden_states,
@@ -766,6 +818,51 @@ class DeployLongT5Stack(LongT5Stack):
                 present_key_value_states = present_key_value_states + [present_key_value_state,]
             if self.config.use_synchronize: torch.cuda.synchronize()
             if self.is_decoder: self.deploy_time['time_others'] += (datetime.datetime.now() - start)
+
+
+        if self.is_decoder and self.config.plotting_logits:
+            # Get the top-1 index of last block.
+            index_top_1 = torch.topk(previous_logits[-1], 1)[1][0][0][0].item()
+            #print(torch.softmax(previous_logits[-1], dim=-1).shape)
+            confidence, max_index = torch.max(torch.softmax(previous_logits[-1], dim=-1), dim=-1)
+            confidence = confidence[0].item()
+            max_index_start = max_index[0].item()
+
+            # Initialize a list to store ranks at each layer
+            ranks_at_layers = []
+            confidences_at_layers = []
+            max_indices_at_layers = []
+
+            # Loop over previous layers in reverse order, stopping at the first layer
+            for i in range(len(previous_logits) - 1, -1, -1):
+                # Get the sorted indices for this layer's logits
+                sorted_indices = torch.argsort(previous_logits[i][-1], descending=True)
+
+                # Find the rank of the top-1 index of the last block in the sorted indices of block i
+                rank = np.where(sorted_indices.cpu() == index_top_1)[-1]
+                #conf = torch.max(torch.softmax(previous_logits[i], dim=-1), dim=-1)[0].item()
+
+                conf, max_index = torch.max(torch.softmax(previous_logits[i], dim=-1), dim=-1)
+                conf = conf[0].item()
+                max_index = max_index[0].item()
+                #print(i ,rank, conf)
+                # Store the rank positions
+                ranks_at_layers.append(rank[0])
+                confidences_at_layers.append(conf)
+                max_indices_at_layers.append(max_index)
+                    
+            ranks_at_layers.reverse() # Reverse the list to have the ranks in the correct order
+            #ranks_at_layers.append(0) # Append 0 to the end of the list to represent the rank at the last layer
+
+            confidences_at_layers.reverse() # Reverse the list to have the ranks in the correct order
+            #confidences_at_layers.append(confidence) # Append 0 to the end of the list to represent the rank at the last layer
+
+            max_indices_at_layers.reverse() # Reverse the list to have the ranks in the correct order
+            #max_indices_at_layers.append(max_index_start)
+
+            self.graph_top_k_list.append(ranks_at_layers) # Append the ranks at each layer to the list of ranks
+            self.graph_top_k_confidence.append(confidences_at_layers) # Append the ranks at each layer to the list of ranks
+            self.graph_top_k_indices.append(max_index_start)
         
         if self.config.use_synchronize: torch.cuda.synchronize()
         start = datetime.datetime.now()
