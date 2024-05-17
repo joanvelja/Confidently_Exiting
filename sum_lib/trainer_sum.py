@@ -116,12 +116,15 @@ class SumTrainer(Seq2SeqTrainer):
             ignore_keys=ignore_keys,
             metric_key_prefix=metric_key_prefix,
         )
+        print(self.model.decoder.graph_top_k_indices)
         print(len(self.model.decoder.graph_top_k_indices))
         non_padded = []
+        len_ = 0
         for sublist in output.predictions.tolist():
-            print(sublist)	
-            non_padded.append([x for x in sublist if x != 0])
-        print(len(non_padded.flatten()))
+            len_ += len([x for x in sublist if x != 0])
+            non_padded.append(([x for x in sublist if x != 0]))
+        print((non_padded))
+        print(len_)
         print("*"*100)
         print(output.predictions)
         print("*"*100)
