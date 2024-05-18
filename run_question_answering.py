@@ -754,7 +754,7 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
             plt.ylabel('Top-K rank')
             plt.legend()
             plt.grid(True)
-            plt.savefig("mean_topk_rank_eval.png")
+            plt.savefig("mean_topk_rank_eval_karim.png")
 
             plt.figure(figsize=(10, 6))
             plt.plot(blocks, mean_conf_block, label='Mean Top-K conf', color='red', linestyle='dashed')
