@@ -9,14 +9,14 @@ In this work we aim to provide an extensive analysis and a new framework on Earl
 
 ## Related Works
 
-Recent advancement in Large Language Models capabilities have come at a computational time and price. Inference time has severely increased, causing these models to be slower then ever. In recent times different Early-Exiting frameworks [[5]](#1), (another) have been proposed to address this issue... 
+Recent advancement in Large Language Models capabilities have come at a computational time and price. Inference time has severely increased, causing these models to be slower then ever. In recent times different Early-Exiting frameworks [[1]](#1), [[5]](#1), (add other papers) have been proposed to address this issue... 
 
 (`Matteo`: dabi maybe you can revisit this part and add information about softmax)
 
 (`Matteo`: From here forward I'll introduce contrastive decoding)
 
-Introduced by [[4]](#1) Contrastive Decoding is a technique used to reduce unwanted behaviours in Large Language Models such as repetition and incoherence. The method is based on the employment two models, a smaller one called amateur and a larger one, called expert. They both perform autoregressive generation on the same data and the final predcted token is selected based on a logits difference between the outpt of the expert and the one of the amateur. While this method is innovative and performant, employing two LLMs is highly inefficient, both in terms of space and compute.
-Alternative methods have been proposed to counter the necessity of using two large models. An example of such work is the idea of Auto-Contrastive Decoding, introduced in [[2]](#1). It is based on the intuition that deeper layers of the model can benefit from simpler information present in shallower ones. The two proposed confidence measures in Section [[Contrastive Decoding]](#1) are based on this paper, but adapted to an early-exiting framework and later extended in [[Speed-up applied to Contrastive Decoding]](#1).
+Introduced by [[4]](#1) *Contrastive Decoding* is a technique used to reduce unwanted behaviours in Large Language Models such as repetition and incoherence. The method is employing two models, a smaller one called amateur and a larger one, called expert. They both perform autoregressive text generation on the same data, and the final predicted token is selected based on the outputs difference between the predictions of the expert and amateur. While this method is innovative and performant, employing two LLMs is highly inefficient, both in terms of space and compute.Alternative methods have been proposed to counter the necessity of using two large models. An example of such work is the idea of Auto-Contrastive Decoding, introduced in [[2]](#1). Here, the authors show how contrasting outputs of different layers within the same model can benefit text generation outputs. The study proves that predictions of shallow layers, which are often overlooked, can help those of deeper ones to attain better resutls. (? Extend with information from [[2]](#1) ?)
+The two proposed confidence measures in Section [[Contrastive Decoding]](#1) are based on this paper, but are both adapted to an early-exiting framework and later extended in [[Speed-up applied to Contrastive Decoding]](#1).
 
 
 ##  <a name="Methodology">Methodology</a> 
