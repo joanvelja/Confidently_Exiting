@@ -227,6 +227,9 @@ class DeployLongT5Stack(LongT5Stack):
         
         self.embed_tokens = embed_tokens
         self.is_decoder = config.is_decoder
+
+        self.graph_top_k_list = []
+        self.graph_top_k_confidence = []
         
         self.local_radius = config.local_radius
         self.block_len = self.local_radius + 1
