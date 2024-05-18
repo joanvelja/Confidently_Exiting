@@ -553,7 +553,6 @@ class DeployT5Stack(T5Stack):
         super().__init__(config, embed_tokens)
         self.graph_top_k_list = []
         self.graph_top_k_confidence = []
-        self.graph_top_k_indices = []
         self.top_k_indices = None
         
         self.embed_tokens = embed_tokens
@@ -968,7 +967,7 @@ class DeployT5Stack(T5Stack):
                             break
 
                 # Early-Exit framework
-                elif self.use_early_exit and not skip_mask:
+                elif self.use_early_exit and not skip_mask:	
                     if (self.exit_min_layer is not None and i < self.exit_min_layer) or i == 1:
                         if self.config.use_synchronize: torch.cuda.synchronize()
                         # start = datetime.datetime.now()
@@ -982,7 +981,6 @@ class DeployT5Stack(T5Stack):
                         self.block_op[i] += 1
 
                     else:
-    
                         if self.config.use_synchronize: torch.cuda.synchronize()
                         start = datetime.datetime.now()
                         _hidden_states = self.dropout(self.final_layer_norm(hidden_states))
@@ -1164,12 +1162,10 @@ class DeployT5Stack(T5Stack):
             #print(torch.softmax(previous_logits[-1], dim=-1).shape)
             confidence, max_index = torch.max(torch.softmax(previous_logits[-1], dim=-1), dim=-1)
             confidence = confidence[0].item()
-            max_index_start = max_index[0].item()
 
             # Initialize a list to store ranks at each layer
             ranks_at_layers = []
             confidences_at_layers = []
-            max_indices_at_layers = []
 
             # Loop over previous layers in reverse order, stopping at the first layer
             for i in range(len(previous_logits) - 1, -1, -1):
@@ -1182,12 +1178,10 @@ class DeployT5Stack(T5Stack):
 
                 conf, max_index = torch.max(torch.softmax(previous_logits[i], dim=-1), dim=-1)
                 conf = conf[0].item()
-                max_index = max_index[0].item()
                 #print(i ,rank, conf)
                 # Store the rank positions
                 ranks_at_layers.append(rank[0])
                 confidences_at_layers.append(conf)
-                max_indices_at_layers.append(max_index)
                     
             ranks_at_layers.reverse() # Reverse the list to have the ranks in the correct order
             #ranks_at_layers.append(0) # Append 0 to the end of the list to represent the rank at the last layer
@@ -1195,12 +1189,8 @@ class DeployT5Stack(T5Stack):
             confidences_at_layers.reverse() # Reverse the list to have the ranks in the correct order
             #confidences_at_layers.append(confidence) # Append 0 to the end of the list to represent the rank at the last layer
 
-            max_indices_at_layers.reverse() # Reverse the list to have the ranks in the correct order
-            #max_indices_at_layers.append(max_index_start)
-
             self.graph_top_k_list.append(ranks_at_layers) # Append the ranks at each layer to the list of ranks
             self.graph_top_k_confidence.append(confidences_at_layers) # Append the ranks at each layer to the list of ranks
-            self.graph_top_k_indices.append(max_index_start)
 
 
         if self.config.use_synchronize: torch.cuda.synchronize()
@@ -1223,6 +1213,7 @@ class DeployT5Stack(T5Stack):
                 ]
                 if v is not None
             )
+
         return BaseModelOutputWithPastAndCrossAttentions(
             last_hidden_state=hidden_states,
             past_key_values=present_key_value_states,
