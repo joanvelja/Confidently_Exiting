@@ -554,7 +554,7 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
             plt.xlabel('Block')
             plt.ylabel('Top-K value')
             plt.grid(True)
-            plt.savefig("boxplot_top1_rank_eval" + data_args.dataset_name +".png")
+            plt.savefig("boxplot_top1_rank_eval" + data_args.dataset_name + "_"+model_args.model_name_or_path +".png")
 
             # Compute the mean of the first column
             mean_conf_block = np.nanmean(padded_conf_array, axis=0)
@@ -686,7 +686,7 @@ if __name__ == "__main__":
         plt.ylabel('Performance')
         plt.legend()
         plt.grid(True)
-        plt.savefig("conf_metric_blocks" + data_args.dataset_name + ".png")
+        plt.savefig("conf_metric_blocks" + data_args.dataset_name + "_"+model_args.model_name_or_path +".png")
 
         
         
