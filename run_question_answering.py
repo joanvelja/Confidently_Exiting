@@ -780,8 +780,8 @@ if __name__ == "__main__":
             
 
         plt.figure(figsize=(10, 6))
-        plt.plot(range(24), mean_block_confidence, label='Confidence', color='midnightblue', linestyle='dashed')
-        plt.plot(range(24), block_k_metric, label='F1', color='red')
+        plt.plot(np.arange(24), mean_block_confidence, label='Confidence', color='midnightblue', linestyle='dashed')
+        plt.plot(np.arange(24), block_k_metric, label='F1', color='red')
         plt.title('Confidence vs F1 over layers')
         plt.xlabel('Layer')
         plt.ylabel('Confidence/F1 Score')

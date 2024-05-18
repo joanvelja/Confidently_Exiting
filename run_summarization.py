@@ -672,6 +672,7 @@ if __name__ == "__main__":
             _, metrics = main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
             if data_args.dataset_name == "squad":
                 block_k_metric.append(metrics["f1"])
+               
             if data_args.dataset_name == "iwslt2017":
                 block_k_metric.append(metrics["sacrebleu"])
             else:
@@ -679,8 +680,8 @@ if __name__ == "__main__":
             
 
         plt.figure(figsize=(10, 6))
-        plt.plot(range(24), mean_block_confidence, label='Confidence', color='midnightblue', linestyle='dashed')
-        plt.plot(range(24), block_k_metric, label='RougeL', color='red')
+        plt.plot(np.arange(24), mean_block_confidence, label='Confidence', color='midnightblue', linestyle='dashed')
+        plt.plot(np.arange(24), block_k_metric, label='RougeL', color='red')
         plt.title('Confidence and RougeL over layers')
         plt.xlabel('Layer')
         plt.ylabel('Confidence/RougeL Score')

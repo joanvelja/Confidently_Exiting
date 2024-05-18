@@ -592,8 +592,8 @@ if __name__ == "__main__":
                 block_k_metric.append(metrics["eval_rougeL"])
 
         plt.figure(figsize=(10, 6))
-        plt.plot(range(24), mean_block_confidence, label='Confidence', color='midnightblue', linestyle='dashed')
-        plt.plot(range(24), block_k_metric, label='Sacrebleu', color='red')
+        plt.plot(np.arange(24),  mean_block_confidence, label='Confidence', color='midnightblue', linestyle='dashed')
+        plt.plot(np.arange(24),  block_k_metric, label='Sacrebleu', color='red')
         plt.title('Confidence vs Sacrebleu over Layers')
         plt.xlabel('Layer')
         plt.ylabel('Confidence/Sacrebleu Score')
