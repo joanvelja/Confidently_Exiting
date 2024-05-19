@@ -15,12 +15,20 @@ Specifically, drawing from [[6]](#1), we develop a method for calibrating local,
 
 
 ## Related Works
-There have been a large number of studies introducing different Early-Exiting frameworks to adress the increase inference time of Large Language Models \cite{schwartz2020right, simoulin2021many, bae2023fast, zhu2021leebert}. Early-Exiting is based on the intuition that each token needs distinct amounts of compute during generation. Not all tokens necessitate the same amount of compute to be generated, as such many methods have been implemented to achieve this. Some use a routing prediction method \cite{liu2021faster}, others employ an early-exit classifier \cite{schuster2021consistent}, while most of the work is done through softmax-based confidence measures [[6]](#1).
+There have been a large number of studies introducing different Early-Exiting frameworks to adress the increase inference time of Large Language Models [[32]](#1), [[19]](#1), [[1]](#1), [[28]](#1). Early-Exiting is based on the intuition that each token needs distinct amounts of compute during generation. Not all tokens necessitate the same amount of compute to be generated, as such many methods have been implemented to achieve this. Some use a routing prediction method [[30]](#1), others employ an early-exit classifier [[31]](#1), while most of the work is done through softmax-based confidence measures [[6]](#1).
+In thhis case [[6]](#1), the challenge of early-exiting is addressed by introducing a framework that dynamically allocates computational resources per input and generation timestep. Local exit decisions are calibrated per token but maintaining sequence-level constraints. This ensures computational efficiency without excessive performance degradation. The study validates their claims though both theoretical analysis and experimentation on diverse text generation tasks and datasets.
+[[28]](#1) introduces a new learning scheme. LeeBERT implements a bi-level optimization problem and a cross-level optimization algorithm. This method allows each exit to learn from others and adjusts the weights of different loss terms. Experiment on the GLUE benchmark demonstrate its effectiveness compared to other state-of-the art early-exit methods.
+[[1]](#1) addresses the early-exiting challenge by introducing the Fast and Robust Early Exiting framework (FREE). This framework's novelty is triple:
 
-SOFTMAX PART
+- the shallow-deep module determines the computational path to be chosen and therefore whether the full model; layers need to be used or only part of them is sufficient.
+- the use of synchronized parallel decoding performs token computation planning and allows the reuse of previously early-exited tokens to minimize inference time.
+- the adaptive threshold estimators, using Beta mixture model, determines dynamically suitable confidence thresholds.
+\end{itemize}
+
+[[29]](#1) proposes a class-based early-exiting strategy. This method foresees the use of intermediate layer features to exclude part of the tokens, allowing later layers to focus on a reduced subset of potential tokens. Experimental results prove the effectiveness in dynamic neural network inference by reducing computational costs while maintaining high performance.
 
 
-Introduced by [[4]](#1) *Contrastive Decoding* is a technique used to reduce unwanted behaviours in Large Language Models such as repetition and incoherence. The method is employing two models, a smaller one called amateur and a larger one, called expert. They both perform auto-regressive text generation on the same data, and the final predicted token is selected based on the outputs difference between the predictions of the expert and amateur. While this method is innovative, employing two LLMs is highly inefficient, both in terms of space and compute. Alternative methods have been proposed, which employ the contrastive decoding scheme, without the necessity of using two large models. An example of such work is the idea of Auto-Contrastive Decoding [[2]](#1) . The authors show how contrasting outputs of different layers within the same model can benefit text generation outputs. The study proves that predictions of shallow layers, which are often overlooked, can help those of deeper ones to attain better results. Other studies have adapted this technique to different tasks such as reducing hallucination in LLMs [[3]](#1). 
+Beyond Early-Exiting, this study is also focusing on the technique of *Contrastive Decoding* [[4]](#1). Its main purpose is to reduce unwanted behaviours in Large Language Models such as repetition and incoherence. The method is employing two models, a smaller one called amateur and a larger one, called expert. They both perform auto-regressive text generation on the same data, and the final predicted token is selected based on the outputs difference between the predictions of the expert and amateur. While this method is innovative, employing two LLMs is highly inefficient, both in terms of space and compute. Alternative methods have been proposed, which employ the contrastive decoding scheme, without the necessity of using two large models. An example of such work is the idea of Auto-Contrastive Decoding [[2]](#1) . The authors show how contrasting outputs of different layers within the same model can benefit text generation outputs. The study proves that predictions of shallow layers, which are often overlooked, can help those of deeper ones to attain better results. Other studies have adapted this technique to different tasks such as reducing hallucination in LLMs [[3]](#1). 
 
 Our proposed confidence measures connect [[6]](#1) with [[2]](#1) and [[3]](#1). We do so by speeding up the softmax operation of [[6]](#1) and apply auto-contrastive decoding and Jensen-Shannon Divergence to early-exit framework together with the speedup framework of section [[Early Exiting Via the Softmax approach]](#1).
 
@@ -73,7 +81,7 @@ The second approach is based on results from [[4]](#1). The aforementioned work 
 We call the first `Weighted contrastive decoding`. This method is an adapted version of Auto-contrastive Decoding of [[2]](#1).
 
 #### Jensen-Shannon Divergence contrastive decoding
-The `Jensen-Shannon Divergence (JSD) contrastive decoding` is inspired by [[3]](#1).
+The `Jensen-Shannon Divergence (JSD) contrastive decoding` is inspired by [[3]](#1) but applied to the early-exiting framework.
 
 
 
@@ -90,8 +98,10 @@ We evaluate the encoder-decoder t5-large model [[22]](#1) on five different data
 
 We also compare the performance and effects of our proposed methods between the pre-trained only version [t5-large](https://huggingface.co/google-t5/t5-large), [long-t5-tglobal-base](https://huggingface.co/google/long-t5-tglobal-base) and the fine-tuned version of t5-large on each training dataset [t5-squad](https://huggingface.co/jvelja/t5-squad),[t5-samsum](https://huggingface.co/jvelja/t5-samsum), [t5-cndm](https://huggingface.co/jvelja/t5-cnndm), [t5-multinews](https://huggingface.co/jvelja/t5-multinews), [t5-bigpatent](https://huggingface.co/jvelja/t5-bigpatent) and [t5-IWSLT](https://huggingface.co/jvelja/t5-iwslt).
 
-## Conclusions
+More to come at the final deadline.
 
+## Conclusions
+Conclusions will be written at the final deadline. 
 
 
 ## References
@@ -176,3 +186,18 @@ Fabbri, Alexander R., Irene Li, Tianwei She, Suyi Li, and Dragomir R. Radev. "Mu
 
 <a id="1">[27]</a>
 Cettolo, Mauro, Marcello Federico, Luisa Bentivogli, Niehues Jan, Stüker Sebastian, Sudoh Katsuitho, Yoshino Koichiro and Federmann Christian. “Overview of the IWSLT 2017 Evaluation Campaign.” International Workshop on Spoken Language Translation (2017).
+
+<a id="1">[28]</a>
+Zhu, Wei. “LeeBERT: Learned Early Exit for BERT with cross-level optimization.” Annual Meeting of the Association for Computational Linguistics (2021).
+
+<a id="1">[29]</a>
+Wang, Jingcun, Bing Li, and Grace Li Zhang. "Early Classification for Dynamic Inference of Neural Networks." arXiv preprint arXiv:2309.13443 (2023).
+
+<a id="1">[30]</a>
+Liu, Yijin, Fandong Meng, Jie Zhou, Yufeng Chen, and Jinan Xu. "Faster depth-adaptive transformers." In Proceedings of the AAAI Conference on Artificial Intelligence, vol. 35, no. 15, pp. 13424-13432. 2021.
+
+<a id="1">[31]</a>
+Schuster, Tal, Adam Fisch, Tommi Jaakkola, and Regina Barzilay. "Consistent accelerated inference via confident adaptive transformers." arXiv preprint arXiv:2104.08803 (2021).
+
+<a id="1">[32]</a>
+Schwartz, Roy, Gabriel Stanovsky, Swabha Swayamdipta, Jesse Dodge, and Noah A. Smith. "The right tool for the job: Matching model and instance complexities." arXiv preprint arXiv:2004.07453 (2020).
