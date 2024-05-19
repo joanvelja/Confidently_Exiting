@@ -1,23 +1,20 @@
 ---
-language:
-- de
-- en
 license: apache-2.0
 tags:
 - generated_from_trainer
 datasets:
-- iwslt2017
+- multi_news
 model-index:
-- name: iwslt_t5_large
+- name: multi_news_longt5_base
   results: []
 ---
 
 <!-- This model card has been generated automatically according to the information the Trainer had access to. You
 should probably proofread and complete it, then remove this comment. -->
 
-# iwslt_t5_large
+# multi_news_longt5_base
 
-This model is a fine-tuned version of [google-t5/t5-large](https://huggingface.co/google-t5/t5-large) on the iwslt2017 iwslt2017-de-en dataset.
+This model is a fine-tuned version of [google/long-t5-tglobal-base](https://huggingface.co/google/long-t5-tglobal-base) on the multi_news dataset.
 
 ## Model description
 

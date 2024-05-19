@@ -1,5 +1,4 @@
 ---
-license: apache-2.0
 tags:
 - generated_from_trainer
 datasets:
@@ -14,7 +13,7 @@ should probably proofread and complete it, then remove this comment. -->
 
 # samsum_t5_large
 
-This model is a fine-tuned version of [t5-large](https://huggingface.co/t5-large) on the samsum dataset.
+This model is a fine-tuned version of [jvelja/t5-samsum](https://huggingface.co/jvelja/t5-samsum) on the samsum dataset.
 
 ## Model description
 
@@ -34,7 +33,7 @@ More information needed
 
 The following hyperparameters were used during training:
 - learning_rate: 5e-05
-- train_batch_size: 4
+- train_batch_size: 8
 - eval_batch_size: 1
 - seed: 42
 - optimizer: Adam with betas=(0.9,0.999) and epsilon=1e-08

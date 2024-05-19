@@ -533,7 +533,7 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
         return trainer, metrics
     
 if __name__ == "__main__":
-    os.environ["WANDB_DISABLED"] = "true"
+    #os.environ["WANDB_DISABLED"] = "true"
     
     # See all possible arguments in src/transformers/training_args.py
     # or by passing the --help flag to this script.
