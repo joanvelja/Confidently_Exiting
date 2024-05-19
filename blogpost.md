@@ -100,6 +100,48 @@ We also compare the performance and effects of our proposed methods between the 
 
 More to come at the final deadline.
 
+### Softmax Results
+
+This table displays the type of softmax exiting (either decaying, fixed, or none) in relation to performance metrics such as runtime, F1 score, Rouge, or BLEU. A clear pattern emerges: when the reduction of the vocabulary size is changed from none to either decaying or fixed, performance in terms of F1, Rouge, or BLEU decreases. However, the overall runtime also decreases, illustrating a trade-off where reducing the vocabulary size results in faster processing times but lower performance.
+
+An interesting pattern appears for the fine-tuned models: if the average block exit is similar across all reduction types, the "None" reduction type yields the best performance across all metrics. This is because vocabulary reduction benefits only if the model computes the logits through most of the layers. When this occurs, it increases the overall runtime.
+
+
+| Model | Dataset | Reduction Type | Block Average Exit | Runtime | Samples per second | f1, rougeL or bleu |
+|:----------------------------|:--------------|:--------------------|-----------------:|---------------:|--------------------------:|----------:|
+| t5-large | squad | decaying | 15 | 6.7521 | 1.481 | 0  |
+| t5-large | squad | fixed | 15.05 | 2.6543 | 3.768 | 0 |
+| t5-large | squad | None | 19.5294 | 5.2598 | 1.901 | 90 |
+| t5-squad | squad | decaying | 14.0612 | 4.3845 | 2.281 | 80 |
+| t5-squad | squad | fixed | 14.566 | 6.9129 | 1.447 | 80 |
+| t5-squad | squad | None | 14.566 | 4.4011 | 2.272 | 100 |
+| t5-samsum | samsum | decaying | 14.9615 | 11.5839 | 0.863 | 2.5 |
+| t5-samsum | samsum | fixed | 15 | 161.101 | 0.062 | 0 |
+| t5-samsum | samsum | None | 19.6388 | 21.3617 | 0.468 | 36.0191 |
+| t5-large | samsum | decaying | 15 | 18.6154 | 0.537 | 5.3799 |
+| t5-large | samsum | fixed | 15 | 166.882 | 0.06 | 0  |
+| t5-large | samsum | None | 21.3266 | 43.0316 | 0.232 | 18.3291 |
+| long-t5-tglobal-base | multi_news | decaying | 9.54358 | 66.1225 | 0.151 | 3.3908 |
+| long-t5-tglobal-base | multi_news | fixed | 9.17888 | 97.5776 | 0.102 | 13.0121 |
+| long-t5-tglobal-base | multi_news | None | 9.03257 | 90.7552 | 0.11 | 16.0328 |
+| t5-large | iwslt2017 | decaying | 14.9921 | 10.69 | 0.935 | 0.165 |
+| t5-large | iwslt2017 | fixed | 15 | 72.6153 | 0.138| 0 |
+| t5-large | iwslt2017 | None | 19.8665 | 21.4535 | 0.466 | 0.6646 |
+| t5-large | cnn_dailymail | decaying | 15 | 7.5626 | 1.322  | 0.8696 |
+| t5-large | cnn_dailymail | fixed | 15 | 65.6162 | 0.152 |  0  |
+| gt5-large | cnn_dailymail | None | 20.1062 | 35.9859 | 0.278 | 23.1428 |
+| t5-cnndm | cnn_dailymail | decaying | 14.92 | 7.3143 | 1.367 | 2.046 |
+| t5-cnndm | cnn_dailymail | fixed | 15 | 20.9629 | 0.477 | 0 |
+| t5-cnndm | cnn_dailymail | None | 18.1947 | 47.876 | 0.209 | 24.9601 |
+| long-t5-tglobal-base | big_patent | decaying | 9.82461 | 55.6787 | 0.18 | 4.6623 |
+| long-t5-tglobal-base | big_patent | fixed | 9.3767 | 154.648 | 0.065  | 10.1653 |
+| long-t5-tglobal-base | big_patent | None | 9.12285 | 158.71 | 0.063 | 22.6895 |
+
+
+---
+
+**Note:** Due to Snellius being down, we had to make these runs locally on 100 samples, which can result in inaccuracies in the results. Additionally, some models could not be fitted into memory and were therefore ignored.
+
 ## Conclusions
 Conclusions will be written at the final deadline. 
 
