@@ -474,7 +474,7 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
             plt.xlabel('Layer', fontsize=16)
             plt.ylabel('Rank of the final predicted token', fontsize=16)
             plt.grid(True)
-            plt.savefig("boxplot_top1_rank_eval" + data_args.dataset_name.replace("/","_") + "_" + model_args.model_name_or_path.replace("/","_")  +".png")
+            plt.savefig("plots/boxplot_top1_rank_eval" + data_args.dataset_name.replace("/","_") + "_" + model_args.model_name_or_path.replace("/","_")  +".png")
 
             # Compute the mean of the first column
             mean_conf_block = np.nanmean(padded_conf_array, axis=0)
@@ -567,7 +567,7 @@ if __name__ == "__main__":
                 "exit_conf_threshold": additional_args.exit_conf_threshold,
                 "exit_min_layer": additional_args.exit_min_layer,
                 },
-            mode="disabled" if TESTING else "online",
+            mode="disabled" if True else "online",
             )
     
     
@@ -580,24 +580,18 @@ if __name__ == "__main__":
         
         additional_args.plotting_logits = False
 
-        for block in range(1, 24):           
+        for block in range(1, 25):           
             additional_args.static_exit_layer = block
             _, metrics = main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
-              
-            if data_args.dataset_name == "squad":
-                block_k_metric.append(metrics["f1"])
-            if data_args.dataset_name == "iwslt2017":
-                block_k_metric.append(metrics["sacrebleu"])
-            else:
-                block_k_metric.append(metrics["eval_rougeL"])
+            block_k_metric.append(metrics["eval_bleu"])
 
         plt.figure(figsize=(10, 6))
-        plt.plot(np.arange(24),  mean_block_confidence, label='Confidence', color='midnightblue', linestyle='dashed')
-        plt.plot(np.arange(24),  block_k_metric, label='Sacrebleu', color='red')
+        plt.plot(np.arange(23),  mean_block_confidence, label='Confidence', color='midnightblue', linestyle='dashed')
+        plt.plot(np.arange(23),  block_k_metric, label='Sacrebleu', color='red')
         plt.title('Confidence vs Sacrebleu over Layers')
         plt.xlabel('Layer')
         plt.ylabel('Confidence/Sacrebleu Score')
         plt.legend()
         plt.grid(True)
     
-        plt.savefig("conf_metric_blocks_" + data_args.dataset_name.replace("/","_") + "_" + model_args.model_name_or_path.replace("/","_")  +".png")
+        plt.savefig("plots/conf_metric_blocks_" + data_args.dataset_name.replace("/","_") + "_" + model_args.model_name_or_path.replace("/","_")  +".png")

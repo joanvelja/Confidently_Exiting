@@ -996,8 +996,8 @@ class DeployT5Stack(T5Stack):
                                 lm_logits = lm_head(_hidden_states) if not self.config.tie_word_embeddings \
                                     else lm_head(_hidden_states * (self.config.d_model ** -0.5))
                                 # Get the top 2500 logits at block 1.
-                                maximum_k_size = 4500 # where 200 is the maximum number of weights to keep ( it actually immediately decreases so it is lower thatn this)
-                                minimum_k_size = 50 # where 50 is the minimum number of weights to keep
+                                maximum_k_size = 15000 # where 200 is the maximum number of weights to keep ( it actually immediately decreases so it is lower thatn this)
+                                minimum_k_size = 10000 # where 50 is the minimum number of weights to keep
                                 num_layers = len(self.block) # This is the number of layers in the model
                                 k = self.func_inverse(i,maximum_k_size, minimum_k_size, num_layers)
                                 self.top_k_indices = torch.topk(lm_logits, k, largest=True, sorted=True)[1][0][0]
@@ -1027,6 +1027,7 @@ class DeployT5Stack(T5Stack):
                                 else: 
                                     raise("Please provide a valid type_vocab_reduct argument. Either use fixed, decaying, or adaptive.")
 
+                        # print("Logits at blocks", i , lm_logits.shape)
                         # END OF SHRINKING VOCAB PART
                         if self.config.exit_conf_type == "contrastive_decoding":
                             
@@ -1086,7 +1087,7 @@ class DeployT5Stack(T5Stack):
                             # print("Layer: ", i) 
                             self.lm_logits = lm_logits # This is where the logits are sent to do the predictions.
     
-                            plot = True
+                            plot = False
                             if plot: #and len(jsds) >= 23 : # When we have all the jdss values, we can use them to check jsds between layers
 
                                 print("JSDS: ", jsds)
@@ -1616,8 +1617,10 @@ class DeployT5ForConditionalGeneration(T5ForConditionalGeneration):
 
             next_token_logits = outputs.logits[:, -1, :]
 
-            next_token_logits = self.apply_repetition_penalty(next_token_logits, input_ids, penalty=1.2)
-
+            try:
+                next_token_logits = self.apply_repetition_penalty(next_token_logits, input_ids, penalty=1.2)
+            except:
+                pass
             # pre-process distribution
             next_tokens_scores = logits_processor(input_ids, next_token_logits)
 

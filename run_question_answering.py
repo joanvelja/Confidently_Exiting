@@ -632,7 +632,6 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
         else:
             metrics = trainer.evaluate(max_length=max_length, num_beams=num_beams, metric_key_prefix="eval")
 
-
         if additional_args.plotting_logits:
             data = model.decoder.graph_top_k_list
             data_conf = model.decoder.graph_top_k_confidence
@@ -665,7 +664,7 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
             plt.xlabel('Layer', fontsize=16)
             plt.ylabel('Rank of the final predicted token', fontsize=16)
             plt.grid(True)
-            plt.savefig("boxplot_topk_rank_eval" + data_args.dataset_name.replace("/","_") + "_" + model_args.model_name_or_path.replace("/","_") +".png")
+            plt.savefig("plots/boxplot_topk_rank_eval" + data_args.dataset_name.replace("/","_") + "_" + model_args.model_name_or_path.replace("/","_") +".png")
 
             # Compute the mean of the first column
             mean_conf_block = np.nanmean(padded_conf_array, axis=0)
@@ -713,7 +712,7 @@ if __name__ == "__main__":
     # See all possible arguments in src/transformers/training_args.py
     # or by passing the --help flag to this script.
     # We now keep distinct sets of args, for a cleaner separation of concerns.
-
+    os.environ["WANDB_DISABLED"] = "true"
     parser = HfArgumentParser((ModelArguments, DataTrainingArguments, Seq2SeqTrainingArguments, AdditionalArguments))
     if len(sys.argv) == 2 and sys.argv[1].endswith(".json"):
         # If we pass only one argument to the script and it's the path to a json file,
@@ -732,52 +731,43 @@ if __name__ == "__main__":
     average_exit_block_list = []
     # for framework in exit_conf_type_list:
     #     additional_args.exit_conf_type = framework
-    for layer in exit_min_layer_list:
-        additional_args.exit_min_layer = layer
-        wandb.login()
+    # for layer in exit_min_layer_list:
+    #     additional_args.exit_min_layer = layer
+    #     wandb.login()
 
-        wandb.init(
-                # set the wandb project where this run will be logged
-                project="contrastive_decoding",
-                entity="uva24",
-                # track hyperparameters and run metadata
-                config={
-                    "dataset": data_args.dataset_name,
-                    "model": model_args.model_name_or_path, 
-                    "exit_conf_type": additional_args.exit_conf_type,
-                    "exit_conf_threshold": additional_args.exit_conf_threshold,
-                    "exit_min_layer": additional_args.exit_min_layer,
-                    },
-                mode="disabled" if TESTING else "online",
-                )
+    #     wandb.init(
+    #             # set the wandb project where this run will be logged
+    #             project="contrastive_decoding",
+    #             entity="uva24",
+    #             # track hyperparameters and run metadata
+    #             config={
+    #                 "dataset": data_args.dataset_name,
+    #                 "model": model_args.model_name_or_path, 
+    #                 "exit_conf_type": additional_args.exit_conf_type,
+    #                 "exit_conf_threshold": additional_args.exit_conf_threshold,
+    #                 "exit_min_layer": additional_args.exit_min_layer,
+    #                 },
+    #             mode="disabled" if TESTING else "online",
+    #             )
         
-        main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
+    #main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
 
         # average_exit_block_list.append(average_exit_block)
-
-        wandb.finish()
 
     
     if not additional_args.plotting_logits:
         main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
-        wandb.finish()
+        #wandb.finish()
     else:
         mean_block_confidence = main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
         block_k_metric = []
         
         additional_args.plotting_logits = False
 
-        for block in range(1, 24):           
+        for block in range(1, 25):           
             additional_args.static_exit_layer = block
             _, metrics = main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
-        
-            if data_args.dataset_name == "squad":
-                block_k_metric.append(metrics["squad"])
-            if data_args.dataset_name == "iwslt2017":
-                block_k_metric.append(metrics["sacrebleu"])
-            else:
-                block_k_metric.append(metrics["eval_rougeL"])
-            
+            block_k_metric.append(metrics["eval_f1"]/100)
 
         plt.figure(figsize=(10, 6))
         plt.plot(np.arange(24), mean_block_confidence, label='Confidence', color='midnightblue', linestyle='dashed')
@@ -787,7 +777,7 @@ if __name__ == "__main__":
         plt.ylabel('Confidence/F1 Score')
         plt.legend()
         plt.grid(True)
-        plt.savefig("conf_metric_blocks" + data_args.dataset_name.replace("/","_") + "_" + model_args.model_name_or_path.replace("/","_") + ".png")
+        plt.savefig("plots/conf_metric_blocks" + data_args.dataset_name.replace("/","_") + "_" + model_args.model_name_or_path.replace("/","_") + ".png")
 
         
                 
