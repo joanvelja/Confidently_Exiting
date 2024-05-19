@@ -249,15 +249,19 @@ def JSD_contrastive_confidence(
 
     # only consider jsds between current and 2nd layer
     mask = probits_exp >= alpha * max_probs_exp
-    jsds = {layer: jsd(probits_exp[mask], prev_probits[layer][mask]) for layer in np.arange(stop = layer_exp + 1, start=2)}
+    jsds = {layer: jsd(probits_exp[mask], prev_probits[layer][mask]) / (layer_exp - layer) for layer in np.arange(stop = layer_exp + 1, start=2)}
+    #jsds = {layer: jsd(probits_exp[mask], prev_probits[layer][mask]) for layer in np.arange(stop = layer_exp + 1, start=2)}
+    # scale jsds hyperbolically
+
     # get the probits with the maximum jsd
-    #max_jsd_layer = max(jsds, key=jsds.get)
+    max_jsd_layer = max(jsds, key=jsds.get)
+    probits_am = prev_probits[max_jsd_layer]
 
     # Get list of jsds values
-    vals = list(jsds.values())
-    o = detect_and_rank_bumps(vals)
-    bump_idx = o[0]
-    probits_am = prev_probits[bump_idx + 2]
+    #vals = list(jsds.values())
+    #o = detect_and_rank_bumps(vals)
+    #bump_idx = o[0]
+    #probits_am = prev_probits[bump_idx + 2]
 
     # for v in prev_probits.values():
     #     probs_am = v
