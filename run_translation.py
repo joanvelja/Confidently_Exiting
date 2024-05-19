@@ -552,26 +552,28 @@ if __name__ == "__main__":
         
     trainer_cls = TransTrainer
 
-    
-    wandb.login()
 
-    wandb.init(
-            # set the wandb project where this run will be logged
-            project="fine-tuned-sum-models",
-            entity="uva24",
-            # track hyperparameters and run metadata
-            config={
-                "dataset": data_args.dataset_name,
-                "model": model_args.model_name_or_path, 
-                "exit_conf_type": additional_args.exit_conf_type,
-                "exit_conf_threshold": additional_args.exit_conf_threshold,
-                "exit_min_layer": additional_args.exit_min_layer,
-                },
-            mode="disabled" if True else "online",
-            )
-    
-    
     if not additional_args.plotting_logits:
+
+        wandb.login()
+
+        wandb.init(
+                # set the wandb project where this run will be logged
+                project="Softmax performance",
+                entity="uva24",
+                # track hyperparameters and run metadata
+                config={
+                    "dataset": data_args.dataset_name,
+                    "model": model_args.model_name_or_path, 
+                    "exit_conf_type": additional_args.exit_conf_type,
+                    "exit_conf_threshold": additional_args.exit_conf_threshold,
+                    "exit_min_layer": additional_args.exit_min_layer,
+                    "type_vocab_reduct": additional_args.type_vocab_reduct,
+                    },
+                mode="disabled" if False else "online",
+                )
+    
+    
         main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
         wandb.finish()
     else:

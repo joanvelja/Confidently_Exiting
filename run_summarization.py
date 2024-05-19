@@ -613,13 +613,11 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
         return trainer, metrics
 
 
-if __name__ == "__main__":
-    os.environ["WANDB_DISABLED"] = "false"
-    
+if __name__ == "__main__": 
     # See all possible arguments in src/transformers/training_args.py
     # or by passing the --help flag to this script.
     # We now keep distinct sets of args, for a cleaner separation of concerns.
-    
+    os.environ["WANDB_DISABLED"] = "true"
     parser = HfArgumentParser((ModelArguments, DataTrainingArguments, Seq2SeqTrainingArguments, AdditionalArguments))
     if len(sys.argv) == 2 and sys.argv[1].endswith(".json"):
         # If we pass only one argument to the script and it's the path to a json file,
@@ -640,25 +638,25 @@ if __name__ == "__main__":
 
     trainer_cls = SumTrainer
 
-    wandb.login()
-
-    wandb.init(
-            # set the wandb project where this run will be logged
-            project="fine-tuned-sum-models",
-            entity="uva24",
-            # track hyperparameters and run metadata
-            config={
-                "dataset": data_args.dataset_name,
-                "model": model_args.model_name_or_path, 
-                "exit_conf_type": additional_args.exit_conf_type,
-                "exit_conf_threshold": additional_args.exit_conf_threshold,
-                "exit_min_layer": additional_args.exit_min_layer,
-                },
-            mode="disabled" if TESTING else "online",
-            )
-    
-    
     if not additional_args.plotting_logits:
+        
+        wandb.login()
+
+        wandb.init(
+                # set the wandb project where this run will be logged
+                project="Softmax performance",
+                entity="uva24",
+                # track hyperparameters and run metadata
+                config={
+                    "dataset": data_args.dataset_name,
+                    "model": model_args.model_name_or_path, 
+                    "exit_conf_type": additional_args.exit_conf_type,
+                    "exit_conf_threshold": additional_args.exit_conf_threshold,
+                    "exit_min_layer": additional_args.exit_min_layer,
+                    "type_vocab_reduct": additional_args.type_vocab_reduct,
+                    },
+                mode="disabled" if False else "online",
+                )
         main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
         wandb.finish()
     else:
