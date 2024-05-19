@@ -14,21 +14,23 @@ Specifically, drawing from \cite{schuster2022confident}, we develop a method for
 
 
 ## Related Works
-There have been a large number of studies introducing different Early-Exiting frameworks to adress the increase inference time of Large Language Models \cite{schwartz2020right, simoulin2021many, bae2023fast, zhu2021leebert}. Early-Exiting is based on the intuition that each token needs distinct amounts of compute during generation. Not all tokens necessitate the same amount of compute to be generated, as such many methods have been implemented to achieve this. Some use a routing prediction method \cite{liu2021faster}, others employ an early-exit classifier \cite{schuster2021consistent}, while most of the work is done through softmax-based confidence measures \cite{schuster2022confident}.  
+There have been a large number of studies introducing different Early-Exiting frameworks to adress the increase inference time of Large Language Models \cite{schwartz2020right, simoulin2021many, bae2023fast, zhu2021leebert}. Early-Exiting is based on the intuition that each token needs distinct amounts of compute during generation. Not all tokens necessitate the same amount of compute to be generated, as such many methods have been implemented to achieve this. Some use a routing prediction method \cite{liu2021faster}, others employ an early-exit classifier \cite{schuster2021consistent}, while most of the work is done through softmax-based confidence measures [[6]](#1).
 
-SOFTMAX
-
-
-Introduced by [[4]](#1) \textit{Contrastive Decoding} is a technique used to reduce unwanted behaviours in Large Language Models such as repetition and incoherence. The method is employing two models, a smaller one called amateur and a larger one, called expert. They both perform auto-regressive text generation on the same data, and the final predicted token is selected based on the outputs difference between the predictions of the expert and amateur. While this method is innovative, employing two LLMs is highly inefficient, both in terms of space and compute. Alternative methods have been proposed, which employ the contrastive decoding scheme, without the necessity of using two large models. An example of such work is the idea of Auto-Contrastive Decoding [[2]](#1) . The authors show how contrasting outputs of different layers within the same model can benefit text generation outputs. The study proves that predictions of shallow layers, which are often overlooked, can help those of deeper ones to attain better results. Other studies have adapted this technique to different tasks such as reducing hallucination in LLMs [[3]](#1). 
-
-Our proposed confidence measures connect [[6]](#1) \cite{schuster2022confident} with [[2]](#1) and [[3]](#1). We do so by speeding up the softmax operation of [[6]](#1) and apply auto-contrastive decoding and Jensen-Shannon Divergence to early-exit framework together with the speedup framework of section [[Speed-up]](#1).
+SOFTMAX PART
 
 
-## Methodology
+Introduced by [[4]](#1) *Contrastive Decoding* is a technique used to reduce unwanted behaviours in Large Language Models such as repetition and incoherence. The method is employing two models, a smaller one called amateur and a larger one, called expert. They both perform auto-regressive text generation on the same data, and the final predicted token is selected based on the outputs difference between the predictions of the expert and amateur. While this method is innovative, employing two LLMs is highly inefficient, both in terms of space and compute. Alternative methods have been proposed, which employ the contrastive decoding scheme, without the necessity of using two large models. An example of such work is the idea of Auto-Contrastive Decoding [[2]](#1) . The authors show how contrasting outputs of different layers within the same model can benefit text generation outputs. The study proves that predictions of shallow layers, which are often overlooked, can help those of deeper ones to attain better results. Other studies have adapted this technique to different tasks such as reducing hallucination in LLMs [[3]](#1). 
 
-### Softmax speed-up
+Our proposed confidence measures connect [[6]](#1) with [[2]](#1) and [[3]](#1). We do so by speeding up the softmax operation of [[6]](#1) and apply auto-contrastive decoding and Jensen-Shannon Divergence to early-exit framework together with the speedup framework of section [[Softmax Speedup]](#1).
 
-### Contrastive Decoding as alternative confidence measure
+
+##  <a name="Methodology">Methodology</a> 
+
+### <a name="Softmax Speedup">Softmax Speedup </a>
+
+### <a name="Contrastive Decoding ">Contrastive Decoding </a>
+
+
 
 #### Weighted contrastive decoding
 We call the first `Weighted contrastive decoding`. This method is an adapted version of Auto-contrastive Decoding of [[2]](#1).
