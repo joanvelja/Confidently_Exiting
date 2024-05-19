@@ -58,21 +58,23 @@ As one can note from Figures
 [boxplot2](plots/boxplot_topk_rank_evalsquad_google-t5_t5-large.png),
 [boxplot3](plots/boxplot_top1_rank_evalsamsum_jvelja_t5-samsum.png)
 and [boxplot4](plots/boxplot_topk_rank_evalsquad_jvelja_t5-squad.png), the rank of the predicted token smoothly decreases across layers, especially for non-fine-tuned models. Again, we prune the $\textbf{W}_j$ matrix, given a minimum early exit layer $j$. We retain its top k-tokens, obtaining the new pruned vocabulary matrix $\tilde{\textbf{{W}}}_{j+i} \in \mathbb{R}^{k \times dim_d}$. Now, instead of keeping the reduced matrix size fixed, we further prune it after every layer. Given the vocabulary matrix $\textbf{W}_{j+i}$ at layer $j+i$ of size $k_1$, we prune for layer $j+i+1$ it to a reduced matrix of size $k_2$, where 
-    \[
+$$
 k_2 = \max\left(k^*, \left\lfloor \frac{k1}{1 + \frac{k1 - k^*}{k^*} \cdot \frac{j+i}{\text{num\_layers}}} \right\rfloor \right)
-\]
-$k^*$ here indicates the minimum size our vocabulary matrix $\textbf{W}_{j+i+1}$ can reach. \\
+$$
 
+$k^*$ here indicates the minimum size our vocabulary matrix $\textbf{W}_{j+i+1}$ can reach. 
+
+The benefit of this approach is obvious, and justified. Our predicted token is often in the top-k ones, with a high value of $k$. Due to this, pruning the vocabulary matrix allows us to reduce the amount of computations we have to compute at each layer, while discarding only irrelevant tokens. While we trade-off some performance, this further speeds up the runtime of our model, allowing us to obtain notable efficiency gains.
 
 
 ### <a name="Contrastive Decoding ">Contrastive Decoding </a>
 
+The second approach is based on results from [[4]](#1). The aforementioned work proposes *contrastive decoding* as a search-based decoding method, inspired by the fact that the failures of larger LMs, e.g., repetition, incoherence, are even more prevalent in smaller LMs, and that this difference signals which texts should be preferred. The original implementation involves the use of two models in parallel, returning the difference between the likelihood under a large LM - called the *expert* - and a small LM - called the *amateur*. We speculate the potential improvement of our original notion of confidence with this approach. We apply contrastive decoding by overcoming a clear limitation of the original work, that is parallel inference among the amateur and the expert models. For this reason, we use previous layers predictions as a proxy of the amateur model, thus removing the requirement of parallel decoding.
 
 
 #### Weighted contrastive decoding
 We call the first `Weighted contrastive decoding`. This method is an adapted version of Auto-contrastive Decoding of [[2]](#1).
 
- 
 #### Jensen-Shannon Divergence contrastive decoding
 The `Jensen-Shannon Divergence (JSD) contrastive decoding` is inspired by [[3]](#1).
 
@@ -81,6 +83,15 @@ The `Jensen-Shannon Divergence (JSD) contrastive decoding` is inspired by [[3]](
 ### Speed-up applied to Contrastive Decoding
 
 ## Results
+We evaluate the encoder-decoder t5-large model [[22]](#1) on five different datasets and three different downstream tasks:
+
+- Stanford Question Answering Dataset (SQuAD) with over 16k of annotated data [[23]](#1).
+- SamSum a human-annotated dataset for abstractive Summarization [[24]](#1).
+- CNN/DailyMail, over 300k news articles from CNN and DailyMail [[25]](#1).
+- Multi-News a long-context multi-document Summarization dataset with news articles [[26]](#1).
+- IWSLT 2017 [[27]](#1) a benchmark for Machine Translation for multiple language (English and German) directions.
+
+We also compare the performance and effects of our proposed methods between the pre-trained only version [t5-large](https://huggingface.co/google-t5/t5-large), [long-t5-tglobal-base](https://huggingface.co/google/long-t5-tglobal-base) and the fine-tuned version of t5-large on each training dataset [t5-squad](https://huggingface.co/jvelja/t5-squad),[t5-samsum](https://huggingface.co/jvelja/t5-samsum), [t5-cndm](https://huggingface.co/jvelja/t5-cnndm), [t5-multinews](https://huggingface.co/jvelja/t5-multinews), [t5-bigpatent](https://huggingface.co/jvelja/t5-bigpatent) and [t5-IWSLT](https://huggingface.co/jvelja/t5-iwslt).
 
 ## Conclusions
 
@@ -150,3 +161,21 @@ Geva, Mor, Roei Schuster, Jonathan Berant, and Omer Levy. "Transformer feed-forw
 
 <a id="1">[21]</a>
 Geva, Mor, Avi Caciularu, Kevin Ro Wang, and Yoav Goldberg. "Transformer feed-forward layers build predictions by promoting concepts in the vocabulary space." arXiv preprint arXiv:2203.14680 (2022).
+
+<a id="1">[22]</a>
+Raffel, Colin, Noam Shazeer, Adam Roberts, Katherine Lee, Sharan Narang, Michael Matena, Yanqi Zhou, Wei Li, and Peter J. Liu. "Exploring the limits of transfer learning with a unified text-to-text transformer." Journal of machine learning research 21, no. 140 (2020): 1-67.
+
+<a id="1">[23]</a>
+Rajpurkar, Pranav, Jian Zhang, Konstantin Lopyrev, and Percy Liang. "Squad: 100,000+ questions for machine comprehension of text." arXiv preprint arXiv:1606.05250 (2016).
+
+<a id="1">[24]</a>
+Gliwa, Bogdan, Iwona Mochol, Maciej Biesek, and Aleksander Wawer. "SAMSum corpus: A human-annotated dialogue dataset for abstractive summarization." arXiv preprint arXiv:1911.12237 (2019).
+
+<a id="1">[25]</a>
+See, Abigail, Peter J. Liu, and Christopher D. Manning. "Get to the point: Summarization with pointer-generator networks." arXiv preprint arXiv:1704.04368 (2017).
+
+<a id="1">[26]</a>
+Fabbri, Alexander R., Irene Li, Tianwei She, Suyi Li, and Dragomir R. Radev. "Multi-news: A large-scale multi-document summarization dataset and abstractive hierarchical model." arXiv preprint arXiv:1906.01749 (2019).
+
+<a id="1">[27]</a>
+Cettolo, Mauro, Marcello Federico, Luisa Bentivogli, Niehues Jan, Stüker Sebastian, Sudoh Katsuitho, Yoshino Koichiro and Federmann Christian. “Overview of the IWSLT 2017 Evaluation Campaign.” International Workshop on Spoken Language Translation (2017).
