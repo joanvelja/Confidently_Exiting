@@ -31,20 +31,17 @@ Our proposed confidence measures connect [[6]](#1) with [[2]](#1) and [[3]](#1).
 Our first approach aims to improve the speedup of the Softmax response approach introduced by [[6]](#1). The aforementioned confidence measure computes the difference between the top two values of Softmax $(\textbf{W}_i d_t^i)$, at each layer $i$. We denote this measure as $c_t^i$. If $c_t^i \geq \lambda_t^i$, the model exists early, providing us the current prediction computed at that layer.
 
 However, the multiplication inside Softmax, i.e. $\textbf{W}_i d_t^i$ can be deemed as computationally expensive. Note that $\textbf{W}_i \in \mathbb{R}^{30.000 \times dim_d}$, where $30.000$ is our vocabulary size, and  $dim_d$ is equal to the size of the last hidden representation $d_t^i$ of our model. We note and argue that most of these computations are redundant, and potentially not necessary. In Figures below, we show the boxplots for the rank of the final predicted token at each layer, across not  fine-tuned and fine-tuned models, for two different datasets.
-The main message these images convey to us is that the final predicted token is often already highly ranked from the first few layers of our model. This behavior is more explicit in Figure [boxplot2](plots/boxplot_topk_rank_evalsquad_google-t5_t5-large.png) and [boxplot4](plots/boxplot_topk_rank_evalsquad_jvelja_t5-squad.png), where we use fine-tuned models for our downstream task.
+The main message these images convey to us is that the final predicted token is often already highly ranked from the first few layers of our model. This behavior is more explicit in Figure [boxplot2](src/plots/boxplot_topk_rank_evalsquad_google-t5_t5-large.png) and [boxplot4](src/plots/boxplot_topk_rank_evalsquad_jvelja_t5-squad.png), where we use fine-tuned models for our downstream task.
 
-![boxplot1](plots/boxplot_top1_rank_evalsamsum_google-t5_t5-large.png)
-
-![boxplot2](plots/boxplot_topk_rank_evalsquad_google-t5_t5-large.png)
-
-![boxplot3](plots/boxplot_top1_rank_evalsamsum_jvelja_t5-samsum.png)
-
-![boxplot4](plots/boxplot_topk_rank_evalsquad_jvelja_t5-squad.png)
+![boxplot1](src/plots/boxplot_top1_rank_evalsamsum_google-t5_t5-large.png)
+![boxplot2](src/plots/boxplot_topk_rank_evalsquad_google-t5_t5-large.png)
+![boxplot3](src/plots/boxplot_top1_rank_evalsamsum_jvelja_t5-samsum.png)
+![boxplot4](src/plots/boxplot_topk_rank_evalsquad_jvelja_t5-squad.png)
 
 On the other hand, confidence alone can be a deceiving measure. LLMs can be too confident in the first layers, causing the model to exit prematurely. Our desiderata is for the model to be confident at the same when its prediction has a high accuracy. However, we find that this is not always the case.
-In Figure [confidence](plots/conf_acc_temp.png), we see the accuracy and the confidence across each layer. The model in the first layers presents an anomalous high confidence, while its performance is poor. Early exiting only based on the Softmax response would result in highly poor performances. We decide to set a *minimum exit layer* parameter $j$, which forces the model to consider exiting only after this layer. Note that this parameter is highly dependent on the model and dataset one experiments on. For fine-tuned models for example, one expects this parameter to be smaller.
+In Figure [confidence](src/plots/conf_acc_temp.png), we see the accuracy and the confidence across each layer. The model in the first layers presents an anomalous high confidence, while its performance is poor. Early exiting only based on the Softmax response would result in highly poor performances. We decide to set a *minimum exit layer* parameter $j$, which forces the model to consider exiting only after this layer. Note that this parameter is highly dependent on the model and dataset one experiments on. For fine-tuned models for example, one expects this parameter to be smaller.
 
-![confidence](plots/conf_acc_temp.png)
+![confidence](src/plots/conf_acc_temp.png)
 
 
 Motivated by these findings, we introduce two additional modifications to the Softmax response approach.
@@ -54,10 +51,10 @@ After the minimum early exit layer $j$, we prune $\textbf{W}_j$, retaining its t
 
 #### Softmax response via decaying pruning
 As one can note from Figures 
-[boxplot1](plots/boxplot_top1_rank_evalsamsum_google-t5_t5-large.png),
-[boxplot2](plots/boxplot_topk_rank_evalsquad_google-t5_t5-large.png),
-[boxplot3](plots/boxplot_top1_rank_evalsamsum_jvelja_t5-samsum.png)
-and [boxplot4](plots/boxplot_topk_rank_evalsquad_jvelja_t5-squad.png), the rank of the predicted token smoothly decreases across layers, especially for non-fine-tuned models. Again, we prune the $\textbf{W}_j$ matrix, given a minimum early exit layer $j$. We retain its top k-tokens, obtaining the new pruned vocabulary matrix $\tilde{\textbf{{W}}}_{j+i} \in \mathbb{R}^{k \times dim_d}$. Now, instead of keeping the reduced matrix size fixed, we further prune it after every layer. Given the vocabulary matrix $\textbf{W}_{j+i}$ at layer $j+i$ of size $k_1$, we prune for layer $j+i+1$ it to a reduced matrix of size $k_2$, where 
+[boxplot1](src/plots/boxplot_top1_rank_evalsamsum_google-t5_t5-large.png),
+[boxplot2](src/plots/boxplot_topk_rank_evalsquad_google-t5_t5-large.png),
+[boxplot3](src/plots/boxplot_top1_rank_evalsamsum_jvelja_t5-samsum.png)
+and [boxplot4](src/plots/boxplot_topk_rank_evalsquad_jvelja_t5-squad.png), the rank of the predicted token smoothly decreases across layers, especially for non-fine-tuned models. Again, we prune the $\textbf{W}_j$ matrix, given a minimum early exit layer $j$. We retain its top k-tokens, obtaining the new pruned vocabulary matrix $\tilde{\textbf{{W}}}_{j+i} \in \mathbb{R}^{k \times dim_d}$. Now, instead of keeping the reduced matrix size fixed, we further prune it after every layer. Given the vocabulary matrix $\textbf{W}_{j+i}$ at layer $j+i$ of size $k_1$, we prune for layer $j+i+1$ it to a reduced matrix of size $k_2$, where 
 $$
 k_2 = \max\left(k^*, \left\lfloor \frac{k1}{1 + \frac{k1 - k^*}{k^*} \cdot \frac{j+i}{\text{num\_layers}}} \right\rfloor \right)
 $$
