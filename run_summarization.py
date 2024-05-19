@@ -28,10 +28,14 @@ import nltk  # Here to have a nice missing dependency error message early on
 import numpy as np
 import torch
 from filelock import FileLock
-
+import seaborn as sns
+import pandas as pd
+import matplotlib.pyplot as plt
+import copy
 import datasets
 import evaluate
 import transformers
+from sklearn.metrics import f1_score
 from datasets import load_dataset
 from peft import LoraConfig, TaskType, get_peft_model, PeftModel
 from transformers import (
@@ -72,6 +76,8 @@ import wandb
 # require_version("datasets>=1.8.0", "To fix: pip install -r examples/pytorch/summarization/requirements.txt")
 
 logger = logging.getLogger(__name__)
+
+TESTING = True
 
 summarization_name_mapping = {
     "amazon_reviews_multi": ("review_body", "review_title"),
@@ -426,7 +432,7 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
 
     def compute_metrics(eval_preds, compute_metrics=True):
         if compute_metrics:
-            preds, labels, inputs = eval_preds
+            preds, labels = eval_preds
         else:
             preds, labels = eval_preds
         if isinstance(preds, tuple):
@@ -513,10 +519,51 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
             
         else:
             metrics = trainer.evaluate(metric_key_prefix="eval")
+
+        if additional_args.plotting_logits:
+            data = model.decoder.graph_top_k_list
+            data_conf = model.decoder.graph_top_k_confidence
+
+
+            max_length = max(len(arr) for arr in data)
+
+            # Pad arrays with NaNs to ensure they are all the same length
+            padded_data = [np.pad(np.array(arr, dtype=float),  # Convert array to float
+                        (0, max_length - len(arr)),
+                        mode='constant',
+                        constant_values=np.nan)
+                for arr in data]
+            
+            padded_conf = [np.pad(np.array(arr, dtype=float),  # Convert array to float
+                        (0, max_length - len(arr)),
+                        mode='constant',
+                        constant_values=np.nan)
+                for arr in data_conf]
+
+            # Convert the list of arrays into a single NumPy array
+            padded_array = np.array(padded_data)
+            padded_conf_array = np.array(padded_conf)
+
+            # Converting the array to a DataFrame for easier handling in seaborn
+            df = pd.DataFrame(padded_array)
+
+            # Creating a boxplot
+            plt.figure(figsize=(12, 8))
+            sns.boxplot(data=df)
+            plt.title('Rank of the final predicted token at each layer', fontsize=20)
+            plt.xlabel('Layer', fontsize=16)
+            plt.ylabel('Rank of the final predicted token', fontsize=16)
+            plt.grid(True)
+            plt.savefig("boxplot_top1_rank_eval" + data_args.dataset_name.replace("/","_") + "_" + model_args.model_name_or_path.replace("/","_") +".png")
+
+            # Compute the mean of the first column
+            mean_conf_block = np.nanmean(padded_conf_array, axis=0)
+
+            return mean_conf_block
         
         max_eval_samples = data_args.max_eval_samples if data_args.max_eval_samples is not None else len(eval_dataset)
         metrics["eval_samples"] = min(max_eval_samples, len(eval_dataset))
-
+ 
         trainer.log_metrics("eval", metrics)
         trainer.save_metrics("eval", metrics)
 
@@ -561,13 +608,13 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
         trainer.create_model_card(**kwargs)
 
     if not jupyter:
-        return results
+        return results, metrics
     else:
-        return trainer
+        return trainer, metrics
 
 
 if __name__ == "__main__":
-    os.environ["WANDB_DISABLED"] = "true"
+    os.environ["WANDB_DISABLED"] = "false"
     
     # See all possible arguments in src/transformers/training_args.py
     # or by passing the --help flag to this script.
@@ -607,9 +654,41 @@ if __name__ == "__main__":
                 "exit_conf_threshold": additional_args.exit_conf_threshold,
                 "exit_min_layer": additional_args.exit_min_layer,
                 },
-            # mode="disabled" if TESTING else "online",
+            mode="disabled" if TESTING else "online",
             )
+    
+    
+    if not additional_args.plotting_logits:
+        main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
+        wandb.finish()
+    else:
+        mean_block_confidence = main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
+        block_k_metric = []
+        
+        additional_args.plotting_logits = False
 
-    main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
+        for block in range(1, 24):           
+            additional_args.static_exit_layer = block
+            _, metrics = main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
+            if data_args.dataset_name == "squad":
+                block_k_metric.append(metrics["f1"])
+               
+            if data_args.dataset_name == "iwslt2017":
+                block_k_metric.append(metrics["sacrebleu"])
+            else:
+                block_k_metric.append(metrics["eval_rougeL"])
+            
 
-    wandb.finish()
+        plt.figure(figsize=(10, 6))
+        plt.plot(np.arange(24), mean_block_confidence, label='Confidence', color='midnightblue', linestyle='dashed')
+        plt.plot(np.arange(24), block_k_metric, label='RougeL', color='red')
+        plt.title('Confidence and RougeL over layers')
+        plt.xlabel('Layer')
+        plt.ylabel('Confidence/RougeL Score')
+        plt.legend()
+        plt.grid(True)
+        plt.savefig("conf_metric_blocks" + data_args.dataset_name.replace("/","_") + "_" + model_args.model_name_or_path.replace("/","_")  +".png")
+
+        
+        
+    

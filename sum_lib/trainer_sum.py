@@ -52,7 +52,7 @@ from models.deploying_longt5 import DeployLongT5ForConditionalGeneration
 class SumTrainer(Seq2SeqTrainer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
+        
         descriptive = True
         if descriptive:
             self.tokenizer = AutoTokenizer.from_pretrained('google-t5/t5-large')
@@ -116,9 +116,6 @@ class SumTrainer(Seq2SeqTrainer):
             ignore_keys=ignore_keys,
             metric_key_prefix=metric_key_prefix,
         )
-
-        # output.predictions contains the generated tokens
-        print(self.tokenizer.batch_decode(output.predictions, skip_special_tokens=True))
             
         total_batch_size = self.args.eval_batch_size * self.args.world_size
         if f"{metric_key_prefix}_jit_compilation_time" in output.metrics:
@@ -247,10 +244,11 @@ class SumTrainer(Seq2SeqTrainer):
 
             # Prediction step
             loss, logits, labels = self.prediction_step(model, inputs, prediction_loss_only, ignore_keys=ignore_keys)
+
             inputs_decode = self._prepare_input(inputs["input_ids"]) if args.include_inputs_for_metrics else None
 
-            print(self.tokenizer.decode(inputs["input_ids"][0], skip_special_tokens=True))
-            print("-END CONTEXT-")
+            # print(self.tokenizer.decode(inputs["input_ids"][0], skip_special_tokens=True))
+            # print("-END CONTEXT-")
 
             if is_torch_tpu_available():
                 xm.mark_step()
@@ -419,6 +417,7 @@ class SumTrainer(Seq2SeqTrainer):
         # generated_tokens = self.model.generate(**inputs, **gen_kwargs)
         
         gen_model = self.model.base_model if self.model.config.use_lora else self.model
+        
         generated_tokens = gen_model.generate(
             inputs["input_ids"],
             attention_mask=inputs["attention_mask"],

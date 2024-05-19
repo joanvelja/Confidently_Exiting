@@ -634,81 +634,8 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
 
 
         if additional_args.plotting_logits:
-            filtered_labels = [[item for item in sublist if item != -100] for sublist in eval_dataset["labels"]]
-
             data = model.decoder.graph_top_k_list
             data_conf = model.decoder.graph_top_k_confidence
-            data_top1_indices = model.decoder.graph_top_k_indices
-
-            full_accuracy_array = []
-
-            full_reconstruct_predictions =  [[] for _ in range(len(model.decoder.block))]
-
-            count = 0 
-            printing_true_list = []
-            printing_pred_list = []
-            final_labels = copy.deepcopy(filtered_labels)
-            for true_predictions_data in filtered_labels:
-                reconstruct_predictions = [[] for _ in range(len(model.decoder.block))]
-                while len(true_predictions_data) != 0:
-                    # Model vs token prediction
-                    true_value = true_predictions_data.pop(0)
-                    predict_token_model = data_top1_indices[count]
-                
-                    printing_true_list.append(tokenizer.decode(true_value))
-                    printing_pred_list.append(tokenizer.decode(predict_token_model))
-
-                    #print("Predict token", predict_token_model)
-                    for i in range(len(model.decoder.block)):
-                    #print("steps", i , reconstruct_predictions[i], predict_token_model[i])
-                        reconstruct_predictions[i].append(predict_token_model[i])
-                    #reconstruct_predictions = np.append(reconstruct_predictions, predict_token_model[i])
-
-                    # If the model predicts end of sentence but not the true prediction
-                    if predict_token_model[-1] == 1 and true_value != 1:
-                        #print("check", predict_token_model[-1], true_value)
-                        data_top1_indices.insert(count+1, [1]*len(predict_token_model)) # Insert a one right after the end of sentence token
-
-                    # If the model predicts a token but the true prediction is end of sentence
-                    if predict_token_model[-1] != 1 and true_value == 1:
-                        true_predictions_data.append(1)
-
-                    if predict_token_model[-1] == 1 and true_value == 1:
-                        count += 1
-                        break
-                    count += 1 
-                for i in range(len(model.decoder.block)):
-                    full_reconstruct_predictions[i].append(reconstruct_predictions[i])           
-
-            # print("true list", printing_true_list)
-            # print("pred lsit", printing_pred_list)
-            f1_score_list = []
-            
-            for full_block_prediction in full_reconstruct_predictions:
-                # Ensure each prediction is a single list of integers
-                f1 = 0
-                for index, true_labels in enumerate(final_labels): 
-                    prediction = full_block_prediction[index]                
-                    # max_len = max(len(prediction), len(true_labels))
-                    # padded_prediction = prediction + [0] * (max_len - len(prediction))
-                    # padded_true = true_labels + [0] * (max_len - len(true_labels))
-
-                    all_labels = list(set(prediction + true_labels))
-                    pred_binary = [1 if label in prediction else 0 for label in all_labels]
-                    true_binary = [1 if label in true_labels else 0 for label in all_labels]
-
-                    # Compute F1 score
-                    block_f1 = f1_score(true_binary, pred_binary, average='binary')
-                    f1 += block_f1
-                f1_score_list.append(f1/len(final_labels))
-
-
-                        
-                
-
-            full_accuracy_array = np.array(full_accuracy_array)
-            mean_correctness = np.mean(full_accuracy_array, axis=0)
-
             max_length = max(len(arr) for arr in data)
 
             # Pad arrays with NaNs to ensure they are all the same length
@@ -734,38 +661,15 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
             # Creating a boxplot
             plt.figure(figsize=(12, 8))
             sns.boxplot(data=df)
-            plt.title('Boxplot for Each Block')
-            plt.xlabel('Block')
-            plt.ylabel('Top-K value')
+            plt.title('Rank of the final predicted token at each layer', fontsize=20)
+            plt.xlabel('Layer', fontsize=16)
+            plt.ylabel('Rank of the final predicted token', fontsize=16)
             plt.grid(True)
-            plt.savefig("boxplot_topk_rank_eval.png")
+            plt.savefig("boxplot_topk_rank_eval" + data_args.dataset_name.replace("/","_") + "_" + model_args.model_name_or_path.replace("/","_") +".png")
 
             # Compute the mean of the first column
-            mean_block = np.nanmean(padded_array, axis=0)
             mean_conf_block = np.nanmean(padded_conf_array, axis=0)
-
-            # Plotting
-            blocks = np.arange(mean_block.size)
-
-            plt.figure(figsize=(10, 6))
-            plt.plot(blocks, mean_block, label='Mean Top-K rank', color='midnightblue')
-            plt.title('Mean, Max and Min top-k rank over blocks')
-            plt.xlabel('Blocks')
-            plt.ylabel('Top-K rank')
-            plt.legend()
-            plt.grid(True)
-            plt.savefig("mean_topk_rank_eval.png")
-
-            plt.figure(figsize=(10, 6))
-            plt.plot(blocks, mean_conf_block, label='Mean Top-K conf', color='red', linestyle='dashed')
-            plt.plot(blocks, f1_score_list, label='Mean f1 per block', color='green', linestyle='dashed')
-            plt.title('Confidence of top-1 rank over blocks')
-            plt.xlabel('Blocks')
-            plt.ylabel('Highest Softmax Confidence')
-            plt.legend()
-            plt.grid(True)
-            plt.savefig("conf_acc_graph.png")
-
+            return mean_conf_block
 
         max_eval_samples = data_args.max_eval_samples if data_args.max_eval_samples is not None else len(eval_dataset)
         metrics["eval_samples"] = min(max_eval_samples, len(eval_dataset))
@@ -800,9 +704,9 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
         trainer.push_to_hub(**kwargs)
         
     if not jupyter:
-        return results
+        return results, metrics
     else:
-        return trainer
+        return trainer, metrics
 
 
 if __name__ == "__main__":
@@ -852,6 +756,40 @@ if __name__ == "__main__":
         # average_exit_block_list.append(average_exit_block)
 
         wandb.finish()
+
+    
+    if not additional_args.plotting_logits:
+        main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
+        wandb.finish()
+    else:
+        mean_block_confidence = main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
+        block_k_metric = []
+        
+        additional_args.plotting_logits = False
+
+        for block in range(1, 24):           
+            additional_args.static_exit_layer = block
+            _, metrics = main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
+        
+            if data_args.dataset_name == "squad":
+                block_k_metric.append(metrics["squad"])
+            if data_args.dataset_name == "iwslt2017":
+                block_k_metric.append(metrics["sacrebleu"])
+            else:
+                block_k_metric.append(metrics["eval_rougeL"])
+            
+
+        plt.figure(figsize=(10, 6))
+        plt.plot(np.arange(24), mean_block_confidence, label='Confidence', color='midnightblue', linestyle='dashed')
+        plt.plot(np.arange(24), block_k_metric, label='F1', color='red')
+        plt.title('Confidence vs F1 over layers')
+        plt.xlabel('Layer')
+        plt.ylabel('Confidence/F1 Score')
+        plt.legend()
+        plt.grid(True)
+        plt.savefig("conf_metric_blocks" + data_args.dataset_name.replace("/","_") + "_" + model_args.model_name_or_path.replace("/","_") + ".png")
+
+        
                 
         
 

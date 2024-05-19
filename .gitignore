@@ -1,0 +1,12 @@
+
+util/__pycache__/
+
+models/__pycache__/__init__.cpython-310.pyc
+
+models/__pycache__/deploying_longt5.cpython-310.pyc
+
+models/__pycache__/deploying_t5.cpython-310.pyc
+
+models/__pycache__/modeling_longt5.cpython-310.pyc
+
+models/__pycache__/modeling_t5.cpython-310.pyc
