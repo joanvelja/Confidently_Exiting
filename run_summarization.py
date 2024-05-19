@@ -667,14 +667,14 @@ if __name__ == "__main__":
         
         additional_args.plotting_logits = False
 
-        for block in range(1, 25):           
+        for block in range(1, 13):           
             additional_args.static_exit_layer = block
             _, metrics = main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
             block_k_metric.append(metrics["eval_rougeL"]/100)    
 
         plt.figure(figsize=(10, 6))
-        plt.plot(np.arange(23), mean_block_confidence, label='Confidence', color='midnightblue', linestyle='dashed')
-        plt.plot(np.arange(23), block_k_metric, label='RougeL', color='red')
+        plt.plot(np.arange(12), mean_block_confidence, label='Confidence', color='midnightblue', linestyle='dashed')
+        plt.plot(np.arange(12), block_k_metric, label='RougeL', color='red')
         plt.title('Confidence and RougeL over layers')
         plt.xlabel('Layer')
         plt.ylabel('Confidence/RougeL Score')
