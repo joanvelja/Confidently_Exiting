@@ -634,13 +634,14 @@ if __name__ == "__main__":
             model_cls = LongT5ForConditionalGeneration if not additional_args.deploy_scenario \
                 else DeployLongT5ForConditionalGeneration
     else:
-        raise NotImplemented
+        model_cls = T5ForConditionalGeneration if not additional_args.deploy_scenario \
+            else DeployT5ForConditionalGeneration
 
     trainer_cls = SumTrainer
-    type_vocab_reduct = [None, "fixed", "decaying"] 
+    type_vocab_reduct = ["None", "fixed", "decaying"] 
     if not additional_args.plotting_logits:
         for type_reduct in type_vocab_reduct:
-            additional_args.type_vocab_reduct = type_vocab_reduct
+            additional_args.type_vocab_reduct = type_reduct
             wandb.login()
 
             wandb.init(

@@ -730,11 +730,11 @@ if __name__ == "__main__":
     exit_conf_type_list = ["softmax", "JSD_contrastive_confidence", "reweight_contrastive_decoding"]
     average_exit_block_list = []
 
-    type_vocab_reduct = [None, "fixed", "decaying"] 
+    type_vocab_reduct = ["None", "fixed", "decaying"] 
     
     if not additional_args.plotting_logits:
         for type_reduct in type_vocab_reduct:
-            additional_args.type_vocab_reduct = type_vocab_reduct
+            additional_args.type_vocab_reduct = type_reduct
             wandb.login()
 
             wandb.init(

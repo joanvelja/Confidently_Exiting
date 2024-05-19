@@ -552,11 +552,11 @@ if __name__ == "__main__":
         
     trainer_cls = TransTrainer
 
-    type_vocab_reduct = [None, "fixed", "decaying"] 
+    type_vocab_reduct = ["None", "fixed", "decaying"] 
     
     if not additional_args.plotting_logits:
         for type_reduct in type_vocab_reduct:
-            additional_args.type_vocab_reduct = type_vocab_reduct
+            additional_args.type_vocab_reduct = type_reduct
             wandb.login()
 
             wandb.init(

@@ -1024,6 +1024,9 @@ class DeployT5Stack(T5Stack):
                                         retained_top_k = int(curr_weights_size * (1 - conf * conf_scaling_factor))
                                         selected_weights = lm_head.weight[self.top_k_indices[:retained_top_k], :]
                                         lm_logits = torch.nn.functional.linear(_hidden_states, selected_weights)
+                                elif self.config.type_vocab_reduct == "None":
+                                    lm_logits = lm_head(_hidden_states) if not self.config.tie_word_embeddings \
+                                        else lm_head(_hidden_states * (self.config.d_model ** -0.5))
                                 else: 
                                     raise("Please provide a valid type_vocab_reduct argument. Either use fixed, decaying, or adaptive.")
 
