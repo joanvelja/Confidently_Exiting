@@ -1,0 +1,68 @@
+{
+    "os": "macOS-14.5-arm64-arm-64bit",
+    "python": "3.10.12",
+    "heartbeatAt": "2024-05-19T17:11:29.377566",
+    "startedAt": "2024-05-19T17:11:28.805036",
+    "docker": null,
+    "cuda": null,
+    "args": [
+        "--model_name_or_path",
+        "jvelja/t5-cnndm",
+        "--do_eval",
+        "--dataset_name",
+        "cnn_dailymail",
+        "--dataset_config_name",
+        "3.0.0",
+        "--output_dir",
+        "./save/cnndm_t5_large/",
+        "--per_device_eval_batch_size",
+        "1",
+        "--deploy_scenario",
+        "True",
+        "--overwrite_output_dir",
+        "--predict_with_generate",
+        "--source_prefix",
+        "summarize: ",
+        "--max_eval_samples",
+        "100",
+        "--exit_min_layer",
+        "1",
+        "--exit_conf_threshold",
+        "0.9",
+        "--use_early_exit",
+        "True",
+        "--exit_conf_type",
+        "softmax",
+        "--use_auth_token",
+        "True",
+        "--include_inputs_for_metrics",
+        "True"
+    ],
+    "state": "running",
+    "program": "-m run_summarization",
+    "codePathLocal": null,
+    "git": {
+        "remote": "https://github.com/joanvelja/Confidently_Exiting.git",
+        "commit": "f3faed6956e042ac3bd9bc5f7117380f595f62fb"
+    },
+    "email": "matteo.nulli@gmail.com",
+    "root": "/Users/matteo/Documents/MSc/Period5/DL2/Project/Confidently_Exiting",
+    "host": "MacBook-Pro-di-Matteo-4.local",
+    "username": "matteo",
+    "executable": "/Users/matteo/anaconda3/envs/dl2/bin/python",
+    "cpu_count": 10,
+    "cpu_count_logical": 10,
+    "disk": {
+        "/": {
+            "total": 460.4317207336426,
+            "used": 443.17702865600586
+        }
+    },
+    "gpuapple": {
+        "type": "arm",
+        "vendor": "Apple"
+    },
+    "memory": {
+        "total": 32.0
+    }
+}

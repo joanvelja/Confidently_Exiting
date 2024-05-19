@@ -596,7 +596,7 @@ class DeployT5Stack(T5Stack):
             self._reset_time_measure()
         else: self.deploy_time = None
         
-        plot = True
+        plot = False
         if plot:
             self.tokenizer = T5Tokenizer.from_pretrained("google-t5/t5-large")
         
@@ -1088,7 +1088,7 @@ class DeployT5Stack(T5Stack):
                             # print("Layer: ", i) 
                             self.lm_logits = lm_logits # This is where the logits are sent to do the predictions.
     
-                            plot = True
+                            plot = False
                             if plot: #and len(jsds) >= 23 : # When we have all the jdss values, we can use them to check jsds between layers
 
                                 print("JSDS: ", jsds)

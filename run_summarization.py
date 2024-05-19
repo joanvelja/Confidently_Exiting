@@ -567,7 +567,7 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
 
 
 if __name__ == "__main__":
-    os.environ["WANDB_DISABLED"] = "true"
+    # os.environ["WANDB_DISABLED"] = "true"
     
     # See all possible arguments in src/transformers/training_args.py
     # or by passing the --help flag to this script.
@@ -593,23 +593,36 @@ if __name__ == "__main__":
 
     trainer_cls = SumTrainer
 
-    wandb.login()
+    exit_min_layer_list = [2,3,6,15,17,18]
+    exit_conf_type_list = ["softmax", "JSD_contrastive_confidence", "reweight_contrastive_decoding"]
+    average_exit_block_list = []
+    # for framework in exit_conf_type_list:
+    #     additional_args.exit_conf_type = framework
+    for layer in exit_min_layer_list:
+        additional_args.exit_min_layer = layer
+        for framework in exit_conf_type_list:
+            
+            additional_args.exit_conf_type = framework
+            if (framework == "softmax" and layer in [2, 6,15,17,18]) or (framework == "JSD_contrastive_confidence" and layer in [2, 6,15,17,18]):
+                continue
+            wandb.login()
 
-    wandb.init(
-            # set the wandb project where this run will be logged
-            project="fine-tuned-sum-models",
-            entity="uva24",
-            # track hyperparameters and run metadata
-            config={
-                "dataset": data_args.dataset_name,
-                "model": model_args.model_name_or_path, 
-                "exit_conf_type": additional_args.exit_conf_type,
-                "exit_conf_threshold": additional_args.exit_conf_threshold,
-                "exit_min_layer": additional_args.exit_min_layer,
-                },
-            # mode="disabled" if TESTING else "online",
-            )
 
-    main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
+            wandb.init(
+                    # set the wandb project where this run will be logged
+                    project="summarization_cd",
+                    entity="uva24",
+                    # track hyperparameters and run metadata
+                    config={
+                        "dataset": data_args.dataset_name,
+                        "model": model_args.model_name_or_path, 
+                        "exit_conf_type": additional_args.exit_conf_type,
+                        "exit_conf_threshold": additional_args.exit_conf_threshold,
+                        "exit_min_layer": additional_args.exit_min_layer,
+                        },
+                    # mode="disabled" if TESTING else "online",
+                    )
 
-    wandb.finish()
+            main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
+
+            wandb.finish()

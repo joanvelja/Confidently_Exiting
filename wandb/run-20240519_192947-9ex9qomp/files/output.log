@@ -1,0 +1,587 @@
+05/19/2024 19:29:50 - WARNING - __main__ - Process rank: -1, device: cpu, n_gpu: 0distributed training: False, 16-bits training: False
+05/19/2024 19:29:50 - INFO - __main__ - Training/evaluation parameters Seq2SeqTrainingArguments(
+_n_gpu=0,
+adafactor=False,
+adam_beta1=0.9,
+adam_beta2=0.999,
+adam_epsilon=1e-08,
+auto_find_batch_size=False,
+bf16=False,
+bf16_full_eval=False,
+data_seed=None,
+dataloader_drop_last=False,
+dataloader_num_workers=0,
+dataloader_pin_memory=True,
+ddp_bucket_cap_mb=None,
+ddp_find_unused_parameters=None,
+ddp_timeout=1800,
+debug=[],
+deepspeed=None,
+disable_tqdm=False,
+do_eval=True,
+do_predict=False,
+do_train=False,
+eval_accumulation_steps=None,
+eval_delay=0,
+eval_steps=500,
+evaluation_strategy=steps,
+fp16=False,
+fp16_backend=auto,
+fp16_full_eval=False,
+fp16_opt_level=O1,
+fsdp=[],
+fsdp_config={'fsdp_min_num_params': 0, 'xla': False, 'xla_fsdp_grad_ckpt': False},
+fsdp_min_num_params=0,
+fsdp_transformer_layer_cls_to_wrap=None,
+full_determinism=False,
+generation_config=None,
+generation_max_length=128,
+generation_num_beams=None,
+gradient_accumulation_steps=1,
+gradient_checkpointing=False,
+greater_is_better=True,
+group_by_length=False,
+half_precision_backend=auto,
+hub_model_id=None,
+hub_private_repo=False,
+hub_strategy=every_save,
+hub_token=<HUB_TOKEN>,
+ignore_data_skip=False,
+include_inputs_for_metrics=True,
+jit_mode_eval=False,
+label_names=None,
+label_smoothing_factor=0.0,
+learning_rate=5e-05,
+length_column_name=length,
+load_best_model_at_end=True,
+local_rank=-1,
+log_level=passive,
+log_level_replica=warning,
+log_on_each_node=True,
+logging_dir=./save/samsum_t5-large/runs/May19_19-17-28_MacBook-Pro-di-Matteo-4.local,
+logging_first_step=False,
+logging_nan_inf_filter=True,
+logging_steps=500,
+logging_strategy=steps,
+lr_scheduler_type=linear,
+max_grad_norm=1.0,
+max_steps=-1,
+metric_for_best_model=rougeLsum,
+mp_parameters=,
+no_cuda=False,
+num_train_epochs=3.0,
+optim=adafactor,
+optim_args=None,
+output_dir=./save/samsum_t5-large/,
+overwrite_output_dir=True,
+past_index=-1,
+per_device_eval_batch_size=1,
+per_device_train_batch_size=8,
+predict_with_generate=True,
+prediction_loss_only=False,
+push_to_hub=False,
+push_to_hub_model_id=None,
+push_to_hub_organization=None,
+push_to_hub_token=<PUSH_TO_HUB_TOKEN>,
+ray_scope=last,
+remove_unused_columns=True,
+report_to=['wandb'],
+resume_from_checkpoint=None,
+run_name=./save/samsum_t5-large/,
+save_on_each_node=False,
+save_safetensors=False,
+save_steps=500,
+save_strategy=steps,
+save_total_limit=1,
+seed=42,
+sharded_ddp=[],
+skip_memory_metrics=True,
+sortish_sampler=False,
+tf32=None,
+torch_compile=False,
+torch_compile_backend=None,
+torch_compile_mode=None,
+torchdynamo=None,
+tpu_metrics_debug=False,
+tpu_num_cores=None,
+use_ipex=False,
+use_legacy_prediction_loop=False,
+use_mps_device=False,
+warmup_ratio=0.0,
+warmup_steps=0,
+weight_decay=0.0,
+xpu_backend=None,
+)
+/Users/matteo/anaconda3/envs/dl2/lib/python3.10/site-packages/datasets/load.py:2547: FutureWarning: 'use_auth_token' was deprecated in favor of 'token' in version 2.14.0 and will be removed in 3.0.0.
+You can remove this warning by passing 'token=<use_auth_token>' instead.
+  warnings.warn(
+05/19/2024 19:29:53 - INFO - datasets.builder - No config specified, defaulting to the single config: samsum/samsum
+05/19/2024 19:29:53 - INFO - datasets.info - Loading Dataset Infos from /Users/matteo/.cache/huggingface/modules/datasets_modules/datasets/samsum/f1d7c6b7353e6de335d444e424dc002ef70d1277109031327bc9cc6af5d3d46e
+05/19/2024 19:29:53 - INFO - datasets.builder - Overwrite dataset info from restored data version if exists.
+05/19/2024 19:29:53 - INFO - datasets.info - Loading Dataset info from /Users/matteo/.cache/huggingface/datasets/samsum/samsum/0.0.0/f1d7c6b7353e6de335d444e424dc002ef70d1277109031327bc9cc6af5d3d46e
+05/19/2024 19:29:53 - INFO - datasets.builder - Found cached dataset samsum (/Users/matteo/.cache/huggingface/datasets/samsum/samsum/0.0.0/f1d7c6b7353e6de335d444e424dc002ef70d1277109031327bc9cc6af5d3d46e)
+05/19/2024 19:29:53 - INFO - datasets.info - Loading Dataset info from /Users/matteo/.cache/huggingface/datasets/samsum/samsum/0.0.0/f1d7c6b7353e6de335d444e424dc002ef70d1277109031327bc9cc6af5d3d46e
+/Users/matteo/anaconda3/envs/dl2/lib/python3.10/site-packages/datasets/load.py:1486: FutureWarning: The repository for samsum contains custom code which must be executed to correctly load the dataset. You can inspect the repository content at https://hf.co/datasets/samsum
+You can avoid this message in future by passing the argument `trust_remote_code=True`.
+Passing `trust_remote_code=True` will be mandatory to load this dataset from the next major release of `datasets`.
+  warnings.warn(
+No config specified, defaulting to the single config: samsum/samsum
+Loading Dataset Infos from /Users/matteo/.cache/huggingface/modules/datasets_modules/datasets/samsum/f1d7c6b7353e6de335d444e424dc002ef70d1277109031327bc9cc6af5d3d46e
+Overwrite dataset info from restored data version if exists.
+Loading Dataset info from /Users/matteo/.cache/huggingface/datasets/samsum/samsum/0.0.0/f1d7c6b7353e6de335d444e424dc002ef70d1277109031327bc9cc6af5d3d46e
+Found cached dataset samsum (/Users/matteo/.cache/huggingface/datasets/samsum/samsum/0.0.0/f1d7c6b7353e6de335d444e424dc002ef70d1277109031327bc9cc6af5d3d46e)
+Loading Dataset info from /Users/matteo/.cache/huggingface/datasets/samsum/samsum/0.0.0/f1d7c6b7353e6de335d444e424dc002ef70d1277109031327bc9cc6af5d3d46e
+[INFO|configuration_utils.py:668] 2024-05-19 19:29:53,381 >> loading configuration file config.json from cache at /Users/matteo/.cache/huggingface/hub/models--google-t5--t5-large/snapshots/150ebc2c4b72291e770f58e6057481c8d2ed331a/config.json
+[INFO|configuration_utils.py:720] 2024-05-19 19:29:53,385 >> Model config T5Config {
+  "_name_or_path": "google-t5/t5-large",
+  "architectures": [
+    "T5ForConditionalGeneration"
+  ],
+  "d_ff": 4096,
+  "d_kv": 64,
+  "d_model": 1024,
+  "decoder_start_token_id": 0,
+  "dense_act_fn": "relu",
+  "dropout_rate": 0.1,
+  "eos_token_id": 1,
+  "feed_forward_proj": "relu",
+  "initializer_factor": 1.0,
+  "is_encoder_decoder": true,
+  "is_gated_act": false,
+  "layer_norm_epsilon": 1e-06,
+  "model_type": "t5",
+  "n_positions": 512,
+  "num_decoder_layers": 24,
+  "num_heads": 16,
+  "num_layers": 24,
+  "output_past": true,
+  "pad_token_id": 0,
+  "relative_attention_max_distance": 128,
+  "relative_attention_num_buckets": 32,
+  "task_specific_params": {
+    "summarization": {
+      "early_stopping": true,
+      "length_penalty": 2.0,
+      "max_length": 200,
+      "min_length": 30,
+      "no_repeat_ngram_size": 3,
+      "num_beams": 4,
+      "prefix": "summarize: "
+    },
+    "translation_en_to_de": {
+      "early_stopping": true,
+      "max_length": 300,
+      "num_beams": 4,
+      "prefix": "translate English to German: "
+    },
+    "translation_en_to_fr": {
+      "early_stopping": true,
+      "max_length": 300,
+      "num_beams": 4,
+      "prefix": "translate English to French: "
+    },
+    "translation_en_to_ro": {
+      "early_stopping": true,
+      "max_length": 300,
+      "num_beams": 4,
+      "prefix": "translate English to Romanian: "
+    }
+  },
+  "transformers_version": "4.28.1",
+  "use_cache": true,
+  "vocab_size": 32128
+}
+[INFO|tokenization_auto.py:502] 2024-05-19 19:29:53,507 >> Could not locate the tokenizer configuration file, will try to use the model config instead.
+[INFO|configuration_utils.py:668] 2024-05-19 19:29:53,625 >> loading configuration file config.json from cache at /Users/matteo/.cache/huggingface/hub/models--google-t5--t5-large/snapshots/150ebc2c4b72291e770f58e6057481c8d2ed331a/config.json
+[INFO|configuration_utils.py:720] 2024-05-19 19:29:53,627 >> Model config T5Config {
+  "_name_or_path": "google-t5/t5-large",
+  "architectures": [
+    "T5ForConditionalGeneration"
+  ],
+  "d_ff": 4096,
+  "d_kv": 64,
+  "d_model": 1024,
+  "decoder_start_token_id": 0,
+  "dense_act_fn": "relu",
+  "dropout_rate": 0.1,
+  "eos_token_id": 1,
+  "feed_forward_proj": "relu",
+  "initializer_factor": 1.0,
+  "is_encoder_decoder": true,
+  "is_gated_act": false,
+  "layer_norm_epsilon": 1e-06,
+  "model_type": "t5",
+  "n_positions": 512,
+  "num_decoder_layers": 24,
+  "num_heads": 16,
+  "num_layers": 24,
+  "output_past": true,
+  "pad_token_id": 0,
+  "relative_attention_max_distance": 128,
+  "relative_attention_num_buckets": 32,
+  "task_specific_params": {
+    "summarization": {
+      "early_stopping": true,
+      "length_penalty": 2.0,
+      "max_length": 200,
+      "min_length": 30,
+      "no_repeat_ngram_size": 3,
+      "num_beams": 4,
+      "prefix": "summarize: "
+    },
+    "translation_en_to_de": {
+      "early_stopping": true,
+      "max_length": 300,
+      "num_beams": 4,
+      "prefix": "translate English to German: "
+    },
+    "translation_en_to_fr": {
+      "early_stopping": true,
+      "max_length": 300,
+      "num_beams": 4,
+      "prefix": "translate English to French: "
+    },
+    "translation_en_to_ro": {
+      "early_stopping": true,
+      "max_length": 300,
+      "num_beams": 4,
+      "prefix": "translate English to Romanian: "
+    }
+  },
+  "transformers_version": "4.28.1",
+  "use_cache": true,
+  "vocab_size": 32128
+}
+[INFO|tokenization_utils_base.py:1809] 2024-05-19 19:29:53,874 >> loading file spiece.model from cache at /Users/matteo/.cache/huggingface/hub/models--google-t5--t5-large/snapshots/150ebc2c4b72291e770f58e6057481c8d2ed331a/spiece.model
+[INFO|tokenization_utils_base.py:1809] 2024-05-19 19:29:53,875 >> loading file tokenizer.json from cache at /Users/matteo/.cache/huggingface/hub/models--google-t5--t5-large/snapshots/150ebc2c4b72291e770f58e6057481c8d2ed331a/tokenizer.json
+[INFO|tokenization_utils_base.py:1809] 2024-05-19 19:29:53,875 >> loading file added_tokens.json from cache at None
+[INFO|tokenization_utils_base.py:1809] 2024-05-19 19:29:53,876 >> loading file special_tokens_map.json from cache at None
+[INFO|tokenization_utils_base.py:1809] 2024-05-19 19:29:53,876 >> loading file tokenizer_config.json from cache at None
+[INFO|configuration_utils.py:668] 2024-05-19 19:29:53,876 >> loading configuration file config.json from cache at /Users/matteo/.cache/huggingface/hub/models--google-t5--t5-large/snapshots/150ebc2c4b72291e770f58e6057481c8d2ed331a/config.json
+[INFO|configuration_utils.py:720] 2024-05-19 19:29:53,878 >> Model config T5Config {
+  "_name_or_path": "google-t5/t5-large",
+  "architectures": [
+    "T5ForConditionalGeneration"
+  ],
+  "d_ff": 4096,
+  "d_kv": 64,
+  "d_model": 1024,
+  "decoder_start_token_id": 0,
+  "dense_act_fn": "relu",
+  "dropout_rate": 0.1,
+  "eos_token_id": 1,
+  "feed_forward_proj": "relu",
+  "initializer_factor": 1.0,
+  "is_encoder_decoder": true,
+  "is_gated_act": false,
+  "layer_norm_epsilon": 1e-06,
+  "model_type": "t5",
+  "n_positions": 512,
+  "num_decoder_layers": 24,
+  "num_heads": 16,
+  "num_layers": 24,
+  "output_past": true,
+  "pad_token_id": 0,
+  "relative_attention_max_distance": 128,
+  "relative_attention_num_buckets": 32,
+  "task_specific_params": {
+    "summarization": {
+      "early_stopping": true,
+      "length_penalty": 2.0,
+      "max_length": 200,
+      "min_length": 30,
+      "no_repeat_ngram_size": 3,
+      "num_beams": 4,
+      "prefix": "summarize: "
+    },
+    "translation_en_to_de": {
+      "early_stopping": true,
+      "max_length": 300,
+      "num_beams": 4,
+      "prefix": "translate English to German: "
+    },
+    "translation_en_to_fr": {
+      "early_stopping": true,
+      "max_length": 300,
+      "num_beams": 4,
+      "prefix": "translate English to French: "
+    },
+    "translation_en_to_ro": {
+      "early_stopping": true,
+      "max_length": 300,
+      "num_beams": 4,
+      "prefix": "translate English to Romanian: "
+    }
+  },
+  "transformers_version": "4.28.1",
+  "use_cache": true,
+  "vocab_size": 32128
+}
+[INFO|modeling_utils.py:2534] 2024-05-19 19:29:53,933 >> loading weights file model.safetensors from cache at /Users/matteo/.cache/huggingface/hub/models--google-t5--t5-large/snapshots/150ebc2c4b72291e770f58e6057481c8d2ed331a/model.safetensors
+[INFO|configuration_utils.py:575] 2024-05-19 19:29:54,056 >> Generate config GenerationConfig {
+  "_from_model_config": true,
+  "decoder_start_token_id": 0,
+  "eos_token_id": 1,
+  "pad_token_id": 0,
+  "transformers_version": "4.28.1"
+}
+[INFO|modeling_utils.py:3190] 2024-05-19 19:30:04,561 >> All model checkpoint weights were used when initializing DeployT5ForConditionalGeneration.
+[INFO|modeling_utils.py:3198] 2024-05-19 19:30:04,561 >> All the weights of DeployT5ForConditionalGeneration were initialized from the model checkpoint at google-t5/t5-large.
+If your task is similar to the task the model of the checkpoint was trained on, you can already use DeployT5ForConditionalGeneration for predictions without further training.
+[INFO|configuration_utils.py:537] 2024-05-19 19:30:04,684 >> loading configuration file generation_config.json from cache at /Users/matteo/.cache/huggingface/hub/models--google-t5--t5-large/snapshots/150ebc2c4b72291e770f58e6057481c8d2ed331a/generation_config.json
+[INFO|configuration_utils.py:575] 2024-05-19 19:30:04,685 >> Generate config GenerationConfig {
+  "_from_model_config": true,
+  "decoder_start_token_id": 0,
+  "eos_token_id": 1,
+  "pad_token_id": 0,
+  "transformers_version": "4.28.1"
+}
+Loading cached processed dataset at /Users/matteo/.cache/huggingface/datasets/samsum/samsum/0.0.0/f1d7c6b7353e6de335d444e424dc002ef70d1277109031327bc9cc6af5d3d46e/cache-123ef9cb57841ef6.arrow
+[INFO|tokenization_auto.py:502] 2024-05-19 19:30:05,533 >> Could not locate the tokenizer configuration file, will try to use the model config instead.
+[INFO|configuration_utils.py:668] 2024-05-19 19:30:05,648 >> loading configuration file config.json from cache at /Users/matteo/.cache/huggingface/hub/models--google-t5--t5-large/snapshots/150ebc2c4b72291e770f58e6057481c8d2ed331a/config.json
+[INFO|configuration_utils.py:720] 2024-05-19 19:30:05,649 >> Model config T5Config {
+  "_name_or_path": "google-t5/t5-large",
+  "architectures": [
+    "T5ForConditionalGeneration"
+  ],
+  "d_ff": 4096,
+  "d_kv": 64,
+  "d_model": 1024,
+  "decoder_start_token_id": 0,
+  "dense_act_fn": "relu",
+  "dropout_rate": 0.1,
+  "eos_token_id": 1,
+  "feed_forward_proj": "relu",
+  "initializer_factor": 1.0,
+  "is_encoder_decoder": true,
+  "is_gated_act": false,
+  "layer_norm_epsilon": 1e-06,
+  "model_type": "t5",
+  "n_positions": 512,
+  "num_decoder_layers": 24,
+  "num_heads": 16,
+  "num_layers": 24,
+  "output_past": true,
+  "pad_token_id": 0,
+  "relative_attention_max_distance": 128,
+  "relative_attention_num_buckets": 32,
+  "task_specific_params": {
+    "summarization": {
+      "early_stopping": true,
+      "length_penalty": 2.0,
+      "max_length": 200,
+      "min_length": 30,
+      "no_repeat_ngram_size": 3,
+      "num_beams": 4,
+      "prefix": "summarize: "
+    },
+    "translation_en_to_de": {
+      "early_stopping": true,
+      "max_length": 300,
+      "num_beams": 4,
+      "prefix": "translate English to German: "
+    },
+    "translation_en_to_fr": {
+      "early_stopping": true,
+      "max_length": 300,
+      "num_beams": 4,
+      "prefix": "translate English to French: "
+    },
+    "translation_en_to_ro": {
+      "early_stopping": true,
+      "max_length": 300,
+      "num_beams": 4,
+      "prefix": "translate English to Romanian: "
+    }
+  },
+  "transformers_version": "4.28.1",
+  "use_cache": true,
+  "vocab_size": 32128
+}
+[INFO|tokenization_utils_base.py:1809] 2024-05-19 19:30:05,873 >> loading file spiece.model from cache at /Users/matteo/.cache/huggingface/hub/models--google-t5--t5-large/snapshots/150ebc2c4b72291e770f58e6057481c8d2ed331a/spiece.model
+[INFO|tokenization_utils_base.py:1809] 2024-05-19 19:30:05,875 >> loading file tokenizer.json from cache at /Users/matteo/.cache/huggingface/hub/models--google-t5--t5-large/snapshots/150ebc2c4b72291e770f58e6057481c8d2ed331a/tokenizer.json
+[INFO|tokenization_utils_base.py:1809] 2024-05-19 19:30:05,875 >> loading file added_tokens.json from cache at None
+[INFO|tokenization_utils_base.py:1809] 2024-05-19 19:30:05,875 >> loading file special_tokens_map.json from cache at None
+[INFO|tokenization_utils_base.py:1809] 2024-05-19 19:30:05,876 >> loading file tokenizer_config.json from cache at None
+[INFO|configuration_utils.py:668] 2024-05-19 19:30:05,877 >> loading configuration file config.json from cache at /Users/matteo/.cache/huggingface/hub/models--google-t5--t5-large/snapshots/150ebc2c4b72291e770f58e6057481c8d2ed331a/config.json
+[INFO|configuration_utils.py:720] 2024-05-19 19:30:05,878 >> Model config T5Config {
+  "_name_or_path": "google-t5/t5-large",
+  "architectures": [
+    "T5ForConditionalGeneration"
+  ],
+  "d_ff": 4096,
+  "d_kv": 64,
+  "d_model": 1024,
+  "decoder_start_token_id": 0,
+  "dense_act_fn": "relu",
+  "dropout_rate": 0.1,
+  "eos_token_id": 1,
+  "feed_forward_proj": "relu",
+  "initializer_factor": 1.0,
+  "is_encoder_decoder": true,
+  "is_gated_act": false,
+  "layer_norm_epsilon": 1e-06,
+  "model_type": "t5",
+  "n_positions": 512,
+  "num_decoder_layers": 24,
+  "num_heads": 16,
+  "num_layers": 24,
+  "output_past": true,
+  "pad_token_id": 0,
+  "relative_attention_max_distance": 128,
+  "relative_attention_num_buckets": 32,
+  "task_specific_params": {
+    "summarization": {
+      "early_stopping": true,
+      "length_penalty": 2.0,
+      "max_length": 200,
+      "min_length": 30,
+      "no_repeat_ngram_size": 3,
+      "num_beams": 4,
+      "prefix": "summarize: "
+    },
+    "translation_en_to_de": {
+      "early_stopping": true,
+      "max_length": 300,
+      "num_beams": 4,
+      "prefix": "translate English to German: "
+    },
+    "translation_en_to_fr": {
+      "early_stopping": true,
+      "max_length": 300,
+      "num_beams": 4,
+      "prefix": "translate English to French: "
+    },
+    "translation_en_to_ro": {
+      "early_stopping": true,
+      "max_length": 300,
+      "num_beams": 4,
+      "prefix": "translate English to Romanian: "
+    }
+  },
+  "transformers_version": "4.28.1",
+  "use_cache": true,
+  "vocab_size": 32128
+}
+[WARNING|logging.py:280] 2024-05-19 19:30:05,933 >> You're using a T5TokenizerFast tokenizer. Please note that with a fast tokenizer, using the `__call__` method is faster than using a method to encode the text followed by a call to the `pad` method to get a padded encoding.
+[INFO|configuration_utils.py:575] 2024-05-19 19:30:05,934 >> Generate config GenerationConfig {
+  "_from_model_config": true,
+  "decoder_start_token_id": 0,
+  "eos_token_id": 1,
+  "pad_token_id": 0,
+  "transformers_version": "4.28.1"
+}
+05/19/2024 19:30:04 - INFO - datasets.arrow_dataset - Loading cached processed dataset at /Users/matteo/.cache/huggingface/datasets/samsum/samsum/0.0.0/f1d7c6b7353e6de335d444e424dc002ef70d1277109031327bc9cc6af5d3d46e/cache-123ef9cb57841ef6.arrow
+05/19/2024 19:30:05 - INFO - __main__ - *** Evaluate ***
+  0%|                                                                                                                                                                                                                  | 0/100 [00:00<?, ?it/s]
+summarize: A: Hi Tom, are you busy tomorrow’s afternoon? B: I’m pretty sure I am. What’s up? A: Can you go with me to the animal shelter?. B: What do you want to do? A: I want to get a puppy for my son. B: That will make him so happy. A: Yeah, we’ve discussed it many times. I think he’s ready now. B: That’s good. Raising a dog is a tough issue. Like having a baby ;-) A: I'll get him one of those little dogs. B: One that won't grow up too big;-) A: And eat too much;-)) B: Do you know which one he would like? A: Oh, yes, I took him there last Monday. He showed me one that he really liked. B: I bet you had to drag him away. A: He wanted to take it home right away ;-). B: I wonder what he'll name it. A: He said he’d name it after his dead hamster – Lemmy - he's a great Motorhead fan :-)))
+
+  2%|████                                                                                                                                                                                                      | 2/100 [00:02<02:13,  1.37s/it]
+summarize: Emma: I’ve just fallen in love with this advent calendar! Awesome! I wanna one for my kids! Rob: I used to get one every year as a child! Loved them! Emma: Yeah, i remember! they were filled with chocolates! Lauren: they are different these days! much more sophisticated! Haha! Rob: yeah, they can be fabric/ wooden, shop bought/ homemade, filled with various stuff Emma: what do you fit inside? Lauren: small toys, Christmas decorations, creative stuff, hair bands & clips, stickers, pencils & rubbers, small puzzles, sweets Emma: WOW! That’s brill! X Lauren: i add one more very special thing as well- little notes asking my children to do something nice for someone else Rob: i like that! My sister adds notes asking her kids questions about christmas such as What did the 3 wise men bring? etc Lauren: i reckon it prepares them for Christmas Emma: and makes it more about traditions and being kind to other people Lauren: my children get very excited every time they get one! Emma: i can see why! :)
+
+  3%|██████                                                                                                                                                                                                    | 3/100 [00:05<02:59,  1.85s/it]
+summarize: Jackie: Madison is pregnant Jackie: but she doesn't wanna talk about it Iggy: why Jackie: I don't know why because she doesn't wanna talk about it Iggy: ok Jackie: I wanted to prepare you for it because people get super excited and ask lots of questions Jackie: and she looked way more anxious than excited Iggy: she's probably worrying about it Iggy: she's taking every commitment really seriously Jackie: it could be money problems or relationship problems Iggy: or maybe she wants an abortion Jackie: it could be all of the above Iggy: but you know what? Iggy: once my friend was pregnant and I couldn't bring myself to be happy about it Jackie: why? Iggy: I felt they were immature and I couldn't picture this couple as parents Jackie: I felt similar way on Patricia's wedding Iggy: Patricia Stevens? Jackie: yes Iggy: so we're talking about the same person Jackie: what a coincidence Jackie: so she's pregnant? Iggy: she thought she was Jackie: damn...
+-END CONTEXT-
+summarize: Marla: file_photo> Marla: look what I found under my bed Kiki: lol Tamara: is that someone's underwear? Marla: it certainly isn't mine, my ass is big but it isn't huge Kiki: it looks like male underwear Tamara: not necessarily, maybe some butch had fun in your room while you were gone Marla: ok but how can you leave your underwear after hooking up? wtf is wrong with people Kiki: she or he could be too wasted to notice Tamara: or maybe someone put their pants there to piss you off Marla: that makes no sense Marla: it's so fucking childish Kiki: if it's childish then it must have been your sister's idea Marla: she's 13, she doesn't have underwear that isn't pink Tamara: maybe it belonged to one of your exes? Kiki: she would have recognized it Marla: lol we're doing total CSI investigation on one pair of boxers :D Kiki: file_gif> Tamara: lol Tamara: I think your sister convinced someone to put their underwear in your room as a dare Marla: sounds legit Kiki: Tamara, you just cracked the case! Tamara: file_gif> Tamara: always happy to help
+
+  4%|████████                                                                                                                                                                                                  | 4/100 [00:07<03:22,  2.11s/it]
+summarize: Robert: Hey give me the address of this music shop you mentioned before Robert: I have to buy guitar cable Fred: file_other> Fred: Catch it on google maps Robert: thx m8 Fred: ur welcome
+
+
+  6%|████████████                                                                                                                                                                                              | 6/100 [00:13<03:46,  2.41s/it]
+summarize: Keith: Meg, pls buy some milk and cereals, I see now we've run out of them Megan: hm, sure, I can do that Megan: but did you check in the drawer next to the fridge? Keith: nope, let me have a look Keith: ok, false alarm, we have cereal and milk :D Megan: file_gif>
+
+  7%|██████████████▏                                                                                                                                                                                           | 7/100 [00:15<03:42,  2.39s/it]
+summarize: Samantha: file_video> Evelyn: LOL Holly: Is SHE making that noise?? Samatha: Yes () Holly: How possible?? :o Samantha: Idk, I'm also surprised!! Evelyn: xD
+
+  8%|████████████████▏                                                                                                                                                                                         | 8/100 [00:18<03:47,  2.47s/it]
+summarize: Theresa: have you been at Tom's new place? Luis: yes, it's nice Marion: He invited us for a dinner Adam: where is it? Marion: a bit outside the city Adam: where exactly? Marion: Fiesole Luis: very nice!
+-END CONTEXT-
+summarize: Jane: Hello Vegano Resto: Hello, how may I help you today? Jane: I would like to make a reservation. Jane: For 6 people, tonight around 20:00 Vegano Resto: Let me just check. Vegano Resto: Ah, I'm afraid that there is no room at 20:00. Vegano Resto: However, I could offer you a table for six at 18:30 or at 21:00 Vegano Resto: Would either of those times suit you? Jane: Oh dear. Jane: Let me just ask my friends. Vegano Resto: No problem. Jane: 21:00 will be ok. Vegano Resto: Perfect. So tonight at 21:00 for six people under your name. Jane: great, thank you!
+
+  9%|██████████████████▏                                                                                                                                                                                       | 9/100 [00:20<03:42,  2.45s/it]
+summarize: Nancy: Howdy, how y'all doin'? Tina: Is that a Texan drawl, girl? Nancy: Yes ma'am! Loving it out here! Tina: How's the job going? Kids behaving themselves? Nancy: Mostly! They laugh at my accent though! Tina: Well, they probably haven't met a Welsh person before! Nancy: No shit! They ask me to repeat everything! Best one is "Water", course, it's mostly "Waarderr" here! Tina: LOL. I'd love to hear that, you picked up the accent yet? Nancy: Nah, 21 years in Cardiff isn't easily removed! Tina: We're missing you here, the pub is quiet these days without your laugh! Nancy: Miss you too! I'm coming home in 6 weeks, though. Last fortnight I'm going travelling with 3 other Brits working here, a Geordie girl, a guy from Belfast and Annie, who's from Glasgow. Tina: My God, I'm so jealous! I bet they had even more trouble being understood out there! See you after your trip!
+
+ 10%|████████████████████                                                                                                                                                                                     | 10/100 [00:23<03:53,  2.60s/it]
+summarize: Laura: I need a new printer :/ Laura: thinking about this one Laura: file_other> Jamie: you're sure you need a new one? Jamie: I mean you can buy a second hand one Laura: could be
+
+ 11%|██████████████████████                                                                                                                                                                                   | 11/100 [00:25<03:46,  2.54s/it]
+summarize: Barbara: got everything? Haylee: yeah almost Haylee: i'm in dairy section Haylee: but can't find this youghurt u wanted Barbara: the coconut milk one? Haylee: yeah Barbara: hmmm yeah that's a mystery. cause it's not dairy but it's yoghurt xD Haylee: exactly xD Haylee: ok i asked sb. they put it next to eggs lol Barbara: lol
+
+ 12%|████████████████████████                                                                                                                                                                                 | 12/100 [00:28<03:42,  2.53s/it]
+summarize: Norbert: we need to hurry to catch the tour Wendy: ok, am buying something. be right out! Norbert: ok. am not waiting long though. missed the last one because of you Wendy: just be patient for once. Norbert: im always patient Wendy: at the register now Norbert: alright
+
+ 13%|██████████████████████████▏                                                                                                                                                                              | 13/100 [00:30<03:35,  2.48s/it]
+summarize: Lidia: hi guys, how was your day? Cecil: amazing Lidia: where did you go? Cheryl: to the Jandia Peninsula Cheryl: sorry, Cecil is driving Lidia: and how was it? Cheryl: I liked it a lot Cheryl: Peter took very nice pics Peter: file_photo> file_photo> Peter: but it was very windy Lidia: yes, it's always windy here Peter: really? Also in summer? Lidia: sure, the name Fuerteventura means strong wind Cheryl: wow, it's fascinating Lidia: so do you have any plans for tomorrow Cheryl: Cecil wants to explore more the south of the island Peter: I'm just a passenger, so have no voice Cheryl: c'mon, it's not true Peter: I'm just joking Cheryl: we will decide after dinner Cecil: ok, so let me know Cheryl: we will
+
+ 14%|████████████████████████████▏                                                                                                                                                                            | 14/100 [00:33<03:44,  2.61s/it]
+summarize: Nickola: Have you found it? Sophie: No! Still looking :( Nickola: Check pockets and handbags. Sophie: Checked them all twice already...
+
+
+ 16%|████████████████████████████████▏                                                                                                                                                                        | 16/100 [00:39<03:50,  2.74s/it]
+summarize: Rosie: What's your favorite b-movie? Elle: um, hard to say. Why do you ask? Dennis: Toxic avenger for sure Rosie: I have to write an essay and I chose bad movies as my topic and I'm just looking for inspiration Elle: plan 9 from outer space is definitely something worth mentioning Rosie: Yeah, I've seen it. And I will also cover "The Room". I'm just looking for something a bit more niche Dennis: There's Troma Studio for ya - toxic avenger, poultrygeist - the latter is exceptionally awful - and it's a musical Rosie: Is it one of those intentionally bad movies? Dennis: most definitely Rosie: ok, thank you, I'll check it out Elle: oh, there's also jesus christ vampire hunter Rosie: what? :D Elle: it's even worse than it sounds Dennis: and when it comes to more recent movies there are those stupid animal-based horror movies like sharknado or zombeavers Rosie: I've heard of sharknado and zombeavers sound just awesome Rosie: thanks guys, you helped me a lot :)
+-END CONTEXT-
+summarize: Julia: What is your biggest dream Julia: I mean the kind that can be achieved James: Everyone say I have nice voice James: My mom liked very much when I was reading outloud James: I've had this dream for some time now, to become a voice actor James: Be a part of cartoon or video game as a voice actor reading a character Julia: Wow. Nice one. Julia: Btw you do have a nice voice Julia: I could listen to you as a radio speaker. James: Thanks James: I've worked in radio, but it was during college so I had little time for this Julia: Shame. James: I know. But nothing is lost. I still have microphone at home and with a bit of help I could make homemade radio station Julia: That's actually a great idea Julia: I cheer for you!
+
+ 17%|██████████████████████████████████▏                                                                                                                                                                      | 17/100 [00:42<03:48,  2.76s/it]
+summarize: Poppy: I literally cannot think any more today! Alice: Yeah, I'm in the same shape. What a long day! Poppy: Lunch went by in a flash because I had errands, which makes the day so slow! Alice: I didn't get lunch, so that's even worse! Poppy: Oh, poor you! Aren't you starving? Alice: I'll live. Only three more hours! Poppy: LOL! Not that you're counting... Alice: Damn straight I'm counting! LOL! Poppy: Well, I'm def going for drinks after work. Want to join? Alice: Who else is there? Poppy: Nobody yet but I was going to put the word out. Alice: Sure, sounds fun. I'll invite some people up here if that's okay? Poppy: Oh, got your eye on anyone? Alice: Fred! Poppy: Fred? Really? Alice: Sure, why not? He's single, my age and not bad looking. Poppy: He's a dork! Alice: But a cute one! Poppy: If you say so. Not my type! Alice: That's a relief! Poppy: He's all yours! Alice: Good. So I'll invite him and a bunch of others. See you at Nick's? Poppy: Perfect. About 5:30. Alice: Great! Poppy: Can't wait! So ready for a beer! Alice: GnT for me!
+
+ 18%|████████████████████████████████████▏                                                                                                                                                                    | 18/100 [00:44<03:45,  2.75s/it]
+summarize: Sash: need to see u Caron: y Caron: i'm out from 12 Sash: will be before Sash: then Caron: k Sash: open the door: Caron: what time u coming I need to go out Sash: soon Caron: hurry up I need to go out
+
+ 19%|██████████████████████████████████████▏                                                                                                                                                                  | 19/100 [00:49<04:15,  3.16s/it]Traceback (most recent call last):
+  File "/Users/matteo/anaconda3/envs/dl2/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/Users/matteo/anaconda3/envs/dl2/lib/python3.10/runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "/Users/matteo/Documents/MSc/Period5/DL2/Project/Confidently_Exiting/run_summarization.py", line 626, in <module>
+    main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
+  File "/Users/matteo/Documents/MSc/Period5/DL2/Project/Confidently_Exiting/run_summarization.py", line 511, in main
+    output = trainer.evaluate(metric_key_prefix="eval")
+  File "/Users/matteo/Documents/MSc/Period5/DL2/Project/Confidently_Exiting/sum_lib/trainer_sum.py", line 110, in evaluate
+    output = eval_loop(
+  File "/Users/matteo/Documents/MSc/Period5/DL2/Project/Confidently_Exiting/sum_lib/trainer_sum.py", line 249, in evaluation_loop
+    loss, logits, labels = self.prediction_step(model, inputs, prediction_loss_only, ignore_keys=ignore_keys)
+  File "/Users/matteo/Documents/MSc/Period5/DL2/Project/Confidently_Exiting/sum_lib/trainer_sum.py", line 422, in prediction_step
+    generated_tokens = gen_model.generate(
+  File "/Users/matteo/anaconda3/envs/dl2/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 115, in decorate_context
+    return func(*args, **kwargs)
+  File "/Users/matteo/anaconda3/envs/dl2/lib/python3.10/site-packages/transformers/generation/utils.py", line 1437, in generate
+    return self.greedy_search(
+  File "/Users/matteo/Documents/MSc/Period5/DL2/Project/Confidently_Exiting/models/deploying_t5.py", line 1570, in greedy_search
+    outputs = self(
+  File "/Users/matteo/anaconda3/envs/dl2/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/Users/matteo/anaconda3/envs/dl2/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/Users/matteo/Documents/MSc/Period5/DL2/Project/Confidently_Exiting/models/deploying_t5.py", line 1320, in forward
+    encoder_outputs, decoder_outputs = self.forward_impl(input_ids, attention_mask, decoder_input_ids, decoder_attention_mask,
+  File "/Users/matteo/Documents/MSc/Period5/DL2/Project/Confidently_Exiting/models/deploying_t5.py", line 1440, in forward_impl
+    decoder_outputs = self.decoder(
+  File "/Users/matteo/anaconda3/envs/dl2/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/Users/matteo/anaconda3/envs/dl2/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/Users/matteo/Documents/MSc/Period5/DL2/Project/Confidently_Exiting/models/deploying_t5.py", line 1112, in forward
+    layer_outputs = layer_module(
+  File "/Users/matteo/anaconda3/envs/dl2/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/Users/matteo/anaconda3/envs/dl2/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/Users/matteo/Documents/MSc/Period5/DL2/Project/Confidently_Exiting/models/deploying_t5.py", line 484, in forward
+    self_attention_outputs = self.layer[0](
+  File "/Users/matteo/anaconda3/envs/dl2/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/Users/matteo/anaconda3/envs/dl2/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/Users/matteo/Documents/MSc/Period5/DL2/Project/Confidently_Exiting/models/deploying_t5.py", line 286, in forward
+    attention_output = self.SelfAttention(
+  File "/Users/matteo/anaconda3/envs/dl2/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/Users/matteo/anaconda3/envs/dl2/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/Users/matteo/Documents/MSc/Period5/DL2/Project/Confidently_Exiting/models/deploying_t5.py", line 175, in forward
+    key_states = project(
+  File "/Users/matteo/Documents/MSc/Period5/DL2/Project/Confidently_Exiting/models/deploying_t5.py", line 158, in project
+    hidden_states = torch.cat([past_key_value, hidden_states], dim=2)
+KeyboardInterrupt

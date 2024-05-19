@@ -319,7 +319,7 @@ def get_skip_mask_cd(
     alpha: float = 0.1,
     adapt_threshold: float = None,
     return_conf=False,
-    return_jsds=True,
+    return_jsds=False,
 ):
 
     assert config.exit_conf_type is not None or config.shallow2deep_conf_type is not None
