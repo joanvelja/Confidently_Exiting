@@ -1281,7 +1281,10 @@ class DeployLongT5ForConditionalGeneration(LongT5ForConditionalGeneration):
 
             next_token_logits = outputs.logits[:, -1, :]
 
-            next_token_logits = self.apply_repetition_penalty(next_token_logits, input_ids, penalty=1.2)
+            try:
+                next_token_logits = self.apply_repetition_penalty(next_token_logits, input_ids, penalty=1.2)
+            except:
+                pass
 
             # pre-process distribution
             next_tokens_scores = logits_processor(input_ids, next_token_logits)
