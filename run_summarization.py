@@ -670,7 +670,7 @@ if __name__ == "__main__":
         for block in range(1, 25):           
             additional_args.static_exit_layer = block
             _, metrics = main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
-            block_k_metric.append(metrics["eval_rougeL"])    
+            block_k_metric.append(metrics["eval_rougeL"]/100)    
 
         plt.figure(figsize=(10, 6))
         plt.plot(np.arange(23), mean_block_confidence, label='Confidence', color='midnightblue', linestyle='dashed')
