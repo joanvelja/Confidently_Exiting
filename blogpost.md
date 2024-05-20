@@ -55,14 +55,14 @@ In Figure [confidence](src/plots/conf_acc_temp.png), we see the accuracy and the
 Motivated by these findings, we introduce two additional modifications to the Softmax response approach.
 
 #### Softmax response via fixed pruning
-After the minimum early exit layer $j$, we prune $W_j$, retaining its top-k tokens in the new vocabulary matrix. We define the new pruned matrix as $\hat{W}_{j+i} \in \mathbb{R}^{k \times dim_d}$, for $i = 1, \dots, L-j$ and $k \ll 30.000$. Hence, we prune our matrix at layer $j+1$, and keep the size fixed to $k$ for all subsequent layers 
+After the minimum early exit layer $j$, we prune $W_j$, retaining its top-k tokens in the new vocabulary matrix. We define the new pruned matrix as $\tilde{W}_{j+i} \in \mathbb{R}^{k \times dim_d}$, for $i = 1, \dots, L-j$ and $k \ll 30.000$. Hence, we prune our matrix at layer $j+1$, and keep the size fixed to $k$ for all subsequent layers 
 
 #### Softmax response via decaying pruning
 As one can note from Figures 
 [boxplot1](src/plots/boxplot_top1_rank_evalsamsum_google-t5_t5-large.png),
 [boxplot2](src/plots/boxplot_topk_rank_evalsquad_google-t5_t5-large.png),
 [boxplot3](src/plots/boxplot_top1_rank_evalsamsum_jvelja_t5-samsum.png)
-and [boxplot4](src/plots/boxplot_topk_rank_evalsquad_jvelja_t5-squad.png), the rank of the predicted token smoothly decreases across layers, especially for non-fine-tuned models. Again, we prune the $W_j$ matrix, given a minimum early exit layer j. We retain its top k-tokens, obtaining the new pruned vocabulary matrix $\hat{W}_{j+i}$ $\in$ $\mathbb{R}^{k \times dim_d}$. Now, instead of keeping the reduced matrix size fixed, we further prune it after every layer. Given the vocabulary matrix $W_{j+i}$ at layer $j+i$ of size $k_1$, we prune for layer $j+i+1$ it to a reduced matrix of size $k_2$, where
+and [boxplot4](src/plots/boxplot_topk_rank_evalsquad_jvelja_t5-squad.png), the rank of the predicted token smoothly decreases across layers, especially for non-fine-tuned models. Again, we prune the $W_j$ matrix, given a minimum early exit layer j. We retain its top k-tokens, obtaining the new pruned vocabulary matrix $\tilde{W}_{j+i}$ $\in$ $\mathbb{R}^{k \times dim_d}$. Now, instead of keeping the reduced matrix size fixed, we further prune it after every layer. Given the vocabulary matrix $W_{j+i}$ at layer $j+i$ of size $k_1$, we prune for layer $j+i+1$ it to a reduced matrix of size $k_2$, where
 
 ```math
 k_2 = \max\left(k^*, \left\lfloor \frac{k1}{1 + \frac{k1 - k^*}{k^*} \cdot \frac{j+i}{\text{num\_layers}}} \right\rfloor \right)
