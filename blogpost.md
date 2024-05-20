@@ -62,7 +62,7 @@ As one can note from Figures
 [boxplot1](src/plots/boxplot_top1_rank_evalsamsum_google-t5_t5-large.png),
 [boxplot2](src/plots/boxplot_topk_rank_evalsquad_google-t5_t5-large.png),
 [boxplot3](src/plots/boxplot_top1_rank_evalsamsum_jvelja_t5-samsum.png)
-and [boxplot4](src/plots/boxplot_topk_rank_evalsquad_jvelja_t5-squad.png), the rank of the predicted token smoothly decreases across layers, especially for non-fine-tuned models. Again, we prune the $W_j$ matrix, given a minimum early exit layer j. We retain its top k-tokens, obtaining the new pruned vocabulary matrix $\tilde{W}_{j+i} \in \mathbb{R}^{k \times dim_d}. Now, instead of keeping the reduced matrix size fixed, we further prune it after every layer. Given the vocabulary matrix $W_j+i$ at layer $j+i$ of size $k_1$, we prune for layer $j+i+1$ it to a reduced matrix of size $k_2$, where
+and [boxplot4](src/plots/boxplot_topk_rank_evalsquad_jvelja_t5-squad.png), the rank of the predicted token smoothly decreases across layers, especially for non-fine-tuned models. Again, we prune the $W_j$ matrix, given a minimum early exit layer j. We retain its top k-tokens, obtaining the new pruned vocabulary matrix $\tilde{W}_{j+i} \in \mathbb{R}^{k \times dim_d}. Now, instead of keeping the reduced matrix size fixed, we further prune it after every layer. Given the vocabulary matrix $W_{j+i}$ at layer $j+i$ of size $k_1$, we prune for layer $j+i+1$ it to a reduced matrix of size $k_2$, where
 
 ```math
 k_2 = \max\left(k^*, \left\lfloor \frac{k1}{1 + \frac{k1 - k^*}{k^*} \cdot \frac{j+i}{\text{num\_layers}}} \right\rfloor \right)
