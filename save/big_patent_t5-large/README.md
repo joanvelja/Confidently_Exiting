@@ -5,14 +5,14 @@ tags:
 datasets:
 - big_patent
 model-index:
-- name: big_patent_t5-base
+- name: big_patent_t5-large
   results: []
 ---
 
 <!-- This model card has been generated automatically according to the information the Trainer had access to. You
 should probably proofread and complete it, then remove this comment. -->
 
-# big_patent_t5-base
+# big_patent_t5-large
 
 This model is a fine-tuned version of [google/long-t5-tglobal-base](https://huggingface.co/google/long-t5-tglobal-base) on the big_patent e dataset.
 
