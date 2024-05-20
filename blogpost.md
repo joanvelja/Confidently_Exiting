@@ -67,6 +67,9 @@ and [boxplot4](src/plots/boxplot_topk_rank_evalsquad_jvelja_t5-squad.png), the r
 SE = \frac{\sigma}{\sqrt{n}}
 ```
 
+$\sqrt{2}$.
+
+
 $$
 k_2 = \max\left(k^*, \left\lfloor \frac{k1}{1 + \frac{k1 - k^*}{k^*} \cdot \frac{j+i}{\text{num\_layers}}} \right\rfloor \right)
 $$
