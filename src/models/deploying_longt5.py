@@ -668,34 +668,70 @@ class DeployLongT5Stack(LongT5Stack):
                         start = datetime.datetime.now()
                         _hidden_states = self.dropout(self.final_layer_norm(hidden_states))
 
-                         # SHRINKING VOCAB PART:
+                        # SHRINKING VOCAB PART:
                         if not self.config.type_vocab_reduct: # If we are not using any vocab reduction
+                            a = _hidden_states * (self.config.d_model ** -0.5)
                             lm_logits = lm_head(_hidden_states) if not self.config.tie_word_embeddings \
-                                else lm_head(_hidden_states * (self.config.d_model ** -0.5))
+                                else lm_head(a)
                         else:
-                            starting_layer = self.config.exit_min_layer if self.config.exit_min_layer > 1  else 2 # Start where exit_min_layer is set or start at 2.
+                            starting_layer = self.config.exit_min_layer if self.config.exit_min_layer > 1  else 1 # Start where exit_min_layer is set or start at 2.
                             if i == starting_layer: # if it is the first layer where we compute the logits
                                 lm_logits = lm_head(_hidden_states) if not self.config.tie_word_embeddings \
                                     else lm_head(_hidden_states * (self.config.d_model ** -0.5))
                                 # Get the top 2500 logits at block 1.
-                                maximum_k_size = 4500 # where 200 is the maximum number of weights to keep ( it actually immediately decreases so it is lower thatn this)
-                                minimum_k_size = 50 # where 50 is the minimum number of weights to keep
+                                maximum_k_size = 35000 # where 200 is the maximum number of weights to keep ( it actually immediately decreases so it is lower thatn this)
+                                minimum_k_size = 250 # where 50 is the minimum number of weights to keep
                                 num_layers = len(self.block) # This is the number of layers in the model
                                 k = self.func_inverse(i,maximum_k_size, minimum_k_size, num_layers)
-                                self.top_k_indices = torch.topk(lm_logits, k, largest=True, sorted=True)[1][0][0]
-                                selected_weights = lm_head.weight[self.top_k_indices, :] # THis can be done here to win some compute time
+                                self.top_k_indices = torch.topk(lm_logits[0][0], k, largest=True, sorted=True)[1].sort()[0]
+
+                                selected_weights = lm_head.weight[self.top_k_indices, : ] # THis can be done here to win some compute time
                             else: # For all the other layers either use fixed, decaying or adaptive pruning
                                 if self.config.type_vocab_reduct == "fixed":
                                     # Note: There is no bias in self.lm_head = nn.Linear(config.d_model, config.vocab_size, bias=False)
-                                    lm_logits = torch.nn.functional.linear(_hidden_states, selected_weights) # Get new logits with the top-200 weights
-                                    # Note: Using nn.functional.linear should always outperform (in terms of time) the lm_head(_hidden_states) as it uses the same function but with the whole data.
+                                    #lm_logits = selected_weights(_hidden_states) # Get new logits with the top-200 weights
+                                    #print(_hidden_states.shape, selected_weights.T.shape)
+
+                                    a = _hidden_states * (self.config.d_model ** -0.5)
+                                    lm_logits_temp = torch.nn.functional.linear(_hidden_states, selected_weights)  if not self.config.tie_word_embeddings \
+                                        else torch.nn.functional.linear(a, selected_weights)
+                                    
+                                    # Initialize lm_logits with -inf
+                                    lm_logits = torch.full((1, 1, self.config.vocab_size), -float("inf"), device=lm_logits_temp.device)
+                                    #lm_logits = torch.full((1, 1, self.config.vocab_size), -10000.00, device=lm_logits_temp.device)
+
+                                    # Create a mask for the top_k_indices
+                                    top_k_mask = torch.zeros(self.config.vocab_size, dtype=torch.bool, device=lm_logits_temp.device)
+                                    top_k_mask[self.top_k_indices] = True
+
+                                    # Use the mask to assign values from lm_logits_temp to lm_logits
+                                    lm_logits[0, 0, top_k_mask] = lm_logits_temp[0, 0, :len(self.top_k_indices)]
+
+                                    # Update lm_logits_temp by removing the used elements
+                                    lm_logits_temp = lm_logits_temp[:, :, len(self.top_k_indices):]
+
                                 elif self.config.type_vocab_reduct == "decaying":  # Smoothed pruning! For all the other layers -> smoothed pruning
                                     current_k = self.func_inverse(i,maximum_k_size, minimum_k_size, num_layers)
                                     # top_k_list = [4500, 2500, 2000, 1000, 750, 700, 600, 500, 400, 300, 100, 50] # This is the list of top_k values for each block based on graph for based as an indicator.
                                     selected_weights = lm_head.weight[self.top_k_indices[:current_k], :]
+                    
+                                    a = _hidden_states * (self.config.d_model ** -0.5)
+                                    lm_logits_temp = torch.nn.functional.linear(_hidden_states, selected_weights)  if not self.config.tie_word_embeddings \
+                                        else torch.nn.functional.linear(a, selected_weights)
+                                    
+                                    # Initialize lm_logits with -inf
+                                    lm_logits = torch.full((1, 1, self.config.vocab_size), -float("inf"), device=lm_logits_temp.device)
+                                    #lm_logits = torch.full((1, 1, self.config.vocab_size), -10000.00, device=lm_logits_temp.device)
 
-                                    # Use these selected weights to compute the logits for this layer.
-                                    lm_logits = torch.nn.functional.linear(hidden_states, selected_weights)
+                                    # Create a mask for the top_k_indices
+                                    top_k_mask = torch.zeros(self.config.vocab_size, dtype=torch.bool, device=lm_logits_temp.device)
+                                    top_k_mask[self.top_k_indices[:current_k]] = True
+
+                                    # Use the mask to assign values from lm_logits_temp to lm_logits
+                                    lm_logits[0, 0, top_k_mask] = lm_logits_temp[0, 0, :len(self.top_k_indices[:current_k])]
+
+                                    # Update lm_logits_temp by removing the used elements
+                                    lm_logits_temp = lm_logits_temp[:, :, len(self.top_k_indices[:current_k]):]
                                 elif self.config.type_vocab_reduct == "adaptive":
                                         # TODO experiment with not only the top-1 confidence but combining the top-k confidences
                                         # TODO experiment with taking the top-k not (only) in the starting layer
@@ -706,11 +742,9 @@ class DeployLongT5Stack(LongT5Stack):
                                         retained_top_k = int(curr_weights_size * (1 - conf * conf_scaling_factor))
                                         selected_weights = lm_head.weight[self.top_k_indices[:retained_top_k], :]
                                         lm_logits = torch.nn.functional.linear(_hidden_states, selected_weights)
-                                elif self.config.type_vocab_reduct == "None":
-                                    lm_logits = lm_head(_hidden_states) if not self.config.tie_word_embeddings \
-                                        else lm_head(_hidden_states * (self.config.d_model ** -0.5))
                                 else: 
                                     raise("Please provide a valid type_vocab_reduct argument. Either use fixed, decaying, or adaptive.")
+
 
 
                         if self.config.exit_conf_type == "contrastive_decoding":

@@ -12,3 +12,5 @@ models/__pycache__/modeling_longt5.cpython-310.pyc
 models/__pycache__/modeling_t5.cpython-310.pyc
 
 wandb/
+
+*.pyc
