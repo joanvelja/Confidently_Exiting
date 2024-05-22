@@ -736,7 +736,7 @@ if __name__ == "__main__":
 
         wandb.init(
                 # set the wandb project where this run will be logged
-                project="Final Performance Softmax",
+                project="Final Performance Softmax local",
                 entity="uva24",
                 # track hyperparameters and run metadata
                 config={

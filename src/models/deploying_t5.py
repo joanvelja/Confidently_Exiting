@@ -1009,7 +1009,6 @@ class DeployT5Stack(T5Stack):
                                     # Note: There is no bias in self.lm_head = nn.Linear(config.d_model, config.vocab_size, bias=False)
                                     #lm_logits = selected_weights(_hidden_states) # Get new logits with the top-200 weights
                                     #print(_hidden_states.shape, selected_weights.T.shape)
-
                                     a = _hidden_states * (self.config.d_model ** -0.5)
                                     lm_logits_temp = torch.nn.functional.linear(_hidden_states, selected_weights)  if not self.config.tie_word_embeddings \
                                         else torch.nn.functional.linear(a, selected_weights)

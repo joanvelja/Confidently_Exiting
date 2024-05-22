@@ -644,7 +644,7 @@ if __name__ == "__main__":
 
         wandb.init(
                 # set the wandb project where this run will be logged
-                project="Final Performance Softmax",
+                project="Final Performance Softmax local",
                 entity="uva24",
                 # track hyperparameters and run metadata
                 config={
@@ -665,7 +665,7 @@ if __name__ == "__main__":
         
         additional_args.plotting_logits = False
 
-        for block in range(1, 13):           
+        for block in range(1, 25):           
             additional_args.static_exit_layer = block
             _, metrics = main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
             block_k_metric.append(metrics["eval_rougeL"]/100)    
