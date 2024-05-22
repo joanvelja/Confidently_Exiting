@@ -671,8 +671,8 @@ if __name__ == "__main__":
             block_k_metric.append(metrics["eval_rougeL"]/100)    
 
         plt.figure(figsize=(10, 6))
-        plt.plot(np.arange(12), mean_block_confidence, label='Confidence', color='midnightblue', linestyle='dashed')
-        plt.plot(np.arange(12), block_k_metric, label='RougeL', color='red')
+        plt.plot(np.arange(24), mean_block_confidence, label='Confidence', color='midnightblue', linestyle='dashed')
+        plt.plot(np.arange(24), block_k_metric, label='RougeL', color='red')
         plt.title('Confidence and RougeL over layers')
         plt.xlabel('Layer')
         plt.ylabel('Confidence/RougeL Score')
