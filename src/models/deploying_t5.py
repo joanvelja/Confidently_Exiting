@@ -868,6 +868,7 @@ class DeployT5Stack(T5Stack):
 
         # previous_logits = []
         prev_probits = {}
+        prev_confidences = {}
         if self.is_decoder and self.config.plotting_logits:
             previous_logits = []
 
@@ -993,6 +994,7 @@ class DeployT5Stack(T5Stack):
                                 else lm_head(a)
                         else:
                             starting_layer = self.config.exit_min_layer if self.config.exit_min_layer > 1  else 1 # Start where exit_min_layer is set or start at 2.
+                            
                             if i == starting_layer: # if it is the first layer where we compute the logits
                                 lm_logits = lm_head(_hidden_states) if not self.config.tie_word_embeddings \
                                     else lm_head(_hidden_states * (self.config.d_model ** -0.5))
@@ -1056,17 +1058,36 @@ class DeployT5Stack(T5Stack):
                                         # TODO experiment with different formulas to go from confidence value to retained indices
                                         # TODO experiment with non-confidence parameters (and potentialy combinations of params)
                                         curr_weights_size = lm_head.weight.size(dim=0)
+                                        conf = prev_confidences[i-1] # This is the confidence of the previous layer
                                         conf_scaling_factor = 0.9 # TODO experiment with different scaling factors
                                         retained_top_k = int(curr_weights_size * (1 - conf * conf_scaling_factor))
                                         selected_weights = lm_head.weight[self.top_k_indices[:retained_top_k], :]
-                                        lm_logits = torch.nn.functional.linear(_hidden_states, selected_weights)
+                                        ############################
+                                        a = _hidden_states * (self.config.d_model ** -0.5)
+                                        lm_logits_temp = torch.nn.functional.linear(_hidden_states, selected_weights)  if not self.config.tie_word_embeddings \
+                                            else torch.nn.functional.linear(a, selected_weights)
+                                    
+                                        # Initialize lm_logits with -inf
+                                        lm_logits = torch.full((1, 1, self.config.vocab_size), -float("inf"), device=lm_logits_temp.device)
+                                        #lm_logits = torch.full((1, 1, self.config.vocab_size), -10000.00, device=lm_logits_temp.device)
+
+                                        # Create a mask for the top_k_indices
+                                        top_k_mask = torch.zeros(self.config.vocab_size, dtype=torch.bool, device=lm_logits_temp.device)
+                                        top_k_mask[self.top_k_indices[:retained_top_k]] = True
+
+                                        # Use the mask to assign values from lm_logits_temp to lm_logits
+                                        lm_logits[0, 0, top_k_mask] = lm_logits_temp[0, 0, :len(self.top_k_indices[:retained_top_k])]
+
+                                        # Update lm_logits_temp by removing the used elements
+                                        lm_logits_temp = lm_logits_temp[:, :, len(self.top_k_indices[:retained_top_k]):]
+                                
                                 else: 
                                     raise("Please provide a valid type_vocab_reduct argument. Either use fixed, decaying, or adaptive.")
 
                         # END OF SHRINKING VOCAB PART
                         if self.config.exit_conf_type == "contrastive_decoding":
                             
-                            skip_mask = get_skip_mask_cd(
+                            out = get_skip_mask_cd(
                                 lm_logits,
                                 _hidden_states,
                                 cm_head,
@@ -1076,11 +1097,17 @@ class DeployT5Stack(T5Stack):
                                 prev_probits = prev_probits, 
                                 layer_am = i//2,
                                 alpha = 0.1,
+                                return_conf=True if self.config.type_vocab_reduct == "adaptive" else False,
+                                #shrunk_vocab = True if self.config.type_vocab_reduct else False,
                                 )
+                            if self.config.type_vocab_reduct == "adaptive":
+                                skip_mask, conf = out
+                                prev_confidences[i] = conf
+                            
                         
                         elif self.config.exit_conf_type == "reweight_contrastive_decoding":
                             
-                            skip_mask = get_skip_mask_cd(
+                            out = get_skip_mask_cd(
                                 lm_logits,
                                 _hidden_states,
                                 cm_head,
@@ -1090,11 +1117,18 @@ class DeployT5Stack(T5Stack):
                                 prev_probits = prev_probits, 
                                 layer_am = i//2,
                                 alpha = 0.1,
+                                return_conf=True if self.config.type_vocab_reduct == "adaptive" else False,
+                                #shrunk_vocab = True if self.config.type_vocab_reduct else False,
                                 )
+                            if self.config.type_vocab_reduct == "adaptive":
+                                skip_mask, conf = out
+                                prev_confidences[i] = conf
+                            else:
+                                skip_mask = out
                             
                         elif self.config.exit_conf_type == "JSD_contrastive_confidence":
                             
-                            skip_mask, jsds = get_skip_mask_cd(
+                            out = get_skip_mask_cd(
                                 lm_logits,
                                 _hidden_states,
                                 cm_head,
@@ -1104,16 +1138,31 @@ class DeployT5Stack(T5Stack):
                                 prev_probits = prev_probits, 
                                 layer_am = i//2,
                                 alpha = 0.1,
-                                return_jsds=True
+                                return_jsds=True,
+                                return_conf=True if self.config.type_vocab_reduct == "adaptive" else False,
+                                #shrunk_vocab = True if self.config.type_vocab_reduct else False,
                                 )
+                            if self.config.type_vocab_reduct == "adaptive":
+                                skip_mask, jsds, conf = out
+                                prev_confidences[i] = conf
+                            else:
+                                skip_mask, jsds = out
+        
                         else:
-                            skip_mask = get_skip_mask(
+                            out = get_skip_mask(
                                 lm_logits,
                                 _hidden_states,
                                 cm_head,
                                 config=self.config,
-                                pos_time=past_key_values[i][0].shape[2] + 1 if past_key_values[i] is not None else 1
+                                pos_time=past_key_values[i][0].shape[2] + 1 if past_key_values[i] is not None else 1,
+                                return_conf=True if self.config.type_vocab_reduct == "adaptive" else False,
+                                #shrunk_vocab = True if self.config.type_vocab_reduct else False,
                             )
+                            if self.config.type_vocab_reduct == "adaptive":
+                                skip_mask, conf = out
+                                prev_confidences[i] = conf
+                            else:
+                                skip_mask = out
                         
 
                         if not skip_mask: self.block_op[i] += 1                    
@@ -1121,7 +1170,7 @@ class DeployT5Stack(T5Stack):
                             # print("Layer: ", i) 
                             self.lm_logits = lm_logits # This is where the logits are sent to do the predictions.
     
-                            plot = False
+                            plot = True
                             if plot: #and len(jsds) >= 23 : # When we have all the jdss values, we can use them to check jsds between layers
 
                                 print("JSDS: ", jsds)
