@@ -30,7 +30,7 @@
 
 
 CUDA_VISIBLE_DEVICES=0 python -m run_question_answering \
-    --model_name_or_path jvelja/t5-squad \
+    --model_name_or_path google-t5/t5-large \
     --do_eval \
     --dataset_name squad \
     --context_column context \
@@ -46,10 +46,11 @@ CUDA_VISIBLE_DEVICES=0 python -m run_question_answering \
     --use_early_exit True \
     --exit_conf_type JSD_contrastive_confidence \
     --exit_conf_threshold 0.9 \
-    --exit_min_layer 1 \
+    --exit_min_layer 3 \
     --include_inputs_for_metrics True \
-    --max_eval_samples 100 \
+    --max_eval_samples 6 \
     --use_auth_token True \
+    --type_vocab_reduct adaptive \
    
 
    # JSD_contrastive_confidence

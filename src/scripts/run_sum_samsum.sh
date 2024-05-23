@@ -35,7 +35,7 @@
 
 
 CUDA_VISIBLE_DEVICES=0 python -m run_summarization \
-    --model_name_or_path jvelja/t5-samsum \
+    --model_name_or_path google-t5/t5-large \
     --do_eval \
     --dataset_name samsum \
     --output_dir ./save/jvelja_t5-large/ \
@@ -46,10 +46,10 @@ CUDA_VISIBLE_DEVICES=0 python -m run_summarization \
     --predict_with_generate \
     --source_prefix "summarize: " \
     --use_early_exit True \
-    --exit_conf_type JSD_contrastive_confidence \
+    --exit_conf_type softmax \
     --exit_conf_threshold 0.9 \
-    --exit_min_layer 12 \
-    --max_eval_samples 20 \
+    --exit_min_layer 17 \
+    --max_eval_samples 100 \
     --include_inputs_for_metrics True \
     --use_auth_token True \
 

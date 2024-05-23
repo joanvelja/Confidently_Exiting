@@ -247,8 +247,8 @@ class SumTrainer(Seq2SeqTrainer):
 
             inputs_decode = self._prepare_input(inputs["input_ids"]) if args.include_inputs_for_metrics else None
 
-            print(self.tokenizer.decode(inputs["input_ids"][0], skip_special_tokens=True))
-            print("-END CONTEXT-")
+            # print(self.tokenizer.decode(inputs["input_ids"][0], skip_special_tokens=True))
+            # print("-END CONTEXT-")
 
             if is_torch_tpu_available():
                 xm.mark_step()

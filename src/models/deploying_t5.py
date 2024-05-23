@@ -595,7 +595,7 @@ class DeployT5Stack(T5Stack):
             self._reset_time_measure()
         else: self.deploy_time = None
         
-        plot = True
+        plot = False
         if plot:
             self.tokenizer = T5Tokenizer.from_pretrained("google-t5/t5-large")
         
@@ -866,7 +866,6 @@ class DeployT5Stack(T5Stack):
         self.shallow2deep = False  # False: skip, and True: forward
         self.lm_logits = None  # to prevent calculating logits twice
 
-        # previous_logits = []
         prev_probits = {}
         prev_confidences = {}
         if self.is_decoder and self.config.plotting_logits:
@@ -976,8 +975,7 @@ class DeployT5Stack(T5Stack):
                         lm_logits = lm_head(_hidden_states) if not self.config.tie_word_embeddings \
                             else lm_head(_hidden_states * (self.config.d_model ** -0.5))
                         
-                        probits = torch.softmax(lm_logits, dim=-1)
-                        probits = torch.squeeze(probits)
+                        probits = lm_logits.softmax(dim=-1).squeeze() #torch.softmax(lm_logits, dim=-1) + squeezing
                         prev_probits[i] = probits
                         self.block_op[i] += 1
 
@@ -1003,7 +1001,13 @@ class DeployT5Stack(T5Stack):
                                 minimum_k_size = 250 # where 50 is the minimum number of weights to keep
                                 num_layers = len(self.block) # This is the number of layers in the model
                                 k = self.func_inverse(i,maximum_k_size, minimum_k_size, num_layers)
-                                self.top_k_indices = torch.topk(lm_logits[0][0], k, largest=True, sorted=True)[1].sort()[0]
+                                #self.top_k_indices = torch.topk(lm_logits[0][0], k, largest=True, sorted=True)[1].sort()[0]
+                                _, top_k_indices_unsorted = torch.topk(lm_logits[0][0], k, largest=True, sorted=True)
+                                # Preserve the original order of the indices
+                                original_order_indices = torch.arange(lm_logits[0][0].size(0), device=lm_logits.device)
+                                top_k_mask = torch.zeros_like(lm_logits[0][0], dtype=torch.bool)
+                                top_k_mask[top_k_indices_unsorted] = True
+                                self.top_k_indices = original_order_indices[top_k_mask]
 
                                 selected_weights = lm_head.weight[self.top_k_indices, : ] # THis can be done here to win some compute time
                             else: # For all the other layers either use fixed, decaying or adaptive pruning
@@ -1017,18 +1021,15 @@ class DeployT5Stack(T5Stack):
                                         else torch.nn.functional.linear(a, selected_weights)
                                     
                                     # Initialize lm_logits with -inf
-                                    lm_logits = torch.full((1, 1, self.config.vocab_size), -float("inf"), device=lm_logits_temp.device)
+                                    #lm_logits = torch.full((1, 1, self.config.vocab_size), -float("inf"), device=lm_logits_temp.device)
                                     #lm_logits = torch.full((1, 1, self.config.vocab_size), -10000.00, device=lm_logits_temp.device)
 
                                     # Create a mask for the top_k_indices
-                                    top_k_mask = torch.zeros(self.config.vocab_size, dtype=torch.bool, device=lm_logits_temp.device)
-                                    top_k_mask[self.top_k_indices] = True
+                                    #top_k_mask = torch.zeros(self.config.vocab_size, dtype=torch.bool, device=lm_logits_temp.device)
+                                    #top_k_mask[self.top_k_indices] = True
 
                                     # Use the mask to assign values from lm_logits_temp to lm_logits
-                                    lm_logits[0, 0, top_k_mask] = lm_logits_temp[0, 0, :len(self.top_k_indices)]
-
-                                    # Update lm_logits_temp by removing the used elements
-                                    lm_logits_temp = lm_logits_temp[:, :, len(self.top_k_indices):]
+                                    #lm_logits[0, 0, top_k_mask] = lm_logits_temp[0, 0, :len(self.top_k_indices)]
 
                                 elif self.config.type_vocab_reduct == "decaying":  # Smoothed pruning! For all the other layers -> smoothed pruning
                                     current_k = self.func_inverse(i,maximum_k_size, minimum_k_size, num_layers)
@@ -1047,8 +1048,6 @@ class DeployT5Stack(T5Stack):
                                     top_k_mask = torch.zeros(self.config.vocab_size, dtype=torch.bool, device=lm_logits_temp.device)
                                     top_k_mask[self.top_k_indices[:current_k]] = True
 
-                                    # Use the mask to assign values from lm_logits_temp to lm_logits
-                                    lm_logits[0, 0, top_k_mask] = lm_logits_temp[0, 0, :len(self.top_k_indices[:current_k])]
 
                                     # Update lm_logits_temp by removing the used elements
                                     lm_logits_temp = lm_logits_temp[:, :, len(self.top_k_indices[:current_k]):]
@@ -1079,7 +1078,7 @@ class DeployT5Stack(T5Stack):
                                         lm_logits[0, 0, top_k_mask] = lm_logits_temp[0, 0, :len(self.top_k_indices[:retained_top_k])]
 
                                         # Update lm_logits_temp by removing the used elements
-                                        lm_logits_temp = lm_logits_temp[:, :, len(self.top_k_indices[:retained_top_k]):]
+                                        #lm_logits_temp = lm_logits_temp[:, :, len(self.top_k_indices[:retained_top_k]):]
                                 
                                 else: 
                                     raise("Please provide a valid type_vocab_reduct argument. Either use fixed, decaying, or adaptive.")
@@ -1167,10 +1166,11 @@ class DeployT5Stack(T5Stack):
 
                         if not skip_mask: self.block_op[i] += 1                    
                         if skip_mask: 
-                            # print("Layer: ", i) 
+                            # print("Layer: ", i)
+                             
                             self.lm_logits = lm_logits # This is where the logits are sent to do the predictions.
     
-                            plot = True
+                            plot = False
                             if plot: #and len(jsds) >= 23 : # When we have all the jdss values, we can use them to check jsds between layers
 
                                 print("JSDS: ", jsds)
@@ -1181,6 +1181,7 @@ class DeployT5Stack(T5Stack):
                                 word = self.tokenizer.decode(argmax_index)
 
                                 print("Word: ", word, " Token_id: ", argmax_index)
+
                     
 
                         if self.config.use_synchronize: torch.cuda.synchronize()
