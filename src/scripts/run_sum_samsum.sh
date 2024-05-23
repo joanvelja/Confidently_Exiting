@@ -35,7 +35,7 @@
 
 
 CUDA_VISIBLE_DEVICES=0 python -m run_summarization \
-    --model_name_or_path jvelja/t5-samsum \
+    --model_name_or_path google-t5/t5-large \
     --do_eval \
     --dataset_name samsum \
     --output_dir ./save/jvelja_t5-large/ \
@@ -46,32 +46,16 @@ CUDA_VISIBLE_DEVICES=0 python -m run_summarization \
     --predict_with_generate \
     --source_prefix "summarize: " \
     --use_early_exit True \
-    --exit_conf_type JSD_contrastive_confidence \
+    --exit_conf_type softmax \
     --exit_conf_threshold 0.9 \
-    --exit_min_layer 12 \
-    --max_eval_samples 20 \
+    --exit_min_layer 20 \
+    --max_eval_samples 3 \
     --include_inputs_for_metrics True \
     --use_auth_token True \
+    # --type_vocab_reduct fixed \
 
-    # FREE
-    # --use_shallow_deep True \
-    # --shallow_exit_layer 6 \
-    # --shallow2deep_conf_type softmax \
-    # --shallow2deep_conf_threshold 0.9 \
-    # --use_adap_threshold True \ # to use adaptive threshold
 
-    # CALM
-    # --use_early_exit True \
-    # --exit_conf_type softmax \
-    # --exit_conf_threshold 0.9 \
-    # --exit_min_layer 4 \
-
-    # static-exiting
-    # --static_exit_layer 6 \
-
-    # evaluate only performance
-    # --deploy_scenario False \
-    # --per_device_eval_batch_size 8 \
-
-    # for t5-3b
-    # --use_lora \
+    # python run_summarization.py \
+    # --model_name_or_path google-t5/t5-large \
+    # --do_eval --dataset_name samsum \
+    # --output_dir ./save/samsum_t5_large/ --per_device_eval_batch_size 1 --overwrite_output_dir --predict_with_generate --source_prefix "summarize: " --deploy_scenario True --use_synchronize True --overwrite_output_dir --predict_with_generate --use_early_exit True --exit_conf_type softmax --max_eval_samples 100 --exit_conf_threshold 0.9 --exit_min_layer 8

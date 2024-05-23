@@ -432,15 +432,17 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
 
     def compute_metrics(eval_preds, compute_metrics=True):
         if compute_metrics:
-            preds, labels = eval_preds
+            preds, labels, _ = eval_preds
         else:
             preds, labels = eval_preds
         if isinstance(preds, tuple):
             preds = preds[0]
             
         try:
+            print("preds", preds)
             decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
         except:
+            
             decoded_preds = tokenizer.batch_decode(np.where(preds != -100, preds, tokenizer.pad_token_id), 
                                                    skip_special_tokens=True)
         if data_args.ignore_pad_token_for_loss:
@@ -639,26 +641,43 @@ if __name__ == "__main__":
 
     trainer_cls = SumTrainer
 
+    exit_min_layer_list = [6,15,17,18]
+    
+    exit_conf_type_list = ["JSD_contrastive_confidence", "softmax"]
+    seeds = [42, 43, 44, 45, 46, 47, 48, 49, 50, 51]
+    # Set seed before initializing model.
+    
     if not additional_args.plotting_logits:
-        wandb.login()
+        # for seed in seeds:
+        #     set_seed(training_args.seed)
+        #     torch.seed(seed)
+        #     np.random.seed(seed)
 
-        wandb.init(
-                # set the wandb project where this run will be logged
-                project="Final Performance Softmax local",
-                entity="uva24",
-                # track hyperparameters and run metadata
-                config={
-                    "dataset": data_args.dataset_name,
-                    "model": model_args.model_name_or_path, 
-                    "exit_conf_type": additional_args.exit_conf_type,
-                    "exit_conf_threshold": additional_args.exit_conf_threshold,
-                    "exit_min_layer": additional_args.exit_min_layer,
-                    "type_vocab_reduct": additional_args.type_vocab_reduct,
-                    },
-                mode="disabled" if False else "online",
-                )
-        main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
-        wandb.finish()
+        for exit_conf_type in exit_conf_type_list:
+            for exit_min_layer in exit_min_layer_list:
+                additional_args.exit_min_layer = exit_min_layer
+                additional_args.exit_conf_type = exit_conf_type
+                if additional_args.exit_conf_type == "JSD_contrastive_confidence" and exit_min_layer==18:
+                    continue
+                wandb.login()
+
+                wandb.init(
+                        # set the wandb project where this run will be logged
+                        project="small_subset_Matteo",
+                        entity="uva24",
+                        # track hyperparameters and run metadata
+                        config={
+                            "dataset": data_args.dataset_name,
+                            "model": model_args.model_name_or_path, 
+                            "exit_conf_type": additional_args.exit_conf_type,
+                            "exit_conf_threshold": additional_args.exit_conf_threshold,
+                            "exit_min_layer": additional_args.exit_min_layer,
+                            "type_vocab_reduct": additional_args.type_vocab_reduct,
+                            },
+                        mode="disabled" if False else "online",
+                        )
+                main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
+                wandb.finish()
     else:
         mean_block_confidence = main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
         block_k_metric = []

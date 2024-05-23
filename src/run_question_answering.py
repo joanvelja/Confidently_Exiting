@@ -726,31 +726,35 @@ if __name__ == "__main__":
             else DeployT5ForConditionalGeneration
     trainer_cls = QATrainer
 
-    exit_min_layer_list = [1]
-    exit_conf_type_list = ["softmax", "JSD_contrastive_confidence", "reweight_contrastive_decoding"]
+    exit_min_layer_list = [2,3]
+    exit_conf_type_list = ["softmax", "JSD_contrastive_confidence" ,"reweight_contrastive_decoding"]
     average_exit_block_list = []
     
     if not additional_args.plotting_logits:
+        for exit_conf_type in exit_conf_type_list:
+            for exit_min_layer in exit_min_layer_list:
+                additional_args.exit_conf_type = exit_conf_type
+                additional_args.exit_min_layer = exit_min_layer
 
-        wandb.login()
+                wandb.login()
 
-        wandb.init(
-                # set the wandb project where this run will be logged
-                project="Final Performance Softmax local",
-                entity="uva24",
-                # track hyperparameters and run metadata
-                config={
-                    "dataset": data_args.dataset_name,
-                    "model": model_args.model_name_or_path, 
-                    "exit_conf_type": additional_args.exit_conf_type,
-                    "exit_conf_threshold": additional_args.exit_conf_threshold,
-                    "exit_min_layer": additional_args.exit_min_layer,
-                    "type_vocab_reduct": additional_args.type_vocab_reduct,
-                    },
-                mode="disabled" if False else "online",
-                )
-        main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
-        wandb.finish()
+                wandb.init(
+                        # set the wandb project where this run will be logged
+                        project="small_subset_Matteo",
+                        entity="uva24",
+                        # track hyperparameters and run metadata
+                        config={
+                            "dataset": data_args.dataset_name,
+                            "model": model_args.model_name_or_path, 
+                            "exit_conf_type": additional_args.exit_conf_type,
+                            "exit_conf_threshold": additional_args.exit_conf_threshold,
+                            "exit_min_layer": additional_args.exit_min_layer,
+                            "type_vocab_reduct": additional_args.type_vocab_reduct,
+                            },
+                        mode="disabled" if False else "online",
+                        )
+                main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
+                wandb.finish()
     else:
         mean_block_confidence = main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
         block_k_metric = []

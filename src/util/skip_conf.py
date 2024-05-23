@@ -364,7 +364,9 @@ def get_skip_mask_cd(
             alpha = alpha,
             return_jsds = return_jsds,
         )
-    else:
+
+    elif key == "reweight_contrastive_decoding":
+        return_jsds = False
         conf = conf_measure(
             lm_logits,
             layer_exp = layer_exp, 

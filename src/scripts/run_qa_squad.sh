@@ -28,9 +28,8 @@
     # --output_hidden_states_decoder True \
     # --intermediate_loss_fn weighted_ce \
 
-
 CUDA_VISIBLE_DEVICES=0 python -m run_question_answering \
-    --model_name_or_path jvelja/t5-squad \
+    --model_name_or_path google-t5/t5-large \
     --do_eval \
     --dataset_name squad \
     --context_column context \
@@ -44,13 +43,14 @@ CUDA_VISIBLE_DEVICES=0 python -m run_question_answering \
     --predict_with_generate \
     --max_seq_length 512 \
     --use_early_exit True \
-    --exit_conf_type JSD_contrastive_confidence \
+    --exit_conf_type reweight_contrastive_decoding \
     --exit_conf_threshold 0.9 \
     --exit_min_layer 1 \
     --include_inputs_for_metrics True \
     --max_eval_samples 100 \
     --use_auth_token True \
-   
+    --type_vocab_reduct fixed \
+
 
    # JSD_contrastive_confidence
 

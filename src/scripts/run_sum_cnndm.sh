@@ -1,6 +1,5 @@
-CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.run --nproc_per_node=4 \
-    run_summarization.py \
-    --model_name_or_path t5-large \
+CUDA_VISIBLE_DEVICES=0 python -m run_summarization \
+    --model_name_or_path google-t5/t5-large \
     --do_train \
     --do_eval \
     --dataset_name cnn_dailymail \
@@ -11,9 +10,12 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.run --nproc_per_node=4 
     --overwrite_output_dir \
     --predict_with_generate \
     --source_prefix "summarize: " \
-    --save_steps 5383 \
-    --learning_rate 1e-4 \
-    --num_train_epochs 3 \
+   --exit_conf_threshold 0.9 \
+    --exit_min_layer 1 \
+    --max_eval_samples 100 \
+    --include_inputs_for_metrics True \
+    --use_auth_token True \
+    --type_vocab_reduct fixed \
 
     # FREE
     # --output_hidden_states_decoder True \
