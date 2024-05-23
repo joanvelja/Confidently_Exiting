@@ -46,10 +46,10 @@ CUDA_VISIBLE_DEVICES=0 python -m run_summarization \
     --predict_with_generate \
     --source_prefix "summarize: " \
     --use_early_exit True \
-    --exit_conf_type softmax \
+    --exit_conf_type JSD_contrastive_confidence \
     --exit_conf_threshold 0.9 \
     --exit_min_layer 20 \
-    --max_eval_samples 3 \
+    --max_eval_samples 100 \
     --include_inputs_for_metrics True \
     --use_auth_token True \
     # --type_vocab_reduct fixed \

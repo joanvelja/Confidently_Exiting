@@ -595,7 +595,7 @@ class DeployT5Stack(T5Stack):
             self._reset_time_measure()
         else: self.deploy_time = None
         
-        plot = True
+        plot = False
         if plot:
             self.tokenizer = T5Tokenizer.from_pretrained("google-t5/t5-large")
         
@@ -866,8 +866,8 @@ class DeployT5Stack(T5Stack):
         self.shallow2deep = False  # False: skip, and True: forward
         self.lm_logits = None  # to prevent calculating logits twice
 
-        # previous_logits = []
         prev_probits = {}
+        prev_confidences = {}
         if self.is_decoder and self.config.plotting_logits:
             previous_logits = []
 
@@ -975,8 +975,7 @@ class DeployT5Stack(T5Stack):
                         lm_logits = lm_head(_hidden_states) if not self.config.tie_word_embeddings \
                             else lm_head(_hidden_states * (self.config.d_model ** -0.5))
                         
-                        probits = torch.softmax(lm_logits, dim=-1)
-                        probits = torch.squeeze(probits)
+                        probits = lm_logits.softmax(dim=-1).squeeze() #torch.softmax(lm_logits, dim=-1) + squeezing
                         prev_probits[i] = probits
                         self.block_op[i] += 1
 
@@ -993,6 +992,7 @@ class DeployT5Stack(T5Stack):
                                 else lm_head(a)
                         else:
                             starting_layer = self.config.exit_min_layer if self.config.exit_min_layer > 1  else 1 # Start where exit_min_layer is set or start at 2.
+                            
                             if i == starting_layer: # if it is the first layer where we compute the logits
                                 lm_logits = lm_head(_hidden_states) if not self.config.tie_word_embeddings \
                                     else lm_head(_hidden_states * (self.config.d_model ** -0.5))
@@ -1001,7 +1001,13 @@ class DeployT5Stack(T5Stack):
                                 minimum_k_size = 250 # where 50 is the minimum number of weights to keep
                                 num_layers = len(self.block) # This is the number of layers in the model
                                 k = self.func_inverse(i,maximum_k_size, minimum_k_size, num_layers)
-                                self.top_k_indices = torch.topk(lm_logits[0][0], k, largest=True, sorted=True)[1].sort()[0]
+                                #self.top_k_indices = torch.topk(lm_logits[0][0], k, largest=True, sorted=True)[1].sort()[0]
+                                _, top_k_indices_unsorted = torch.topk(lm_logits[0][0], k, largest=True, sorted=True)
+                                # Preserve the original order of the indices
+                                original_order_indices = torch.arange(lm_logits[0][0].size(0), device=lm_logits.device)
+                                top_k_mask = torch.zeros_like(lm_logits[0][0], dtype=torch.bool)
+                                top_k_mask[top_k_indices_unsorted] = True
+                                self.top_k_indices = original_order_indices[top_k_mask]
 
                                 selected_weights = lm_head.weight[self.top_k_indices, : ] # THis can be done here to win some compute time
                             else: # For all the other layers either use fixed, decaying or adaptive pruning
@@ -1009,23 +1015,21 @@ class DeployT5Stack(T5Stack):
                                     # Note: There is no bias in self.lm_head = nn.Linear(config.d_model, config.vocab_size, bias=False)
                                     #lm_logits = selected_weights(_hidden_states) # Get new logits with the top-200 weights
                                     #print(_hidden_states.shape, selected_weights.T.shape)
+
                                     a = _hidden_states * (self.config.d_model ** -0.5)
                                     lm_logits_temp = torch.nn.functional.linear(_hidden_states, selected_weights)  if not self.config.tie_word_embeddings \
                                         else torch.nn.functional.linear(a, selected_weights)
                                     
                                     # Initialize lm_logits with -inf
-                                    lm_logits = torch.full((1, 1, self.config.vocab_size), -float("inf"), device=lm_logits_temp.device)
+                                    #lm_logits = torch.full((1, 1, self.config.vocab_size), -float("inf"), device=lm_logits_temp.device)
                                     #lm_logits = torch.full((1, 1, self.config.vocab_size), -10000.00, device=lm_logits_temp.device)
 
                                     # Create a mask for the top_k_indices
-                                    top_k_mask = torch.zeros(self.config.vocab_size, dtype=torch.bool, device=lm_logits_temp.device)
-                                    top_k_mask[self.top_k_indices] = True
+                                    #top_k_mask = torch.zeros(self.config.vocab_size, dtype=torch.bool, device=lm_logits_temp.device)
+                                    #top_k_mask[self.top_k_indices] = True
 
                                     # Use the mask to assign values from lm_logits_temp to lm_logits
-                                    lm_logits[0, 0, top_k_mask] = lm_logits_temp[0, 0, :len(self.top_k_indices)]
-
-                                    # Update lm_logits_temp by removing the used elements
-                                    lm_logits_temp = lm_logits_temp[:, :, len(self.top_k_indices):]
+                                    #lm_logits[0, 0, top_k_mask] = lm_logits_temp[0, 0, :len(self.top_k_indices)]
 
                                 elif self.config.type_vocab_reduct == "decaying":  # Smoothed pruning! For all the other layers -> smoothed pruning
                                     current_k = self.func_inverse(i,maximum_k_size, minimum_k_size, num_layers)
@@ -1044,8 +1048,6 @@ class DeployT5Stack(T5Stack):
                                     top_k_mask = torch.zeros(self.config.vocab_size, dtype=torch.bool, device=lm_logits_temp.device)
                                     top_k_mask[self.top_k_indices[:current_k]] = True
 
-                                    # Use the mask to assign values from lm_logits_temp to lm_logits
-                                    lm_logits[0, 0, top_k_mask] = lm_logits_temp[0, 0, :len(self.top_k_indices[:current_k])]
 
                                     # Update lm_logits_temp by removing the used elements
                                     lm_logits_temp = lm_logits_temp[:, :, len(self.top_k_indices[:current_k]):]
@@ -1055,17 +1057,36 @@ class DeployT5Stack(T5Stack):
                                         # TODO experiment with different formulas to go from confidence value to retained indices
                                         # TODO experiment with non-confidence parameters (and potentialy combinations of params)
                                         curr_weights_size = lm_head.weight.size(dim=0)
+                                        conf = prev_confidences[i-1] # This is the confidence of the previous layer
                                         conf_scaling_factor = 0.9 # TODO experiment with different scaling factors
                                         retained_top_k = int(curr_weights_size * (1 - conf * conf_scaling_factor))
                                         selected_weights = lm_head.weight[self.top_k_indices[:retained_top_k], :]
-                                        lm_logits = torch.nn.functional.linear(_hidden_states, selected_weights)
+                                        ############################
+                                        a = _hidden_states * (self.config.d_model ** -0.5)
+                                        lm_logits_temp = torch.nn.functional.linear(_hidden_states, selected_weights)  if not self.config.tie_word_embeddings \
+                                            else torch.nn.functional.linear(a, selected_weights)
+                                    
+                                        # Initialize lm_logits with -inf
+                                        lm_logits = torch.full((1, 1, self.config.vocab_size), -float("inf"), device=lm_logits_temp.device)
+                                        #lm_logits = torch.full((1, 1, self.config.vocab_size), -10000.00, device=lm_logits_temp.device)
+
+                                        # Create a mask for the top_k_indices
+                                        top_k_mask = torch.zeros(self.config.vocab_size, dtype=torch.bool, device=lm_logits_temp.device)
+                                        top_k_mask[self.top_k_indices[:retained_top_k]] = True
+
+                                        # Use the mask to assign values from lm_logits_temp to lm_logits
+                                        lm_logits[0, 0, top_k_mask] = lm_logits_temp[0, 0, :len(self.top_k_indices[:retained_top_k])]
+
+                                        # Update lm_logits_temp by removing the used elements
+                                        #lm_logits_temp = lm_logits_temp[:, :, len(self.top_k_indices[:retained_top_k]):]
+                                
                                 else: 
                                     raise("Please provide a valid type_vocab_reduct argument. Either use fixed, decaying, or adaptive.")
 
                         # END OF SHRINKING VOCAB PART
                         if self.config.exit_conf_type == "contrastive_decoding":
                             
-                            skip_mask = get_skip_mask_cd(
+                            out = get_skip_mask_cd(
                                 lm_logits,
                                 _hidden_states,
                                 cm_head,
@@ -1075,11 +1096,17 @@ class DeployT5Stack(T5Stack):
                                 prev_probits = prev_probits, 
                                 layer_am = i//2,
                                 alpha = 0.1,
+                                return_conf=True if self.config.type_vocab_reduct == "adaptive" else False,
+                                #shrunk_vocab = True if self.config.type_vocab_reduct else False,
                                 )
+                            if self.config.type_vocab_reduct == "adaptive":
+                                skip_mask, conf = out
+                                prev_confidences[i] = conf
+                            
                         
                         elif self.config.exit_conf_type == "reweight_contrastive_decoding":
                             
-                            skip_mask = get_skip_mask_cd(
+                            out = get_skip_mask_cd(
                                 lm_logits,
                                 _hidden_states,
                                 cm_head,
@@ -1089,11 +1116,18 @@ class DeployT5Stack(T5Stack):
                                 prev_probits = prev_probits, 
                                 layer_am = i//2,
                                 alpha = 0.1,
+                                return_conf=True if self.config.type_vocab_reduct == "adaptive" else False,
+                                #shrunk_vocab = True if self.config.type_vocab_reduct else False,
                                 )
+                            if self.config.type_vocab_reduct == "adaptive":
+                                skip_mask, conf = out
+                                prev_confidences[i] = conf
+                            else:
+                                skip_mask = out
                             
                         elif self.config.exit_conf_type == "JSD_contrastive_confidence":
                             
-                            skip_mask, jsds = get_skip_mask_cd(
+                            out = get_skip_mask_cd(
                                 lm_logits,
                                 _hidden_states,
                                 cm_head,
@@ -1103,21 +1137,37 @@ class DeployT5Stack(T5Stack):
                                 prev_probits = prev_probits, 
                                 layer_am = i//2,
                                 alpha = 0.1,
-                                return_jsds=True
+                                return_jsds=True,
+                                return_conf=True if self.config.type_vocab_reduct == "adaptive" else False,
+                                #shrunk_vocab = True if self.config.type_vocab_reduct else False,
                                 )
+                            if self.config.type_vocab_reduct == "adaptive":
+                                skip_mask, jsds, conf = out
+                                prev_confidences[i] = conf
+                            else:
+                                skip_mask, jsds = out
+        
                         else:
-                            skip_mask = get_skip_mask(
+                            out = get_skip_mask(
                                 lm_logits,
                                 _hidden_states,
                                 cm_head,
                                 config=self.config,
-                                pos_time=past_key_values[i][0].shape[2] + 1 if past_key_values[i] is not None else 1
+                                pos_time=past_key_values[i][0].shape[2] + 1 if past_key_values[i] is not None else 1,
+                                return_conf=True if self.config.type_vocab_reduct == "adaptive" else False,
+                                #shrunk_vocab = True if self.config.type_vocab_reduct else False,
                             )
+                            if self.config.type_vocab_reduct == "adaptive":
+                                skip_mask, conf = out
+                                prev_confidences[i] = conf
+                            else:
+                                skip_mask = out
                         
 
                         if not skip_mask: self.block_op[i] += 1                    
                         if skip_mask: 
-                            # print("Layer: ", i) 
+                            # print("Layer: ", i)
+                             
                             self.lm_logits = lm_logits # This is where the logits are sent to do the predictions.
     
                             plot = False
@@ -1131,6 +1181,7 @@ class DeployT5Stack(T5Stack):
                                 word = self.tokenizer.decode(argmax_index)
 
                                 print("Word: ", word, " Token_id: ", argmax_index)
+
                     
 
                         if self.config.use_synchronize: torch.cuda.synchronize()

@@ -249,7 +249,7 @@ def JSD_contrastive_confidence(
 
     # only consider jsds between current and 2nd layer
     mask = probits_exp >= alpha * max_probs_exp
-    jsds = {layer: jsd(probits_exp[mask], prev_probits[layer][mask]) / (layer_exp - layer) for layer in np.arange(stop = layer_exp + 1, start=2)}
+    jsds = {layer: jsd(probits_exp[mask], prev_probits[layer][mask]) / (layer_exp - layer + 1) for layer in np.arange(stop = layer_exp + 1, start=2)}
     #jsds = {layer: jsd(probits_exp[mask], prev_probits[layer][mask]) for layer in np.arange(stop = layer_exp + 1, start=2)}
     # scale jsds hyperbolically
 
@@ -274,12 +274,23 @@ def JSD_contrastive_confidence(
     ## calculating the scores using the plausibility constraint
     # s = deepcopy(probits_exp)
 
+    # s = torch.zeros_like(probits_exp)
+    # #s = probits_exp.detach().clone()
+    # contrast = torch.log(probits_exp[mask]) - torch.log(probits_am[mask])
+    # s.masked_fill_(mask, contrast[0])
+    # # DoLA Implementation:
+    # s.masked_fill_(~mask, -1e9)
+    # s = torch.softmax(s, dim=-1).mul_(torch.sum(probits_exp))
+    # s[~mask] = probits_exp[~mask]
+
     s = torch.zeros_like(probits_exp)
-    contrast = torch.log(probits_exp[mask]) - torch.log(probits_am[mask])
-    s.masked_fill_(mask, contrast[0])
+    #s = probits_exp.detach().clone()
+    contrast = (torch.log(probits_exp[mask]) - torch.log(probits_am[mask])) #/ 2.5 # temperature scaling
+    s[mask] = contrast
     # DoLA Implementation:
-    s.masked_fill_(~mask, -1e9)
-    s = torch.softmax(s, dim=-1).mul_(torch.sum(probits_exp))
+    #s.masked_fill_(~mask, -1e9)
+    s[mask] = torch.softmax(s[mask].mul_(torch.sum(probits_exp)), dim=-1)
+    s[~mask] = probits_exp[~mask]
 
     #plot_probits(s, title='Reweighted Contrastive Confidence, layer_exp: {}, layer_am: {}'.format(layer_exp, max_jsd_layer))
 
@@ -287,6 +298,7 @@ def JSD_contrastive_confidence(
     # TODO (joan): Assess JSD between distributions to see what is the best way to do this
 
     top_2 = torch.topk(s, dim=-1, k=2)[0]
+    #print("Top 100", torch.topk(s, dim=-1, k=100)[0])
     # end = datetime.datetime.now()
     # print("Time taken for contrastive confidence", end-start)
     
@@ -364,9 +376,7 @@ def get_skip_mask_cd(
             alpha = alpha,
             return_jsds = return_jsds,
         )
-
-    elif key == "reweight_contrastive_decoding":
-        return_jsds = False
+    else:
         conf = conf_measure(
             lm_logits,
             layer_exp = layer_exp, 
@@ -389,13 +399,14 @@ def get_skip_mask_cd(
     # print("mask", mask)
     # print("mask shape", mask.shape)
 
-    if return_jsds:
-        return mask.item(), jsds
-    
-    if not return_conf:
-        return mask.item()  # False (0) and True (1) denote keep and exit
-    else:
+    if return_jsds and return_conf:
+        return mask.item(), jsds, conf.item()
+    elif return_jsds and not return_conf:
+        return mask.item(), jsds  # False (0) and True (1) denote keep and exit
+    elif not return_jsds and return_conf:
         return mask.item(), conf.item()
+    else:
+        return mask.item()
     
 
 

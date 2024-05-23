@@ -641,24 +641,19 @@ if __name__ == "__main__":
 
     trainer_cls = SumTrainer
 
-    exit_min_layer_list = [6,15,17,18]
     
-    exit_conf_type_list = ["JSD_contrastive_confidence", "softmax"]
-    seeds = [42, 43, 44, 45, 46, 47, 48, 49, 50, 51]
-    # Set seed before initializing model.
+    exit_min_layer_list = [2,3,6,15,17,18,19,20]
+    exit_conf_type_list = ["JSD_contrastive_confidence"]
+    type_vocab_reduct_list = ["fixed", "decaying", "adaptive"]
+    average_exit_block_list = []
     
     if not additional_args.plotting_logits:
-        # for seed in seeds:
-        #     set_seed(training_args.seed)
-        #     torch.seed(seed)
-        #     np.random.seed(seed)
-
-        for exit_conf_type in exit_conf_type_list:
+        for type_vocab_reduct in type_vocab_reduct_list:
             for exit_min_layer in exit_min_layer_list:
+                additional_args.type_vocab_reduct = type_vocab_reduct
                 additional_args.exit_min_layer = exit_min_layer
-                additional_args.exit_conf_type = exit_conf_type
-                if additional_args.exit_conf_type == "JSD_contrastive_confidence" and exit_min_layer==18:
-                    continue
+                # if seed == 41 and exit_conf_type != "reweight_contrastive_decoding":
+                #     continue
                 wandb.login()
 
                 wandb.init(

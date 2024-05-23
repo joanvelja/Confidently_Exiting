@@ -726,15 +726,18 @@ if __name__ == "__main__":
             else DeployT5ForConditionalGeneration
     trainer_cls = QATrainer
 
-    exit_min_layer_list = [2,3]
-    exit_conf_type_list = ["softmax", "JSD_contrastive_confidence" ,"reweight_contrastive_decoding"]
+    exit_min_layer_list = [2,3,6,15,17,18,19,20]
+    exit_conf_type_list = ["JSD_contrastive_confidence"]
+    type_vocab_reduct_list = ["fixed", "decaying", "adaptive"]
     average_exit_block_list = []
     
     if not additional_args.plotting_logits:
-        for exit_conf_type in exit_conf_type_list:
+        for type_vocab_reduct in type_vocab_reduct_list:
             for exit_min_layer in exit_min_layer_list:
-                additional_args.exit_conf_type = exit_conf_type
+                additional_args.type_vocab_reduct = type_vocab_reduct
                 additional_args.exit_min_layer = exit_min_layer
+                # if exit_conf_type == "softmax" and not exit_min_layer in [19, 20]:
+                #     continue
 
                 wandb.login()
 
