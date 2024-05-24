@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from transformers import AutoConfig
 from copy import deepcopy
-from typing import Union
 
 
 import torch
@@ -213,7 +212,6 @@ def JSD_contrastive_confidence(
     prev_probits: dict = None, 
     alpha: float = None,
     return_jsds=True,
-    shrunk_vocab=None,
 ):
     """
     Checking confidence with JSD contrastive decoding.
@@ -221,48 +219,88 @@ def JSD_contrastive_confidence(
     Second we are getting the probits from previous iterations and comparing with a fixed one by taking the log difference.
     
     """
+    # start = datetime.datetime.now()
     assert lm_logits is not None
     ## calculate current layer probabilities
     probits_exp = torch.softmax(lm_logits, dim=-1).squeeze_()
-    prev_probits[layer_exp] = probits_exp # this is not going necessarily to be sized 30k....
+    prev_probits[layer_exp] = probits_exp
+    # print("prev_probits", prev_probits) 
+
    
     # probs_exp = torch.softmax(logits_at, dim=-1)
     max_probs_exp = torch.max(probits_exp)
 
+    ## obtaining the correct layer probit values from previous layers (the layer index is choosen to be usually half of the current layer). 
+    # if layer_am in prev_probits.keys():
+    #     probits_am = prev_probits[layer_am]
+    # else:
+    #     raise ValueError("Choosen layer has not been computed yet")
+
+
+    # Calculate Jensen-Shannon Divergence between the current and previous layer
+    # probs_am = torch.softmax(logits_am, dim=-1)
+    # probs_am = torch.squeeze(probs_am)
+    # probs_exp = torch.squeeze(probs_exp)
+    # m = 0.5 * (probs_am + probs_exp)
+    # jsd = 0.5 * (torch.sum(probs_am * torch.log(probs_am / m)) + torch.sum(probs_exp * torch.log(probs_exp / m)))
+
     jsd = JSD()
+    #jsds = {k: jsd(probits_exp, v) for k, v in prev_probits.items()}
 
     # only consider jsds between current and 2nd layer
-    # mask = probits_exp >= alpha * max_probs_exp
-
-    if shrunk_vocab is not None: # we rely on token plausibility given by top-k tokens
-        mask = shrunk_vocab
-        assert probits_exp.shape == prev_probits[2][mask].shape
-         
-        jsds = {layer: jsd(probits_exp, prev_probits[layer][mask] if prev_probits[layer].shape != probits_exp.shape else prev_probits[layer]) / (layer_exp - layer + 1) for layer in np.arange(stop = layer_exp + 1, start=2)}
-
-    else: # if not, we calculate token plausibility with Li et al. 2022's heuristic
-        mask = probits_exp >= alpha * max_probs_exp
-        jsds = {layer: jsd(probits_exp[mask], prev_probits[layer][mask]) / (layer_exp - layer + 1) for layer in np.arange(stop = layer_exp + 1, start=2)}
-
+    mask = probits_exp >= alpha * max_probs_exp
+    jsds = {layer: jsd(probits_exp[mask], prev_probits[layer][mask]) / (layer_exp - layer + 1) for layer in np.arange(stop = layer_exp + 1, start=2)}
+    #jsds = {layer: jsd(probits_exp[mask], prev_probits[layer][mask]) for layer in np.arange(stop = layer_exp + 1, start=2)}
+    # scale jsds hyperbolically
 
     # get the probits with the maximum jsd
     max_jsd_layer = max(jsds, key=jsds.get)
     probits_am = prev_probits[max_jsd_layer]
 
-    s = torch.zeros_like(probits_exp)
+    # Get list of jsds values
+    #vals = list(jsds.values())
+    #o = detect_and_rank_bumps(vals)
+    #bump_idx = o[0]
+    #probits_am = prev_probits[bump_idx + 2]
 
-    if shrunk_vocab is not None:
-        s = (torch.log(probits_exp) - torch.log(probits_am[mask] if probits_am.shape != probits_exp.shape else probits_am))
-        
-    else:
-        contrast = (torch.log(probits_exp[mask]) - torch.log(probits_am[mask]))
-        s[mask] = contrast
-        # DoLA Implementation:
-        s[mask] = torch.softmax(s[mask].mul_(torch.sum(probits_exp)), dim=-1)
-        s[~mask] = probits_exp[~mask]
+    # for v in prev_probits.values():
+    #     probs_am = v
+    #     jsd_val = jsd(probits_exp, probs_am)
+    #     jsds.append(jsd_val)
+    
+    # max_jsd = torch.max(torch.stack(jsds))
 
     
+    ## calculating the scores using the plausibility constraint
+    # s = deepcopy(probits_exp)
+
+    # s = torch.zeros_like(probits_exp)
+    # #s = probits_exp.detach().clone()
+    # contrast = torch.log(probits_exp[mask]) - torch.log(probits_am[mask])
+    # s.masked_fill_(mask, contrast[0])
+    # # DoLA Implementation:
+    # s.masked_fill_(~mask, -1e9)
+    # s = torch.softmax(s, dim=-1).mul_(torch.sum(probits_exp))
+    # s[~mask] = probits_exp[~mask]
+
+    s = torch.zeros_like(probits_exp)
+    #s = probits_exp.detach().clone()
+    contrast = (torch.log(probits_exp[mask]) - torch.log(probits_am[mask])) #/ 2.5 # temperature scaling
+    s[mask] = contrast
+    # DoLA Implementation:
+    #s.masked_fill_(~mask, -1e9)
+    s[mask] = torch.softmax(s[mask].mul_(torch.sum(probits_exp)), dim=-1)
+    s[~mask] = probits_exp[~mask]
+
+    #plot_probits(s, title='Reweighted Contrastive Confidence, layer_exp: {}, layer_am: {}'.format(layer_exp, max_jsd_layer))
+
+    # TODO: (joan) test also against the scaling being done within the softmax 
+    # TODO (joan): Assess JSD between distributions to see what is the best way to do this
+
     top_2 = torch.topk(s, dim=-1, k=2)[0]
+    #print("Top 100", torch.topk(s, dim=-1, k=100)[0])
+    # end = datetime.datetime.now()
+    # print("Time taken for contrastive confidence", end-start)
     
     if return_jsds:
         return (top_2[..., 0] - top_2[..., 1]).squeeze(), jsds
@@ -298,7 +336,6 @@ def get_skip_mask_cd(
     adapt_threshold: float = None,
     return_conf=False,
     return_jsds=True,
-    shrunk_vocab=None,
 ):
 
     assert config.exit_conf_type is not None or config.shallow2deep_conf_type is not None
@@ -330,7 +367,6 @@ def get_skip_mask_cd(
             alpha = alpha,
             hidden_states = hidden_states,
             classifier = classifier,
-            shrunk_vocab=shrunk_vocab,
         )
     elif key == 'JSD_contrastive_confidence' and return_jsds:
         conf, jsds = conf_measure(
@@ -339,7 +375,6 @@ def get_skip_mask_cd(
             prev_probits = prev_probits, 
             alpha = alpha,
             return_jsds = return_jsds,
-            shrunk_vocab=shrunk_vocab,
         )
     else:
         conf = conf_measure(
@@ -350,7 +385,6 @@ def get_skip_mask_cd(
             alpha = alpha,
             hidden_states = hidden_states,
             classifier = classifier,
-            shrunk_vocab=shrunk_vocab,
         )
     
 

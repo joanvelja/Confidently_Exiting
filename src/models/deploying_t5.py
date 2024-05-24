@@ -1029,7 +1029,7 @@ class DeployT5Stack(T5Stack):
                                     #top_k_mask[self.top_k_indices] = True
 
                                     # Use the mask to assign values from lm_logits_temp to lm_logits
-                                    #lm_logits[0, 0, top_k_mask] = lm_logits_temp[0, 0, :len(self.top_k_indices)]
+                                    lm_logits[0, 0, top_k_mask] = lm_logits_temp[0, 0, :len(self.top_k_indices)]
 
                                 elif self.config.type_vocab_reduct == "decaying":  # Smoothed pruning! For all the other layers -> smoothed pruning
                                     current_k = self.func_inverse(i,maximum_k_size, minimum_k_size, num_layers)
@@ -1048,9 +1048,11 @@ class DeployT5Stack(T5Stack):
                                     top_k_mask = torch.zeros(self.config.vocab_size, dtype=torch.bool, device=lm_logits_temp.device)
                                     top_k_mask[self.top_k_indices[:current_k]] = True
 
+                                    lm_logits[0, 0, top_k_mask] = lm_logits_temp[0, 0, :len(self.top_k_indices[:current_k])]
 
                                     # Update lm_logits_temp by removing the used elements
-                                    lm_logits_temp = lm_logits_temp[:, :, len(self.top_k_indices[:current_k]):]
+                                    #lm_logits_temp = lm_logits_temp[:, :, len(self.top_k_indices[:current_k]):]
+
                                 elif self.config.type_vocab_reduct == "adaptive":
                                         # TODO experiment with not only the top-1 confidence but combining the top-k confidences
                                         # TODO experiment with taking the top-k not (only) in the starting layer
