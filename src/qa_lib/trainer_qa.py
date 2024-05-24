@@ -448,6 +448,7 @@ class QATrainer(Seq2SeqTrainer):
         # generated_tokens = self.model.generate(**inputs, **gen_kwargs)
         
         gen_model = self.model.base_model if self.model.config.use_lora else self.model
+
         generated_tokens = gen_model.generate(
             inputs["input_ids"],
             attention_mask=inputs["attention_mask"],
@@ -466,6 +467,7 @@ class QATrainer(Seq2SeqTrainer):
         ):
             generated_tokens = self._pad_tensors_to_max_len(generated_tokens, gen_kwargs["max_new_tokens"] + 1)
 
+        
         if isinstance(self.model, DeployT5ForConditionalGeneration) or isinstance(self.model, DeployLongT5ForConditionalGeneration):
             loss = None
         else:

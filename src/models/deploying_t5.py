@@ -554,6 +554,7 @@ class DeployT5Stack(T5Stack):
         self.graph_top_k_list = []
         self.graph_top_k_confidence = []
         self.top_k_indices = None
+        self.flop_counter = 0.0
         
         self.embed_tokens = embed_tokens
         self.is_decoder = config.is_decoder
@@ -991,6 +992,11 @@ class DeployT5Stack(T5Stack):
                             a = _hidden_states * (self.config.d_model ** -0.5)
                             lm_logits = lm_head(_hidden_states) if not self.config.tie_word_embeddings \
                                 else lm_head(a)
+                            
+                            if self.config.count_flops:
+                                self.flop_counter += (self.config.d_model**2)* self.config.vocab_size * 1 # Seq length is always one
+
+                            
                         else:
                             starting_layer = self.config.exit_min_layer if self.config.exit_min_layer > 1  else 1 # Start where exit_min_layer is set or start at 2.
                             if i == starting_layer: # if it is the first layer where we compute the logits
@@ -1006,13 +1012,16 @@ class DeployT5Stack(T5Stack):
                                 selected_weights = lm_head.weight[self.top_k_indices, : ] # THis can be done here to win some compute time
                             else: # For all the other layers either use fixed, decaying or adaptive pruning
                                 if self.config.type_vocab_reduct == "fixed":
+
+                                    if self.config.count_flops:
+                                        self.flop_counter +=  (self.config.d_model**2)* k * 1 # Seq length is always one
                                     # Note: There is no bias in self.lm_head = nn.Linear(config.d_model, config.vocab_size, bias=False)
                                     #lm_logits = selected_weights(_hidden_states) # Get new logits with the top-200 weights
                                     #print(_hidden_states.shape, selected_weights.T.shape)
                                     a = _hidden_states * (self.config.d_model ** -0.5)
                                     lm_logits_temp = torch.nn.functional.linear(_hidden_states, selected_weights)  if not self.config.tie_word_embeddings \
                                         else torch.nn.functional.linear(a, selected_weights)
-                                    
+               
                                     # Initialize lm_logits with -inf
                                     lm_logits = torch.full((1, 1, self.config.vocab_size), -float("inf"), device=lm_logits_temp.device)
                                     #lm_logits = torch.full((1, 1, self.config.vocab_size), -10000.00, device=lm_logits_temp.device)
@@ -1029,6 +1038,9 @@ class DeployT5Stack(T5Stack):
 
                                 elif self.config.type_vocab_reduct == "decaying":  # Smoothed pruning! For all the other layers -> smoothed pruning
                                     current_k = self.func_inverse(i,maximum_k_size, minimum_k_size, num_layers)
+                                    
+                                    if self.config.count_flops:
+                                        self.flop_counter +=  (self.config.d_model**2)* current_k * 1 # Seq length is always one
                                     # top_k_list = [4500, 2500, 2000, 1000, 750, 700, 600, 500, 400, 300, 100, 50] # This is the list of top_k values for each block based on graph for based as an indicator.
                                     selected_weights = lm_head.weight[self.top_k_indices[:current_k], :]
                     
@@ -1057,6 +1069,10 @@ class DeployT5Stack(T5Stack):
                                         curr_weights_size = lm_head.weight.size(dim=0)
                                         conf_scaling_factor = 0.9 # TODO experiment with different scaling factors
                                         retained_top_k = int(curr_weights_size * (1 - conf * conf_scaling_factor))
+                                        
+                                        if self.config.count_flops:
+                                            self.flop_counter +=  (self.config.d_model**2)* retained_top_k * 1 # Seq length is always one
+                                        
                                         selected_weights = lm_head.weight[self.top_k_indices[:retained_top_k], :]
                                         lm_logits = torch.nn.functional.linear(_hidden_states, selected_weights)
                                 else: 
@@ -1338,7 +1354,6 @@ class DeployT5ForConditionalGeneration(T5ForConditionalGeneration):
 
         Here, for the faster inference, we have implemented non-autoregressive hidden_state copying in Shallow-Deep framework.
         """
-
         use_cache = use_cache if use_cache is not None else self.config.use_cache
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
         

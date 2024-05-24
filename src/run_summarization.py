@@ -432,7 +432,7 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
 
     def compute_metrics(eval_preds, compute_metrics=True):
         if compute_metrics:
-            preds, labels, _ = eval_preds
+            preds, labels= eval_preds
         else:
             preds, labels = eval_preds
         if isinstance(preds, tuple):
@@ -518,9 +518,17 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
         if training_args.include_inputs_for_metrics:
             output = trainer.evaluate(metric_key_prefix="eval")
             metrics = output.metrics
+
+            if additional_args.count_flops:
+                final_flops = model.decoder.flop_counter/len(eval_dataset)
+                wandb.log({"final_flops": final_flops})  
             
         else:
             metrics = trainer.evaluate(metric_key_prefix="eval")
+
+            if additional_args.count_flops:
+                final_flops = model.decoder.flop_counter/len(eval_dataset)
+                wandb.log({"final_flops": final_flops})  
 
         if additional_args.plotting_logits:
             data = model.decoder.graph_top_k_list
@@ -648,36 +656,24 @@ if __name__ == "__main__":
     # Set seed before initializing model.
     
     if not additional_args.plotting_logits:
-        # for seed in seeds:
-        #     set_seed(training_args.seed)
-        #     torch.seed(seed)
-        #     np.random.seed(seed)
-
-        for exit_conf_type in exit_conf_type_list:
-            for exit_min_layer in exit_min_layer_list:
-                additional_args.exit_min_layer = exit_min_layer
-                additional_args.exit_conf_type = exit_conf_type
-                if additional_args.exit_conf_type == "JSD_contrastive_confidence" and exit_min_layer==18:
-                    continue
-                wandb.login()
-
-                wandb.init(
-                        # set the wandb project where this run will be logged
-                        project="small_subset_Matteo",
-                        entity="uva24",
-                        # track hyperparameters and run metadata
-                        config={
-                            "dataset": data_args.dataset_name,
-                            "model": model_args.model_name_or_path, 
-                            "exit_conf_type": additional_args.exit_conf_type,
-                            "exit_conf_threshold": additional_args.exit_conf_threshold,
-                            "exit_min_layer": additional_args.exit_min_layer,
-                            "type_vocab_reduct": additional_args.type_vocab_reduct,
-                            },
-                        mode="disabled" if False else "online",
-                        )
-                main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
-                wandb.finish()
+        wandb.login()
+        wandb.init(
+                # set the wandb project where this run will be logged
+                project="Get Flops",
+                entity="uva24",
+                # track hyperparameters and run metadata
+                config={
+                    "dataset": data_args.dataset_name,
+                    "model": model_args.model_name_or_path, 
+                    "exit_conf_type": additional_args.exit_conf_type,
+                    "exit_conf_threshold": additional_args.exit_conf_threshold,
+                    "exit_min_layer": additional_args.exit_min_layer,
+                    "type_vocab_reduct": additional_args.type_vocab_reduct,
+                    },
+                mode="disabled" if False else "online",
+                )
+        main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
+        wandb.finish()
     else:
         mean_block_confidence = main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
         block_k_metric = []
