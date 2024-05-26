@@ -58,10 +58,9 @@ Our approach incorporates an early-exiting strategy, wherein the generation of t
 
 When an early exit is triggered at layer $`\ell`$, it necessitates updating the key and value pairs in subsequent layers to ensure proper attention mechanisms for future tokens. To efficiently manage this, a state copying technique is employed, where the hidden states from the early-exited layer $`h^{\ell}_{t+1}`$ are duplicated across subsequent layers ($`h^i_{t+1} = h^{\ell}_{t+1}`$ for every $i$ from $\ell + 1$ to $L$). This process maintains computational efficiency and model performance, even in compact - for today's standards - model configurations like T5 models.
 
-### Models, Datasets and Implementation Preliminaries
-#### Experimental Setting
+### Experimental Setting
 
-We evaluate the encoder-decoder T5 model ([Raffel et al., 2020](#exploring-limits-2020)) on two different datasets and two different downstream tasks:
+In this section, we introduce the experimental setting used in both sections 4 and 5 to explain and validate our claims and to perform experiments. We evaluate the encoder-decoder T5 model ([Raffel et al., 2020](#exploring-limits-2020)) on two different datasets and two different downstream tasks:
 
 - Stanford Question Answering Dataset (SQuAD) with over 100k annotated data ([Rajpurkar et al., 2016](#squad-2016)), 10k of which used for evaluation.
 - SamSum ([Gliwa et al., 2019](#samsum-corpus-2019)), a human-annotated dataset for abstractive Summarization with more than 800 samples in the Validation set.
