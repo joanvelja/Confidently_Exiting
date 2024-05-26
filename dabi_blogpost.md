@@ -140,8 +140,9 @@ To summarize, our predicted token is often in the top-k ones, with a high value 
 <p align='center'>
 <img src="./blogpost_images/plots/boxplot_topk_rank_evalsquad_google-t5_t5-large.png" alt="non fine-tuned T5-Large model, SQuAD Dataset" style="width:45%; display:inline-block; margin: 0 2.5%;" />
 </p>
+
+<p style="text-align: center;">non fine-tuned T5-Large model, SQuAD Dataset
 <p align='center'>
-<p style="text-align: center;">non fine-tuned T5-Large model, SQuAD Dataset</p>
 <img src="./blogpost_images/plots/boxplot_topk_rank_evalsquad_jvelja_t5-squad.png" alt="fine-tuned T5-Large model, SQuAD Dataset" style="width:45%; display:inline-block; margin: 0 2.5%;" />
 </p>
 <p style="text-align: center;">fine-tuned T5-Large model, SQuAD Dataset</p>
