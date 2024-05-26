@@ -59,6 +59,23 @@ Our approach incorporates an early-exiting strategy, wherein the generation of t
 When an early exit is triggered at layer $`\ell`$, it necessitates updating the key and value pairs in subsequent layers to ensure proper attention mechanisms for future tokens. To efficiently manage this, a state copying technique is employed, where the hidden states from the early-exited layer $`h^{\ell}_{t+1}`$ are duplicated across subsequent layers ($`h^i_{t+1} = h^{\ell}_{t+1}`$ for every $i$ from $\ell + 1$ to $L$). This process maintains computational efficiency and model performance, even in compact - for today's standards - model configurations like T5 models.
 
 ### Models, Datasets and Implementation Preliminaries
+#### Experimental Setting
+
+We evaluate the encoder-decoder T5 model ([Raffel et al., 2020](#exploring-limits-2020)) on two different datasets and two different downstream tasks:
+
+- Stanford Question Answering Dataset (SQuAD) with over 100k annotated data ([Rajpurkar et al., 2016](#squad-2016)), 10k of which used for evaluation.
+- SamSum ([Gliwa et al., 2019](#samsum-corpus-2019)), a human-annotated dataset for abstractive Summarization with more than 800 samples in the Validation set.
+
+Each dataset has its own evaluation metrics. Question Answering on SQuAD will be evaluated on F1, whereas Summarization on SamSum on Rouge-L score.
+
+Additionally, we compare the performance and effects of our proposed methods between:
+
+- Pre-trained-only version of T5, from t5-large,
+- Fine-tuned version of T5, t5-squad, t5-samsum. Each fine-tuned version is fine-tuned on the training dataset of the corresponding name.
+
+Within our experiments, we rely on terminology which is dependent on the hyper-parameters used, the most important being the minimum exit layer. This is nothing but the earliest layer at which the model is allowed to exit.
+
+Finally, all the experiments in the following sections are done using the available codebase fast-robust-early-exit ([Bae et al., 2023](#fast-robust-early-exiting-2023)) as baseline.
 
 ## Methodology
 
@@ -168,24 +185,6 @@ We therefore thought of a simple, yet effective way of addressing this choice. P
 Finally, to get the best of both worlds, we experiment with a mixed approach. The rationale here is that we can substitute the plausibility constraint of CD with the top-k tokens we find with the pruning done for softmax response, thus making what we claim to be a choice as informed as possible.
 
 ## Experiments
-
-### Experimental Setting
-
-We evaluate the encoder-decoder T5 model ([Raffel et al., 2020](#exploring-limits-2020)) on two different datasets and two different downstream tasks:
-
-- Stanford Question Answering Dataset (SQuAD) with over 100k annotated data ([Rajpurkar et al., 2016](#squad-2016)), 10k of which used for evaluation.
-- SamSum ([Gliwa et al., 2019](#samsum-corpus-2019)), a human-annotated dataset for abstractive Summarization with more than 800 samples in the Validation set.
-
-Each dataset has its own evaluation metrics. Question Answering on SQuAD will be evaluated on F1, whereas Summarization on SamSum on Rouge-L score.
-
-Additionally, we compare the performance and effects of our proposed methods between:
-
-- Pre-trained-only version of T5, from t5-large,
-- Fine-tuned version of T5, t5-squad, t5-samsum. Each fine-tuned version is fine-tuned on the training dataset of the corresponding name.
-
-Within our experiments, we rely on terminology which is dependent on the hyper-parameters used, the most important being the minimum exit layer. This is nothing but the earliest layer at which the model is allowed to exit.
-
-Finally, all the experiments in the following sections are done using the available codebase fast-robust-early-exit ([Bae et al., 2023](#fast-robust-early-exiting-2023)) as baseline.
 
 ### Softmax Speed-Up
 
