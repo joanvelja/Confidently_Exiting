@@ -84,7 +84,11 @@ which corresponds to an approximate efficiency gain of order
 
 $$\mathcal{O}\left(\frac{d_{\text{vocab}}}{k} \times (L-j)\right)$$
 
-**Softmax response via decaying pruning** As one can note from Figure 1b, the rank of the predicted token smoothly decreases across layers, especially for non-fine-tuned models. Again, we prune the $`\textbf{W}_j`$ matrix, given a minimum early exit layer $j$. We retain its top $k$-tokens, obtaining the new pruned vocabulary matrix $`\tilde{\textbf{W}}_{j+i} \in \mathbb{R}^{k \times d_{\text{model}}}`$. Now, instead of keeping the reduced matrix size fixed, we further prune it after every layer. Given the vocabulary matrix $\tilde{\textbf{W}}_{j+i}$ at layer $j+i$ of size $k_1$, we prune it for layer $j+i+1$ to a reduced matrix of size $k_2$, where
+**Softmax response via decaying pruning** As one can note from Figure 1b, the rank of the predicted token smoothly decreases across layers, especially for non-fine-tuned models. Again, we prune the $`\textbf{W}_j`$ matrix, given a minimum early exit layer $j$. We retain its top $k$-tokens, obtaining the new pruned vocabulary matrix 
+<div align="center">
+$`\tilde{\textbf{W}}_{j+i} \in \mathbb{R}^{k \times d_{\text{model}}}`$.
+</div>
+ Now, instead of keeping the reduced matrix size fixed, we further prune it after every layer. Given the vocabulary matrix $\tilde{\textbf{W}}_{j+i}$ at layer $j+i$ of size $k_1$, we prune it for layer $j+i+1$ to a reduced matrix of size $k_2$, where
 <div align="center">
 <span style="font-size: 20px;">
 $`k_2 = \max\left(k^*, \left\lfloor \frac{k_1}{1 + \frac{k_1 - k^*}{k^*} \cdot \frac{j+i}{\text{num\_layers}}} \right\rfloor \right)`$
