@@ -44,7 +44,7 @@ where $\ell$ represents each layer from 1 to $L$, and $h^0_t$ denotes the output
 
 After processing through the $L$-th layer, the prediction for the next token, $\hat{x}_{t+1}$, is produced by
 
-$`p(\hat{x}_{t+1} \mid x_{\< t+1}) = \text{softmax}(\textbf{W}_L h^L_{t})`$
+$`p(\hat{x}_{t+1} \mid x_{< t+1}) = \text{softmax}(\textbf{W}_L h^L_{t})`$
 
 where $`\textbf{W}_L \in \mathbb{R}^{d_{\text{model}} \times d_{\text{vocab}}}`$ is the linear classifier of block L responsible for mapping back the output of the FNN at that block from $d_{\text{model}}$ to $d_{\text{vocab}}$.
 
@@ -87,16 +87,16 @@ which corresponds to an approximate efficiency gain of order
 $$\mathcal{O}\left(\frac{d_{\text{vocab}}}{k} \times (L-j)\right)
 $$
 
-**Softmax response via decaying pruning** As one can note from Figure 1b, the rank of the predicted token smoothly decreases across layers, especially for non-fine-tuned models. Again, we prune the $`\textbf{W}_j`$ matrix, given a minimum early exit layer $j$. We retain its top $k$-tokens, obtaining the new pruned vocabulary matrix $\tilde{\textbf{W}}_{j+i} \in \mathbb{R}^{k \times d_{\text{model}}}$. Now, instead of keeping the reduced matrix size fixed, we further prune it after every layer. Given the vocabulary matrix $\tilde{\textbf{W}}_{j+i}$ at layer $j+i$ of size $k_1$, we prune it for layer $j+i+1$ to a reduced matrix of size $k_2$, where
+**Softmax response via decaying pruning** As one can note from Figure 1b, the rank of the predicted token smoothly decreases across layers, especially for non-fine-tuned models. Again, we prune the $`\textbf{W}_j`$ matrix, given a minimum early exit layer $j$. We retain its top $k$-tokens, obtaining the new pruned vocabulary matrix $`\tilde{\textbf{W}}_{j+i} \in \mathbb{R}^{k \times d_{\text{model}}}`$. Now, instead of keeping the reduced matrix size fixed, we further prune it after every layer. Given the vocabulary matrix $\tilde{\textbf{W}}_{j+i}$ at layer $j+i$ of size $k_1$, we prune it for layer $j+i+1$ to a reduced matrix of size $k_2$, where
 
 $`k_2 = \max\left(k^*, \left\lfloor \frac{k_1}{1 + \frac{k_1 - k^*}{k^*} \cdot \frac{j+i}{\text{num\_layers}}} \right\rfloor \right)
 `$
 
-$k^*$ here indicates a lower bound on the size our pruned vocabulary matrix $\tilde{\textbf{W}}_{j+i+1}$ can reach. This function has been chosen based on Figure 1a, hence to be robust against the worst case scenario among all datasets and models. The function we defined here above approximates the decaying in ranking of the top-$k$ token in that case. The efficiency gain is, in theory, even more prominent than in the case of fixed pruning.
+$k^*$ here indicates a lower bound on the size our pruned vocabulary matrix $\tilde{\textbf{W}}_{j+i+1}$ can reach. This function has been chosen based on Figure 1a, hence to be robust against the worst case scenario among all datasets and models. The function we defined here above approximates the decaying in ranking of the top-k token in that case. The efficiency gain is, in theory, even more prominent than in the case of fixed pruning.
 
 **Softmax response via adaptive pruning**
 
-To summarize, our predicted token is often in the top-$k$ ones, with a high value of $k$. Due to this, pruning the vocabulary matrix allows us to reduce the amount of computations we have to compute at each layer, while discarding only irrelevant tokens. While we trade-off some performance, this further speeds up the runtime of our model, allowing us to obtain notable efficiency gains.
+To summarize, our predicted token is often in the top-k ones, with a high value of $k$. Due to this, pruning the vocabulary matrix allows us to reduce the amount of computations we have to compute at each layer, while discarding only irrelevant tokens. While we trade-off some performance, this further speeds up the runtime of our model, allowing us to obtain notable efficiency gains.
 
 (a) non fine-tuned T5-Large model, SQuAD Dataset (b) fine-tuned T5-Large model, SQuAD Dataset
 
@@ -144,7 +144,7 @@ We take the original approach by Li et al. (2023) a step further: instead of run
 
 We therefore thought of a simple, yet effective way of addressing this choice. Previous works (Chuang et al., 2024) suggest selection via distance-in-distribution through Jensen-Shannon Divergence. This way, they claim, it is possible to find the most fit amateur layer for the contrastive objective. They do so by contrasting the final distribution against a set of candidate layers for premature layer selection $J$. They divide the layers into 2 to 4 buckets of $J$ based on the total number of layers, relying on a validation set to choose the best bucket for each task. With an Occam’s razor perspective, we claim that the bucketing strategy is suboptimal for several reasons. First, it requires task-specific selection, which is undesirable, given how these models are deployed and utilized by end users, that is, usually, for open-ended generation. Second, bucketing does not address the bias JSD will have towards the lower layers of the distribution. Earlier representations are necessarily more diverse, since the set of plausible tokens for autoregressive generation gets narrower as one goes deeper into the stack. For this reason, we discount the JSD value between two distributions $i, j$ by the layer distance between the two distributions $\ell_j - \ell_i$. By doing this, we are able to capture the layers at which there is a more significant distribution change w.r.t. the layer $\ell_j$ we find ourselves at, thus obtaining meaningful signal from the chosen contrastive distribution. Moreover, in order to avoid computational overhead given by the linear map $\textbf{W}_L$, we only contrast distributions at layer $\ell$ against distributions at layers $m < \ell_0 <$, where $j$ is the minimum exit layer parameter introduced in Section 4.1.
 
-Finally, to get the best of both worlds, we experiment with a mixed approach. The rationale here is that we can substitute the plausibility constraint of CD with the top-$k$ tokens we find with the pruning done for softmax response, thus making what we claim to be a choice as informed as possible.
+Finally, to get the best of both worlds, we experiment with a mixed approach. The rationale here is that we can substitute the plausibility constraint of CD with the top-k tokens we find with the pruning done for softmax response, thus making what we claim to be a choice as informed as possible.
 
 ## Experiments
 
