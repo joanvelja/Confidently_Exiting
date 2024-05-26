@@ -92,7 +92,7 @@ $\tilde{\textbf{W}}_{j+i} \in \mathbb{R}^{d_{\text{model}} \times k}, \quad \tex
 Hence, we prune our matrix at layer $j+1$, and keep the size fixed to $k$ for all subsequent layers. Theoretically, calculating the ratio between the original number of computations required in the original approach with ours, we get
 
 <p align='center'>
-$\frac{d^2_{\text{model}} \times d_{\text{vocab}} \times L}{d^2_{\text{model}} \times k \times (L-j) + d^2_{\text{model}} \times d_{\text{vocab}} \times j}$
+<img src='./blogpost_images/formulas/000.png' height="70" width="300">
 </p>
 
 which corresponds to an approximate efficiency gain of order
