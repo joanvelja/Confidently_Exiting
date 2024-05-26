@@ -260,6 +260,19 @@ In this section, we analyze the behavior of the two implemented versions of cont
 
 Results from Figure 6 show Weighted contrastive decoding achieving comparable average exit layer with softmax baseline, while still retaining almost all the performance. More interesting is the behavior of JSD. The confidence measure consistently beats softmax baseline. The method is exiting earlier with an average gain of 2.5 blocks. Most importantly, it is also achieving higher performance with a 2% increase over both softmax and the no exiting network (green). The reason for the lack in performance in earlier layers for contrastive decoding confidences is in their intrinsic nature. Figure 2 clearly shows that while confidence at earlier layers is very high, their accuracy is very low. This means that contrasting the probability outputs of the amateur layer with the expert, at early layers, results in catastrophically pushing the model towards the earlier end of the curve, resulting in the model being wrongly over-confident.
 
+<p align='center'>
+<img src="./blogpost_images/plots/squadexit.png" alt="Average Exit Block" style="width:48%; display:inline-block; margin: 0 2.5%;" />
+</p>
+<p align='center'>Average Exit Block</p>
+
+<p align='center'>
+<img src="./blogpost_images/plots/squadf1.png" alt="F1 Accuracy" style="width:48%; display:inline-block; margin: 0 2.5%;" />
+</p>
+<p align='center'>F1 Accuracy</p>
+
+<p align='center'><b>SQuAD Average Exit and F1</b>. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SQuAD dataset.</p>
+
+
 Evaluation on SamSum dataset, Figure 7, shows even more impressive results. While weighted contrastive decoding is on par with softmax baseline, the Jensen-Shannon Divergence (JSD) confidence measure is exiting even earlier on average with an impressive 2.9 block difference gain on average with softmax. Additionally, JSD is notably attaining almost a 10% increase in Rouge-L performance on exit-layer 17.
 
 (a) Average Exit Block (b) F1 Accuracy
