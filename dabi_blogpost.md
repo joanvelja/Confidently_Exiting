@@ -1,12 +1,3 @@
-<style>
-  .large-center {
-    font-size: 2em;
-    text-align: center;
-  }
-  .center {
-    text-align: center;
-  }
-</style>
 # Early Exit LLMs - Collaborative Content
 
 ## Introduction
@@ -52,9 +43,9 @@ $$h^\ell_t = \text{Transformer}^\ell(h^{\ell-1}_t)$$
 where $\ell$ represents each layer from 1 to $L$, and $h^0_t$ denotes the output of the embedding layer $`\textbf{W}_E`$. The embedding layer $`\textbf{W}_E \in \mathbb{R}^{d_{\text{vocab}} \times d_{\text{model}}}`$, transforms the tokens $y_{1:t}$ having size $d_{\text{vocab}}$, into dense vector representations sized $d_{\text{model}}$.
 
 After processing through the $L$-th layer, the prediction for the next token, $\hat{x}_{t+1}$, is produced by
-
-$$p(\hat{x}_{t+1} \mid x_{< t+1}) = \text{softmax}(\textbf{W}_L h^L_{t})$$
-
+<p align='center'>
+$'p(\hat{x}_{t+1} \mid x_{< t+1}) = \text{softmax}(\textbf{W}_L h^L_{t})`$
+</p>
 where $`\textbf{W}_L \in \mathbb{R}^{d_{\text{model}} \times d_{\text{vocab}}}`$ is the linear classifier of block L responsible for mapping back the output of the FNN at that block from $d_{\text{model}}$ to $d_{\text{vocab}}$.
 
 Our approach incorporates an early-exiting strategy, wherein the generation of the next token can occur at any layer $\ell$ if the computed confidence score $c_\ell$ exceeds a specified threshold $\tau$.
