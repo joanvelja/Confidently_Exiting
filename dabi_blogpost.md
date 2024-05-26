@@ -102,6 +102,7 @@ $\mathcal{O}\left(\frac{d_{\text{vocab}}}{k} \times (L-j)\right)$
 </p>
 
 **Softmax response via decaying pruning** 
+
 As one can note from Figure 1b, the rank of the predicted token smoothly decreases across layers, especially for non-fine-tuned models. Again, we prune the $`\textbf{W}_j`$ matrix, given a minimum early exit layer $j$. We retain its top $k$-tokens, obtaining the new pruned vocabulary matrix
 
 <p align='center'>
@@ -110,9 +111,9 @@ $\tilde{\textbf{W}}_{j+i} \in \mathbb{R}^{k \times d_{\text{model}}}$.
 
 Now, instead of keeping the reduced matrix size fixed, we further prune it after every layer. Given the vocabulary matrix $\tilde{\textbf{W}}_{j+i}$ at layer $j+i$ of size $k_1$, we prune it for layer $j+i+1$ to a reduced matrix of size $k_2$, where
 
-<p align='center'>
-$k_2 = \max\left(k^*, \left\lfloor \frac{k_1}{1 + \frac{k_1 - k^*}{k^*} \cdot \frac{j+i}{\text{num\_layers}}} \right\rfloor \right)$
-</p>
+
+$$k_2 = \max\left(k^*, \left\lfloor \frac{k_1}{1 + \frac{k_1 - k^*}{k^*} \cdot \frac{j+i}{\text{num\_layers}}} \right\rfloor \right)$$
+
 
 $k^*$ here indicates a lower bound on the size our pruned vocabulary matrix $\tilde{\textbf{W}}_{j+i+1}$ can reach. This function has been chosen based on Figure 1a, hence to be robust against the worst case scenario among all datasets and models. The function we defined here above approximates the decaying in ranking of the top-k token in that case. The efficiency gain is, in theory, even more prominent than in the case of fixed pruning.
 
