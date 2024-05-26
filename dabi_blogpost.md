@@ -308,13 +308,29 @@ As explained in section 4.1, pruning was introduced to speed-up the softmax appr
 
 Lastly, we highlight that the difference in results between Figures 4, 5, and Figures 8, 9 are due to the different number of samples we perform evaluation on. While in section 4.2 we use the whole dataset, here we only employ 100 samples due to compute constraints. However, in both cases, our results are consistent both in terms of performance and FLOPs reduction.
 
-(a) F1 Metric (b) FLOPs per sample
+<p align='center'>
+<img src="./blogpost_images/plots/finalf1qa.png" alt="F1 Metric for T5-Large and T5-Finetuned with JSD base, Softmax Base, JSD and adaptive and Softmax and fixed." style="width:48%; display:inline-block; margin: 0 2.5%;" />
+</p>
+<p align='center'><b>F1 Metric</b> for T5-Large and T5-Finetuned with <i>JSD base</i>, <i>Softmax Base</i>, <i>JSD and adaptive</i> and <i>Softmax and fixed</i>.</p>
 
-**Figure 8: Performance on Question-Answering Task. Comparison of model performance in terms of F1 score and the amount of FLOPs generated per sample. The minimum exit layer was set to 7 for T5-Large and 2 for T5-Large Finetuned, with the confidence set at 0.9 for both. Results are reported across 100 samples on SQuAD.**
+<p align='center'>
+<img src="./blogpost_images/plots/qa_no_log.png" alt="FLOPs per sample for T5-Large and T5-Finetuned with JSD base, Softmax Base, JSD and adaptive and Softmax and fixed." style="width:48%; display:inline-block; margin: 0 2.5%;" />
+</p>
+<p align='center'><b>FLOPs per sample</b> for T5-Large and T5-Finetuned with <i>JSD base</i>, <i>Softmax Base</i>, <i>JSD and adaptive</i> and <i>Softmax and fixed</i>.</p>
 
-(a) Rouge-L Metric (b) FLOPs per sample
+<p align='center'><b>Performance on Question-Answering Task</b>: Comparison of model performance in terms of F1 score and the amount of FLOPs generated per sample. The minimum exit layer was set to 7 for T5-Large and 2 for T5-Large Finetuned, with the confidence set at 0.9 for both. Results are reported across 100 samples on SQuAD.</p>
 
-**Figure 9: Performance on Summarization Task. Comparison of model performance in terms of ROUGE-L score and the amount of FLOPs generated per sample. The minimum exit layer was set to 19 across both T5-Large and T5-Large Finetuned, with the confidence set at 0.9 for both. Results are reported across 100 samples on SamSum.**
+<p align='center'>
+<img src="./blogpost_images/plots/rouge_final.png" alt="Rouge-L Metric for T5-Large and T5-Finetuned with JSD base, Softmax Base, JSD and adaptive and Softmax and fixed." style="width:48%; display:inline-block; margin: 0 2.5%;" />
+</p>
+<p align='center'><b>Rouge-L Metric</b> for T5-Large and T5-Finetuned with <i>JSD base</i>, <i>Softmax Base</i>, <i>JSD and adaptive</i> and <i>Softmax and fixed</i>.</p>
+
+<p align='center'>
+<img src="./blogpost_images/plots/sam_no_log.png" alt="FLOPs per sample for T5-Large and T5-Finetuned with JSD base, Softmax Base, JSD and adaptive and Softmax and fixed." style="width:48%; display:inline-block; margin: 0 2.5%;" />
+</p>
+<p align='center'><b>FLOPs per sample</b> for T5-Large and T5-Finetuned with <i>JSD base</i>, <i>Softmax Base</i>, <i>JSD and adaptive</i> and <i>Softmax and fixed</i>.</p>
+
+<p align='center'><b>Performance on Summarization Task</b>: Comparison of model performance in terms of ROUGE-L score and the amount of FLOPs generated per sample. The minimum exit layer was set to 19 across both T5-Large and T5-Large Finetuned, with the confidence set at 0.9 for both. Results are reported across 100 samples on SamSum.</p>
 
 ## Conclusions
 
