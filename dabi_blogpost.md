@@ -54,7 +54,7 @@ is the linear classifier of block L responsible for mapping back the output of t
 <p align='center'>
 $d_{\text{model}}$ to $d_{\text{vocab}}$.
 </p>
-Our approach incorporates an early-exiting strategy, wherein the generation of the next token can occur at any layer $\ell$ if the computed confidence score $c_\ell$ exceeds a specified threshold $\tau$.
+Our approach incorporates an early-exiting strategy, wherein the generation of the next token can occur at any layer $`\ell`$ if the computed confidence score $`c_\ell`$ exceeds a specified threshold $\tau$.
 
 When an early exit is triggered at layer $`\ell`$, it necessitates updating the key and value pairs in subsequent layers to ensure proper attention mechanisms for future tokens. To efficiently manage this, a state copying technique is employed, where the hidden states from the early-exited layer $`h^{\ell}_{t+1}`$ are duplicated across subsequent layers ($`h^i_{t+1} = h^{\ell}_{t+1}`$ for every $i$ from $\ell + 1$ to $L$). This process maintains computational efficiency and model performance, even in compact - for today's standards - model configurations like T5 models.
 
@@ -65,9 +65,9 @@ When an early exit is triggered at layer $`\ell`$, it necessitates updating the 
 ### Early Exiting Via the Softmax Approach
 
 Our first approach aims to improve a limitation of the Softmax response method introduced by [Schuster et al. (2022)](#confident-adaptive-language-modeling-2022). We denote the final output of layer $\ell$ as
-
-$$\textbf{v}^\ell = \text{Softmax}(\textbf{W}_\ell h^{\ell}_{t})$$
-
+<p align='center'>
+$`\textbf{v}^\ell = \text{Softmax}(\textbf{W}_\ell h^{\ell}_{t})`$
+</p>
 The so-called confidence measure is computed as the difference between the top two values of the probits vector $`\textbf{v}`$, at each layer $\ell$. We denote this measure as $c^{\ell}_{t+1}$. Let us define an early-exit threshold $\tau^{\ell}_{t+1}$ at each layer. If our confidence measure exceeds the early exit-threshold,
 
 $$`c^{\ell}_{t+1} \geq \tau^{\ell}_{t+1}$$
