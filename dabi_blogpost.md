@@ -73,7 +73,9 @@ $\textbf{v}^\ell = \text{Softmax}(\textbf{W}_\ell h^{\ell}_{t})$
 
 The so-called confidence measure is computed as the difference between the top two values of the probits vector $`\textbf{v}`$, at each layer $\ell$. We denote this measure as $`c^{\ell}_{t+1}`$. Let us define an early-exit threshold $\tau^{\ell}_{t+1}$ at each layer. If our confidence measure exceeds the early exit-threshold,
 
-$$c^{\ell}_{t+1} \geq \tau^{\ell}_{t+1}$$
+<p align='center'>
+$`c^{\ell}_{t+1} \geq \tau^{\ell}_{t+1}`$
+<p>
 
 the model exits early, providing us with the prediction for the next token computed at that layer. Otherwise, it continues by going into the next Transformer block. However, the matrix multiplication inside Softmax, i.e., $`\textbf{W}_\ell h^{\ell}_{t}`$ is computationally expensive, especially when iterated over multiple layers. The exact number of computations for the matrix multiplication above corresponds to $d^2_{\text{model}} \times d_{\text{vocab}} \times L$. Hence, if we prune at the first layer the vocabulary size from $d_{\text{vocab}}$ to $k$, the number of computations required will reduce to $d^2_{\text{model}} \times k \times L$.
 
