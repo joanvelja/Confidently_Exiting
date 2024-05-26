@@ -44,9 +44,9 @@ where $\ell$ represents each layer from 1 to $L$, and $h^0_t$ denotes the output
 
 After processing through the $L$-th layer, the prediction for the next token, $\hat{x}_{t+1}$, is produced by
 <p align='center'>
-$`p(\hat{x}_{t+1} \mid x_{< t+1}) = \text{softmax}(\textbf{W}_L h^L_{t})`$
+$p(\hat{x}_{t+1} \mid x_{< t+1}) = \text{softmax}(\textbf{W}_L h^L_{t})$
 </p>
-where $`\textbf{W}_L \in \mathbb{R}^{d_{\text{model}} \times d_{\text{vocab}}}`$ is the linear classifier of block L responsible for mapping back the output of the FNN at that block from $d_{\text{model}}$ to $d_{\text{vocab}}$.
+where $\textbf{W}_L \in \mathbb{R}^{d_{\text{model}} \times d_{\text{vocab}}}$ is the linear classifier of block L responsible for mapping back the output of the FNN at that block from $d_{\text{model}}$ to $d_{\text{vocab}}$.
 
 Our approach incorporates an early-exiting strategy, wherein the generation of the next token can occur at any layer $\ell$ if the computed confidence score $c_\ell$ exceeds a specified threshold $\tau$.
 
