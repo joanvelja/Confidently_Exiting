@@ -137,7 +137,7 @@ $k^*$ here indicates a lower bound on the size our pruned vocabulary matrix $\ti
 
 To summarize, our predicted token is often in the top-k ones, with a high value of $k$. Due to this, pruning the vocabulary matrix allows us to reduce the amount of computations we have to compute at each layer, while discarding only irrelevant tokens. While we trade-off some performance, this further speeds up the runtime of our model, allowing us to obtain notable efficiency gains.
 
-(a) non fine-tuned T5-Large model, SQuAD Dataset (b) fine-tuned T5-Large model, SQuAD Dataset
+![(a) non fine-tuned T5-Large model, SQuAD Dataset](./blogpost_images/plots/boxplot_topk_rank_evalsquad_google-t5_t5-large.png) (b) fine-tuned T5-Large model, SQuAD Dataset
 
 (c) non fine-tuned T5-Large model, SamSum Dataset (d) fine-tuned T5-Large model, SamSum Dataset
 
