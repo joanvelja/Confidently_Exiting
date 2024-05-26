@@ -92,7 +92,7 @@ $\tilde{\textbf{W}}_{j+i} \in \mathbb{R}^{d_{\text{model}} \times k}, \quad \tex
 Hence, we prune our matrix at layer $j+1$, and keep the size fixed to $k$ for all subsequent layers. Theoretically, calculating the ratio between the original number of computations required in the original approach with ours, we get
 
 <p align='center'>
-<img src='./blogpost_images/formulas/002.png' height="70" width="300">
+<img src='./blogpost_images/formulas/002.png' height="70" width="400">
 </p>
 
 which corresponds to an approximate efficiency gain of order
@@ -112,7 +112,7 @@ $\tilde{\textbf{W}}_{j+i} \in \mathbb{R}^{k \times d_{\text{model}}}$.
 Now, instead of keeping the reduced matrix size fixed, we further prune it after every layer. Given the vocabulary matrix $\tilde{\textbf{W}}_{j+i}$ at layer $j+i$ of size $k_1$, we prune it for layer $j+i+1$ to a reduced matrix of size $k_2$, where
 
 <p align='center'>
-<img src='./blogpost_images/formulas/001.png' height="70" width="300">
+<img src='./blogpost_images/formulas/001.png' height="70" width="350">
 </p>
 
 $k^*$ here indicates a lower bound on the size our pruned vocabulary matrix $\tilde{\textbf{W}}_{j+i+1}$ can reach. This function has been chosen based on Figure 1a, hence to be robust against the worst case scenario among all datasets and models. The function we defined here above approximates the decaying in ranking of the top-k token in that case. The efficiency gain is, in theory, even more prominent than in the case of fixed pruning.
