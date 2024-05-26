@@ -91,17 +91,18 @@ $\tilde{\textbf{W}}_{j+i} \in \mathbb{R}^{d_{\text{model}} \times k}, \quad \tex
 
 Hence, we prune our matrix at layer $j+1$, and keep the size fixed to $k$ for all subsequent layers. Theoretically, calculating the ratio between the original number of computations required in the original approach with ours, we get
 
-<p align='center' style='font-size: 36px;'>
+<p align='center'>
 $\frac{d^2_{\text{model}} \times d_{\text{vocab}} \times L}{d^2_{\text{model}} \times k \times (L-j) + d^2_{\text{model}} \times d_{\text{vocab}} \times j}$
 </p>
 
 which corresponds to an approximate efficiency gain of order
 
 <p align='center'>
-$\mathcal{O}\left(\frac{d_{\text{vocab}}}{k} \times (L-j)\right)$$
+$\mathcal{O}\left(\frac{d_{\text{vocab}}}{k} \times (L-j)\right)$
 </p>
 
-**Softmax response via decaying pruning** As one can note from Figure 1b, the rank of the predicted token smoothly decreases across layers, especially for non-fine-tuned models. Again, we prune the $`\textbf{W}_j`$ matrix, given a minimum early exit layer $j$. We retain its top $k$-tokens, obtaining the new pruned vocabulary matrix
+**Softmax response via decaying pruning** 
+As one can note from Figure 1b, the rank of the predicted token smoothly decreases across layers, especially for non-fine-tuned models. Again, we prune the $`\textbf{W}_j`$ matrix, given a minimum early exit layer $j$. We retain its top $k$-tokens, obtaining the new pruned vocabulary matrix
 
 <p align='center'>
 $\tilde{\textbf{W}}_{j+i} \in \mathbb{R}^{k \times d_{\text{model}}}$.
