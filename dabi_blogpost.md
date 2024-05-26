@@ -275,13 +275,18 @@ Results from Figure 6 show Weighted contrastive decoding achieving comparable av
 
 Evaluation on SamSum dataset, Figure 7, shows even more impressive results. While weighted contrastive decoding is on par with softmax baseline, the Jensen-Shannon Divergence (JSD) confidence measure is exiting even earlier on average with an impressive 2.9 block difference gain on average with softmax. Additionally, JSD is notably attaining almost a 10% increase in Rouge-L performance on exit-layer 17.
 
-(a) Average Exit Block (b) F1 Accuracy
+<p align='center'>
+<img src="./blogpost_images/plots/sam_avg.png" alt="Average Exit Block" style="width:48%; display:inline-block; margin: 0 2.5%;" />
+</p>
+<p align='center'>Average Exit Block</p>
 
-**Figure 6: SQuAD Average Exit and F1. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SQuAD dataset.**
+<p align='center'>
+<img src="./blogpost_images/plots/sam_rouge.png" alt="Rouge-L Accuracy" style="width:48%; display:inline-block; margin: 0 2.5%;" />
+</p>
+<p align='center'>Rouge-L Accuracy</p>
 
-(a) Average Exit Block (b) Rouge-L Accuracy
+<p align='center'><b>SamSum Average Exit and Rouge-L</b>. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SamSum dataset.</p>
 
-**Figure 7: SamSum Average Exit and Rouge-L. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SamSum dataset.**
 
 ### Speedup and Contrastive Decoding
 
