@@ -298,7 +298,14 @@ First, we perform a series of experiments aimed at understanding the best possib
 
 Following the argument of Section 4.4, we consider the most informative minimum exit layers to be the highest ones, meaning 15, 17, 18, 19, 20. Keeping this in mind, Table 1 represents the mean exit layer and performance averaged across these minimum exit layer parameters. We note how the adaptive pruning strategy consistently beats fixed and decaying, especially on earlier exiting, with an average gain of 1.2 blocks against fixed on SamSum. The only exception is the fixed pruning achieving the highest Rouge-L score in SamSum. For these reasons, we choose adaptive to be the most fitting pruning method in combination with Jensen-Shannon Divergence (JSD) confidence measure. We defer to Appendix A a series of detailed plots with all minimum exit layers in this setting.
 
-**Table 1: JSD with pruning. Comparison Across different pruning methodologies applied to Jensen-Shannon Divergence (JSD) confidence measure. The values in the table are the mean of exit/performance over the last 4 early minimum exit layer ± their standard deviation.**
+| **Model**                | **SQuAD Avg Exit** | **SQuAD F1 Score** | **SamSum Avg Exit** | **SamSum Rouge-L Score** |
+|--------------------------|--------------------|--------------------|---------------------|--------------------------|
+| JSD fixed pruning        | 19.36 ± 0.66       | 94.18 ± 4.58       | 21.02 ± 0.17        | **22.12** ± 0.31         |
+| JSD decaying pruning     | 19.45 ± 0.58       | 93.03 ± 4.83       | 19.82 ± 0.92        | 21.71 ± 0.47             |
+| **JSD adaptive pruning** | **19.31** ± 0.70   | **94.19** ± 4.58   | **19.78** ± 0.95    | 21.82 ± 0.38             |
+
+**Table 1: JSD with pruning**. Comparison Across different pruning methodologies applied to Jensen-Shannon Divergence (JSD) confidence measure. The values in the table are the mean of exit/performance over the last 4 early minimum exit layer ± their standard deviation.
+
 
 #### Comparison with Baseline Models
 
