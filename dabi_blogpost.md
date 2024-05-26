@@ -12,9 +12,9 @@ To address this limitation, we propose two-fold improvements over the existing e
 
 Concretely, we assume we are given a set $S := \{\{P_i\}^n_{i=1} \in \mathcal{P}^n\}$ of independent and identically distributed (i.i.d.) prompts, each belonging to different tasks (summarization, machine translation, question-answering). We allow $P_{test}$ be an i.i.d. test prompt to our LLM, where $Y_{early} := LM_{early}(P_{test})$ and $Y_{full} := LLM_{full}(P_{test})$ are the early exiting and standard outputs of our LLM, respectively. In order to be satisfied with $Y_{early}$, we require it to be both textually consistent - i.e., to be sensical, accurate to a constant - and to have a smaller decoding runtime with respect to $Y_{full}$. To formalize our framework, we thus provide the following constraint:
 
-```
+$$
 \mathbb{P}\left(\mathbb{E}\left[\mathcal{D} \left( Y_{\text{early}}, Y_{\text{full}}\right)\right] \leq \delta \right) \geq 1 - \epsilon
-```
+$$
 
 Constraining on textual consistency with the original $Y_{full}$, however, can be cumbersome for most tasks: in summarization, for example, multiple generations may be acceptable; or in question-answering, writing a date in different formats may cause inconsistencies with the ground truth. Within Eq. (1), the goal of our work is to find the most computationally efficient $Y_{early}$, that is, generations that exit as early as possible while still maintaining our desired performance guarantees.
 
@@ -38,13 +38,13 @@ This research paper is based on the Early-Exit Framework introduced by Schuster 
 
 The Transformer network, introduced by Vaswani et al. (2017), is structured into $L$ layers, each comprising two distinct sublayers: the Multi-Head Attention (MHA) layer and the Feed-Forward Network (FFN) layer. Within this framework, updates to the residual stream for a subsequent prediction are carried out via the following recursive formula:
 
-```h^\ell_t = \text{Transformer}^\ell(h^{\ell-1}_t)```
+$$h^\ell_t = \text{Transformer}^\ell(h^{\ell-1}_t)$$
 
 where $\ell$ represents each layer from 1 to $L$, and $h^0_t$ denotes the output of the embedding layer $`\textbf{W}_E`$. The embedding layer $`\textbf{W}_E \in \mathbb{R}^{d_{\text{vocab}} \times d_{\text{model}}}`$, transforms the tokens $y_{1:t}$ having size $d_{\text{vocab}}$, into dense vector representations sized $d_{\text{model}}$.
 
 After processing through the $L$-th layer, the prediction for the next token, $\hat{x}_{t+1}$, is produced by
 
-````p(\hat{x}_{t+1} \mid x_{<t+1}) = \text{softmax}(\textbf{W}_L h^L_{t})```
+$$p(\hat{x}_{t+1} \mid x_{<t+1}) = \text{softmax}(\textbf{W}_L h^L_{t})$$
 where $`\textbf{W}_L \in \mathbb{R}^{d_{\text{model}} \times d_{\text{vocab}}}`$ is the linear classifier of block L responsible for mapping back the output of the FNN at that block from $d_{\text{model}}$ to $d_{\text{vocab}}$.
 
 Our approach incorporates an early-exiting strategy, wherein the generation of the next token can occur at any layer $\ell$ if the computed confidence score $c_\ell$ exceeds a specified threshold $\tau$.
@@ -59,11 +59,11 @@ When an early exit is triggered at layer $\ell$, it necessitates updating the ke
 
 Our first approach aims to improve a limitation of the Softmax response method introduced by Schuster et al. (2022). We denote the final output of layer $\ell$ as
 
-```\bm{v}^\ell = \text{Softmax}(\textbf{W}_\ell h^{\ell}_{t})```
+$$\bm{v}^\ell = \text{Softmax}(\textbf{W}_\ell h^{\ell}_{t})$$
 
 The so-called confidence measure is computed as the difference between the top two values of the probits vector $\bm{v}$, at each layer $\ell$. We denote this measure as $c^{\ell}_{t+1}$. Let us define an early-exit threshold $\tau^{\ell}_{t+1}$ at each layer. If our confidence measure exceeds the early exit-threshold,
 
-````c^{\ell}_{t+1} \geq \tau^{\ell}_{t+1}```
+$$c^{\ell}_{t+1} \geq \tau^{\ell}_{t+1}$$
 the model exists early, providing us with the prediction for the next token computed at that layer. Otherwise, it continues by going into the next Transformer block. However, the matrix multiplication inside Softmax, i.e. $`\textbf{W}_\ell h^{\ell}_{t}`$ is computationally expensive, especially when iterated over multiple layers. The exact number of computations for the matrix multiplication above corresponds to $d^2_{\text{model}} \times d_{\text{vocab}} \times L$. Hence, if we prune at the first layer the vocabulary size from $d_{\text{vocab}}$ to $k$, the number of computations required will reduce to $d^2_{\text{model}} \times k \times L$.
 
 Note that $`\textbf{W}_\ell \in \mathbb{R}^{d_{\text{vocab}} \times d_{\text{model}}}`$, where $d_{\text{vocab}} \approx 32,000$ is our vocabulary size, and $d_{\text{model}}$ is equal to the size of the last hidden representation of our FNN. Both parameters are on a scaling upwards trend in SOTA architectures. We note and argue that most of these computations are redundant, and potentially not necessary for some tasks, in line with the literature. In Figure 1, we show the boxplots for the rank of the final predicted token at each layer, across not fine-tuned and fine-tuned models, for two different datasets. The main takeaway from these images is that the final predicted token is often already highly ranked from the first few layers of our model. This behavior is more explicit in Figures 1b and 1d, where we use fine-tuned models for our downstream tasks. On the other hand, confidence alone can be a deceiving measure. LLMs can be overconfident in the first layers, causing the model to exit prematurely. Our desiderata is for the model to be confident at the same time when its prediction has a high accuracy, that is, to be calibrated. However, we interestingly note that such behavior is rarely observed at early layers. In Figures 2 and 3, we see the accuracy and the confidence across each layer. The model in the first layers presents an anomalously high confidence, while its performance is still poor. Early exiting only based on the Softmax response would result in bad performance. We decide to set a minimum exit layer parameter $j$, which forces the model to consider exiting only after this layer. Note that this parameter is highly dependent on the model and dataset one experiments on. For fine-tuned models for example, one expects this parameter to be smaller.
@@ -72,20 +72,20 @@ Motivated by these findings, we introduce three additional modifications to the 
 
 **Softmax response via fixed pruning** After the minimum early exit layer $j$, we prune $`\textbf{W}_j`$, retaining its top-$k$ tokens in the new unembedding matrix. We define the size of the new pruned matrix as
 
-```\tilde{\textbf{W}}_{j+i} \in \mathbb{R}^{d_{\text{model}} \times k}, \quad \textrm{for} \quad i = 1, \ldots, L-j \quad \textrm{and} \quad k \ll d_{\text{vocab}}
-```
+$$\tilde{\textbf{W}}_{j+i} \in \mathbb{R}^{d_{\text{model}} \times k}, \quad \textrm{for} \quad i = 1, \ldots, L-j \quad \textrm{and} \quad k \ll d_{\text{vocab}}
+$$
 Hence, we prune our matrix at layer $j+1$, and keep the size fixed to $k$ for all subsequent layers. Theoretically, calculating the ratio between the original number of computations required in the original approach with ours, we get
 
-```\frac{d^2_{\text{model}} \times d_{\text{vocab}} \times L}{d^2_{\text{model}} \times k \times (L-j) + d^2_{\text{model}} \times d_{\text{vocab}} \times j }
-```
+$$\frac{d^2_{\text{model}} \times d_{\text{vocab}} \times L}{d^2_{\text{model}} \times k \times (L-j) + d^2_{\text{model}} \times d_{\text{vocab}} \times j }
+$$
 which corresponds to an approximate efficiency gain of order
 
-```\mathcal{O}\left(\frac{d_{\text{vocab}}}{k} \times (L-j)\right)
-```
+$$\mathcal{O}\left(\frac{d_{\text{vocab}}}{k} \times (L-j)\right)
+$$
 **Softmax response via decaying pruning** As one can note from Figure 1b, the rank of the predicted token smoothly decreases across layers, especially for non-fine-tuned models. Again, we prune the $`\textbf{W}_j`$ matrix, given a minimum early exit layer $j$. We retain its top $k$-tokens, obtaining the new pruned vocabulary matrix $\tilde{\textbf{W}}_{j+i} \in \mathbb{R}^{k \times d_{\text{model}}}$. Now, instead of keeping the reduced matrix size fixed, we further prune it after every layer. Given the vocabulary matrix $\tilde{\textbf{W}}_{j+i}$ at layer $j+i$ of size $k_1$, we prune it for layer $j+i+1$ to a reduced matrix of size $k_2$, where
 
-```k_2 = \max\left(k^*, \left\lfloor \frac{k_1}{1 + \frac{k_1 - k^*}{k^*} \cdot \frac{j+i}{\text{num\_layers}}} \right\rfloor \right)
-```
+$$k_2 = \max\left(k^*, \left\lfloor \frac{k_1}{1 + \frac{k_1 - k^*}{k^*} \cdot \frac{j+i}{\text{num\_layers}}} \right\rfloor \right)
+$$
 $k^*$ here indicates a lower bound on the size our pruned vocabulary matrix $\tilde{\textbf{W}}_{j+i+1}$ can reach. This function has been chosen based on Figure 1a, hence to be robust against the worst case scenario among all datasets and models. The function we defined here above approximates the decaying in ranking of the top-$k$ token in that case. The efficiency gain is, in theory, even more prominent than in the case of fixed pruning.
 
 **Softmax response via adaptive pruning**
@@ -108,31 +108,31 @@ The second approach (Figure 4) is based on results from Li et al. (2023). The af
 
 Following Li et al. (2023), we first implement the CD adaptive plausibility constraint, $\nu_{\text{head}}(x_{<t})$, defined by:
 
-```
+$$
 \nu_{\text{head}}(x_{<t}) = \{x_t \in V : p_{\text{EXP}}(x_t|x_{<t}) \geq \alpha \max_{x'_t \in V} p_{\text{EXP}}(x'_t|x_{<t})\}
-```
+$$
 
 It’s important to recognize that smaller LMs, despite their limitations, do reliably capture basic elements of English grammar and essential common sense principles, such as subject-verb agreement. Therefore, applying the CD objective indiscriminately could inadvertently penalize these correct linguistic behaviors, leading to false negatives. Similarly, it might also erroneously reward implausible token choices, resulting in false positives. To address these potential pitfalls, we incorporate the aforementioned plausibility constraint into our framework. Given a preceding context $x_{<t}$, this constraint selects a subset of plausible next tokens, out of the vocabulary $V$, whose probabilities are above a threshold. The threshold is a fraction $\alpha$ of the probability of the token with the highest probability in the vocabulary. The hyperparameter $\alpha$ is in the range $[0, 1]$, and it is set by the authors of the original work to 0.1 without any explanation about the heuristic assumption. What we found in our experiments, instead, is that setting this parameter to 0.1 leads to overconfidence. For this reason, we thus propose a different way to address the parameter, not requiring tuning and taking into account the notion of confidence we already calculate for the purpose of EE. We therefore propose a hyperbolic decaying schedule for $\alpha$ defined as follows:
 
-```
+$$
 \alpha' = \left(\frac{\alpha}{1 + \text{decay rate} \times \ell}\right) \times (1 - \text{confidence})
-```
+$$
 
 The intuition for this is that we want to combine the decay of the threshold over iterations with the confidence of the predictions, allowing for a more relaxed threshold as confidence increases and iterations progress. Formally, to translate the concept of CD into a practical application, we introduce a contrastive objective, called Log Contrastive Difference (LCD), defined as:
 
-```
+$$
 p_{\text{LCD}}(x_t | x_{<t}) = \text{Softmax}\left(\log \frac{p_{\text{EXP}}(x_t | x_{<t})}{p_{\text{AMA}}(x_t | x_{<t})}\right)
-```
+$$
 
 This CD objective is designed to promote text patterns that are preferred by the larger, expert LMs and discourage those that are typically produced by the smaller, amateur LMs. It works in tandem with the plausibility constraint, to ensure that the penalization of amateur behaviors does not disregard grammatically correct and sensible language constructs. By doing this, we aim to refine the CD approach, enabling it to differentiate effectively between undesirable simplicity and necessary linguistic accuracy, thus avoiding common errors in model-generated text. Thus the final distribution will be:
 
-```
+$$
 p_{\text{DCD}}(x_t | x_{<t}) =
 \begin{cases}
 p_{\text{LCD}}(x_t | x_{<t}) & \text{if} \ x_t \in V_{\text{head}}(x_{<t}) \\
 p_{\text{EXP}}(x_t | x_{<t}) & \text{otherwise}
 \end{cases}
-```
+$$
 
 We take the original approach by Li et al. (2023) a step further: instead of running inference on parallel models, thus requiring significant compute overhead, we substitute the amateur, smaller model by proxying it with the distribution obtained at earlier layers of the attention stack, and the expert model distribution with the layer $\ell$ we find ourselves at. This intuition is aligned with findings by Elbayad et al. (2019) and Geva et al. (2021; 2022). One question that arises naturally from this idea is previous layer selection.
 
