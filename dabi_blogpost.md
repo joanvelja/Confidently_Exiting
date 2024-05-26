@@ -20,11 +20,11 @@ To address this issue, early-exiting mechanisms ([Teerapittayanon et al., 2016](
 To address this limitation, we propose two-fold improvements over the existing early-exit literature, in a way that enables both efficient and qualitative intermediate layer decoding.
 
 Concretely, we assume we are given a set $S := \{\{P_i\}^n_{i=1} \in \mathcal{P}^n\}$ of independent and identically distributed (i.i.d.) prompts, each belonging to different tasks (summarization, machine translation, question-answering). We allow $P_{test}$ be an i.i.d. test prompt to our LLM, where $Y_{early} := LM_{early}(P_{test})$ and $Y_{full} := LLM_{full}(P_{test})$ are the early exiting and standard outputs of our LLM, respectively. In order to be satisfied with $Y_{early}$, we require it to be both textually consistent - i.e., to be sensical, accurate to a constant - and to have a smaller decoding runtime with respect to $Y_{full}$. To formalize our framework, we thus provide the following constraint:
-<div class="center">
-\(
-\displaystyle\mathbb{P}\left(\mathbb{E}\left[\mathcal{D} \left( Y_{\text{early}}, Y_{\text{full}}\right)\right] \leq \delta \right) \geq 1 - \epsilon
-\)
-</div>
+
+$$
+\mathbb{P}\left(\mathbb{E}\left[\mathcal{D} \left( Y_{\text{early}}, Y_{\text{full}}\right)\right] \leq \delta \right) \geq 1 - \epsilon
+$$
+
 Constraining on textual consistency with the original $`Y_{full}`$, however, can be cumbersome for most tasks: in summarization, for example, multiple generations may be acceptable; or in question-answering, writing a date in different formats may cause inconsistencies with the ground truth. Within Eq. (1), the goal of our work is to find the most computationally efficient $Y_{early}$, that is, generations that exit as early as possible while still maintaining our desired performance guarantees.
 
 In this work, we analyze the early exiting paradigm for LLMs, and present a principled method for increasing model efficiency while remaining confident in the quality of the resulting predictions. Our preliminary analysis covers challenges associated with the early-exiting framework. First, we study a phenomenon of non-finetuned LMs, where the confidence at early layers is deemed to be high, but where accuracy is not satisfactory, thus resulting in poor calibration ([Mielke et al., 2022](#reducing-overconfidence-2022); [Band et al., 2024](#linguistic-calibration-2024)). This gives us grounds to experiment with some heuristics for the minimum exit layer. Second, we provide a comparative analysis of finetuned versus non-finetuned LMs on a per-task basis, where we provide evidence of further attainable speedups under the finetuned regime. Specifically, drawing from [Schuster et al. (2022)](#confident-adaptive-language-modeling-2022), we develop a method for calibrating local, per-token, exit decisions such that global, sequence-level constraints — as determined by lexical or semantic sequence-level metrics like ROUGE score — are provably maintained with arbitrarily high probability (e.g., 95%). Moreover, in order to offset the decrease in performance, we leverage within-model contrastive decoding ([Li et al., 2023](#contrastive-decoding-2023)), attaining a pareto improvement over runtime and performance.
