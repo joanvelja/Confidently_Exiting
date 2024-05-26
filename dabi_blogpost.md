@@ -44,7 +44,7 @@ where $\ell$ represents each layer from 1 to $L$, and $h^0_t$ denotes the output
 
 After processing through the $L$-th layer, the prediction for the next token, $\hat{x}_{t+1}$, is produced by
 
-$`p(\hat{x}_{t+1} \mid x_{\\let+1}) = \text{softmax}(\textbf{W}_L h^L_{t})`$
+$`p(\hat{x}_{t+1} \mid x_{\< t+1}) = \text{softmax}(\textbf{W}_L h^L_{t})`$
 
 where $`\textbf{W}_L \in \mathbb{R}^{d_{\text{model}} \times d_{\text{vocab}}}`$ is the linear classifier of block L responsible for mapping back the output of the FNN at that block from $d_{\text{model}}$ to $d_{\text{vocab}}$.
 
@@ -72,10 +72,10 @@ Note that $`\textbf{W}_\ell \in \mathbb{R}^{d_{\text{vocab}} \times d_{\text{mod
 
 Motivated by these findings, we introduce three additional modifications to the Softmax response approach.
 
-**Softmax response via fixed pruning** After the minimum early exit layer $j$, we prune $`\textbf{W}_j`$, retaining its top-$k$ tokens in the new unembedding matrix. We define the size of the new pruned matrix as
+**Softmax response via fixed pruning** After the minimum early exit layer $j$, we prune $`\textbf{W}_j`$, retaining its top-k tokens in the new unembedding matrix. We define the size of the new pruned matrix as
 
-$$\tilde{\textbf{W}}_{j+i} \in \mathbb{R}^{d_{\text{model}} \times k}, \quad \textrm{for} \quad i = 1, \ldots, L-j \quad \textrm{and} \quad k \ll d_{\text{vocab}}
-$$
+$`\tilde{\textbf{W}}_{j+i} \in \mathbb{R}^{d_{\text{model}} \times k}, \quad \textrm{for} \quad i = 1, \ldots, L-j \quad \textrm{and} \quad k \ll d_{\text{vocab}}
+`$
 
 Hence, we prune our matrix at layer $j+1$, and keep the size fixed to $k$ for all subsequent layers. Theoretically, calculating the ratio between the original number of computations required in the original approach with ours, we get
 
@@ -112,13 +112,13 @@ To summarize, our predicted token is often in the top-$k$ ones, with a high valu
 
 The second approach (Figure 4) is based on results from Li et al. (2023). The aforementioned work proposes contrastive decoding (CD) as a search-based decoding method. This is inspired by the fact that the failures of larger LMs, e.g., repetition, incoherence, are even more prevalent in smaller LMs. By contrasting outputs of smaller LMs with larger ones the impact of the aforementioned failure reduces as a consequence. In more detail, even when both types of models agree on a high-probability token—frequently a repetitive one—, expert models tend to distribute a significant portion of the probability across a variety of other plausible, non-repetitive token options. This behavior underlines the understanding of language contexts by the expert models, reflecting their ability to consider a broader array of potential continuations. By effectively sidelining these sub-optimal behaviors, CD leverages the more sophisticated predictive capabilities of the larger models. The core goal of this method is to refine the output text by filtering through the lens of larger models, retaining only their superior, diverse linguistic predictions while excluding the limitations typically exhibited by smaller models. This results in text generation that not only avoids redundancy but also enriches the content quality, aligning it to human-like language. The original implementation involves the use of two models in parallel, returning the difference between the probits $p_{\text{EXP}}$ of a large LM - called the expert - and the probits $p_{\text{AMA}}$ of a small LM - called the amateur.
 
-Following Li et al. (2023), we first implement the CD adaptive plausibility constraint, $`\nu_{\text{head}}(x_{\let})`$, defined by:
+Following Li et al. (2023), we first implement the CD adaptive plausibility constraint, $`\nu_{\text{head}}(x_{< t})`$, defined by:
 
 $`
-\nu_{\text{head}}(x_{\let}) = \{x_t \in V : p_{\text{EXP}}(x_t|x_{\let}) \geq \alpha \max_{x'_t \in V} p_{\text{EXP}}(x'_t|x_{\let})\}
+\nu_{\text{head}}(x_{< t}) = \{x_t \in V : p_{\text{EXP}}(x_t|x_{< t}) \geq \alpha \max_{x'_t \in V} p_{\text{EXP}}(x'_t|x_{< t})\}
 `$
 
-It’s important to recognize that smaller LMs, despite their limitations, do reliably capture basic elements of English grammar and essential common sense principles, such as subject-verb agreement. Therefore, applying the CD objective indiscriminately could inadvertently penalize these correct linguistic behaviors, leading to false negatives. Similarly, it might also erroneously reward implausible token choices, resulting in false positives. To address these potential pitfalls, we incorporate the aforementioned plausibility constraint into our framework. Given a preceding context $`x_{\let}`$, this constraint selects a subset of plausible next tokens, out of the vocabulary $V$, whose probabilities are above a threshold. The threshold is a fraction $\alpha$ of the probability of the token with the highest probability in the vocabulary. The hyperparameter $\alpha$ is in the range $[0, 1]$, and it is set by the authors of the original work to 0.1 without any explanation about the heuristic assumption. What we found in our experiments, instead, is that setting this parameter to 0.1 leads to overconfidence. For this reason, we thus propose a different way to address the parameter, not requiring tuning and taking into account the notion of confidence we already calculate for the purpose of EE. We therefore propose a hyperbolic decaying schedule for $\alpha$ defined as follows:
+It’s important to recognize that smaller LMs, despite their limitations, do reliably capture basic elements of English grammar and essential common sense principles, such as subject-verb agreement. Therefore, applying the CD objective indiscriminately could inadvertently penalize these correct linguistic behaviors, leading to false negatives. Similarly, it might also erroneously reward implausible token choices, resulting in false positives. To address these potential pitfalls, we incorporate the aforementioned plausibility constraint into our framework. Given a preceding context $`x_{< t}`$, this constraint selects a subset of plausible next tokens, out of the vocabulary $V$, whose probabilities are above a threshold. The threshold is a fraction $\alpha$ of the probability of the token with the highest probability in the vocabulary. The hyperparameter $\alpha$ is in the range $[0, 1]$, and it is set by the authors of the original work to 0.1 without any explanation about the heuristic assumption. What we found in our experiments, instead, is that setting this parameter to 0.1 leads to overconfidence. For this reason, we thus propose a different way to address the parameter, not requiring tuning and taking into account the notion of confidence we already calculate for the purpose of EE. We therefore propose a hyperbolic decaying schedule for $\alpha$ defined as follows:
 
 $$
 \alpha' = \left(\frac{\alpha}{1 + \text{decay rate} \times \ell}\right) \times (1 - \text{confidence})
@@ -127,22 +127,22 @@ $$
 The intuition for this is that we want to combine the decay of the threshold over iterations with the confidence of the predictions, allowing for a more relaxed threshold as confidence increases and iterations progress. Formally, to translate the concept of CD into a practical application, we introduce a contrastive objective, called Log Contrastive Difference (LCD), defined as:
 
 $`
-p_{\text{LCD}}(x_t | x_{\let}) = \text{Softmax}\left(\log \frac{p_{\text{EXP}}(x_t | x_{\let})}{p_{\text{AMA}}(x_t | x_{\let})}\right)
+p_{\text{LCD}}(x_t | x_{< t}) = \text{Softmax}\left(\log \frac{p_{\text{EXP}}(x_t | x_{< t})}{p_{\text{AMA}}(x_t | x_{< t})}\right)
 `$
 
 This CD objective is designed to promote text patterns that are preferred by the larger, expert LMs and discourage those that are typically produced by the smaller, amateur LMs. It works in tandem with the plausibility constraint, to ensure that the penalization of amateur behaviors does not disregard grammatically correct and sensible language constructs. By doing this, we aim to refine the CD approach, enabling it to differentiate effectively between undesirable simplicity and necessary linguistic accuracy, thus avoiding common errors in model-generated text. Thus the final distribution will be:
 
 $`
-p_{\text{DCD}}(x_t | x_{\let}) =
+p_{\text{DCD}}(x_t | x_{< t}) =
 \begin{cases}
-p_{\text{LCD}}(x_t | x_{\let}) & \text{if} \ x_t \in V_{\text{head}}(x_{\let}) \\
-p_{\text{EXP}}(x_t | x_{\let}) & \text{otherwise}
+p_{\text{LCD}}(x_t | x_{< t}) & \text{if} \ x_t \in V_{\text{head}}(x_{< t}) \\
+p_{\text{EXP}}(x_t | x_{< t}) & \text{otherwise}
 \end{cases}
 `$
 
 We take the original approach by Li et al. (2023) a step further: instead of running inference on parallel models, thus requiring significant compute overhead, we substitute the amateur, smaller model by proxying it with the distribution obtained at earlier layers of the attention stack, and the expert model distribution with the layer $\ell$ we find ourselves at. This intuition is aligned with findings by Elbayad et al. (2019) and Geva et al. (2021; 2022). One question that arises naturally from this idea is previous layer selection.
 
-We therefore thought of a simple, yet effective way of addressing this choice. Previous works (Chuang et al., 2024) suggest selection via distance-in-distribution through Jensen-Shannon Divergence. This way, they claim, it is possible to find the most fit amateur layer for the contrastive objective. They do so by contrasting the final distribution against a set of candidate layers for premature layer selection $J$. They divide the layers into 2 to 4 buckets of $J$ based on the total number of layers, relying on a validation set to choose the best bucket for each task. With an Occam’s razor perspective, we claim that the bucketing strategy is suboptimal for several reasons. First, it requires task-specific selection, which is undesirable, given how these models are deployed and utilized by end users, that is, usually, for open-ended generation. Second, bucketing does not address the bias JSD will have towards the lower layers of the distribution. Earlier representations are necessarily more diverse, since the set of plausible tokens for autoregressive generation gets narrower as one goes deeper into the stack. For this reason, we discount the JSD value between two distributions $i, j$ by the layer distance between the two distributions $\ell_j - \ell_i$. By doing this, we are able to capture the layers at which there is a more significant distribution change w.r.t. the layer $\ell_j$ we find ourselves at, thus obtaining meaningful signal from the chosen contrastive distribution. Moreover, in order to avoid computational overhead given by the linear map $\textbf{W}_L$, we only contrast distributions at layer $\ell$ against distributions at layers $m \le \ell_0 \le$, where $j$ is the minimum exit layer parameter introduced in Section 4.1.
+We therefore thought of a simple, yet effective way of addressing this choice. Previous works (Chuang et al., 2024) suggest selection via distance-in-distribution through Jensen-Shannon Divergence. This way, they claim, it is possible to find the most fit amateur layer for the contrastive objective. They do so by contrasting the final distribution against a set of candidate layers for premature layer selection $J$. They divide the layers into 2 to 4 buckets of $J$ based on the total number of layers, relying on a validation set to choose the best bucket for each task. With an Occam’s razor perspective, we claim that the bucketing strategy is suboptimal for several reasons. First, it requires task-specific selection, which is undesirable, given how these models are deployed and utilized by end users, that is, usually, for open-ended generation. Second, bucketing does not address the bias JSD will have towards the lower layers of the distribution. Earlier representations are necessarily more diverse, since the set of plausible tokens for autoregressive generation gets narrower as one goes deeper into the stack. For this reason, we discount the JSD value between two distributions $i, j$ by the layer distance between the two distributions $\ell_j - \ell_i$. By doing this, we are able to capture the layers at which there is a more significant distribution change w.r.t. the layer $\ell_j$ we find ourselves at, thus obtaining meaningful signal from the chosen contrastive distribution. Moreover, in order to avoid computational overhead given by the linear map $\textbf{W}_L$, we only contrast distributions at layer $\ell$ against distributions at layers $m < \ell_0 <$, where $j$ is the minimum exit layer parameter introduced in Section 4.1.
 
 Finally, to get the best of both worlds, we experiment with a mixed approach. The rationale here is that we can substitute the plausibility constraint of CD with the top-$k$ tokens we find with the pruning done for softmax response, thus making what we claim to be a choice as informed as possible.
 
