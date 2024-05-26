@@ -157,17 +157,17 @@ To summarize, our predicted token is often in the top-k ones, with a high value 
 </p>
 <p align='center'>fine-tuned T5-Large model, SamSum Dataset</p>
 
-<p align='center'>Boxplots of the rank of final predicted token at each layer, across 2 different models and 2 different datasets.</p>
+<p align='center'><a id='figure-1'><b>Figure 1:</b></a> Boxplots of the rank of final predicted token at each layer, across 2 different models and 2 different datasets.</p>
 
 
 
 <p align='center'>
 <img src="./blogpost_images/plots/conf_metric_squad_google_t5.png" alt="Confidence vs F1 accuracy. T5-base model, SQuAD dataset" style="width:45%; display:inline-block; margin: 0 2.5%;" /></p>
-<p align='center'>Confidence vs F1 accuracy. T5-base model, SQuAD dataset</p>
+<p align='center'><a id='figure-2'><b>Figure 2:</b></a> Confidence vs F1 accuracy. T5-base model, SQuAD dataset</p>
 
 <p align='center'>
 <img src="./blogpost_images/plots/conf_metric_squad_tuned.png" alt="Confidence vs F1 accuracy. Fine-Tuned model, SQuAD dataset" style="width:45%; display:inline-block; margin: 0 2.5%;" /></p>
-<p align='center'>Confidence vs F1 accuracy. Fine-Tuned model, SQuAD dataset</p>
+<p align='center'><a id='figure-3'><b>Figure 3:</b></a> Confidence vs F1 accuracy. Fine-Tuned model, SQuAD dataset</p>
 
 <p align='center'>Confidence vs F1 accuracy</p>
 
@@ -176,7 +176,7 @@ To summarize, our predicted token is often in the top-k ones, with a high value 
 <p align='center'>
 <img src="./blogpost_images/plots/IMG_0311.JPG" alt="Dynamic Contrastive Decoding: illustration of how we leverage Contrastive Decoding within model layers." style="width:90%; display:inline-block; margin: 0 2.5%;" />
 </p>
-<p align='center'>Dynamic Contrastive Decoding: illustration of how we leverage <i>Contrastive Decoding</i> within model layers.</p>
+<p align='center'><a id='figure-4'><b>Figure 4:</b></a> Dynamic Contrastive Decoding: illustration of how we leverage <i>Contrastive Decoding</i> within model layers.</p>
 
 
 The second approach (Figure 4) is based on results from [Li et al. (2023)](#contrastive-decoding-2023). The aforementioned work proposes contrastive decoding (CD) as a search-based decoding method. This is inspired by the fact that the failures of larger LMs, e.g., repetition, incoherence, are even more prevalent in smaller LMs. By contrasting outputs of smaller LMs with larger ones the impact of the aforementioned failure reduces as a consequence. In more detail, even when both types of models agree on a high-probability token—frequently a repetitive one—, expert models tend to distribute a significant portion of the probability across a variety of other plausible, non-repetitive token options. This behavior underlines the understanding of language contexts by the expert models, reflecting their ability to consider a broader array of potential continuations. By effectively sidelining these sub-optimal behaviors, CD leverages the more sophisticated predictive capabilities of the larger models. The core goal of this method is to refine the output text by filtering through the lens of larger models, retaining only their superior, diverse linguistic predictions while excluding the limitations typically exhibited by smaller models. This results in text generation that not only avoids redundancy but also enriches the content quality, aligning it to human-like language. The original implementation involves the use of two models in parallel, returning the difference between the probits $p_{\text{EXP}}$ of a large LM - called the expert - and the probits $p_{\text{AMA}}$ of a small LM - called the amateur.
@@ -233,7 +233,7 @@ We create our experiments by using the available implementation as a baseline an
 </p>
 <p align='center'><b>FLOPs per sample</b> for T5-Large and T5-Finetuned with <i>No</i>, <i>Fixed</i>, or <i>Decaying</i> reduction applied to the <b>W_j</b> matrix</p>
 
-<p align='center'><b>Performance on Question-Answering Task</b>: Comparison of model performance in terms of F1 score and the amount of FLOPs generated per sample. The minimum exit layer was set to 7 for T5-Large and 2 for T5-Large Finetuned, with the confidence set at 0.9 for both. The amount of FLOPs represents the average from 100 samples and the dataset used is SQuAD.</p>
+<p align='center'><a id='figure-5'><b>Figure 5:</b></a> <b>Performance on Question-Answering Task</b>: Comparison of model performance in terms of F1 score and the amount of FLOPs generated per sample. The minimum exit layer was set to 7 for T5-Large and 2 for T5-Large Finetuned, with the confidence set at 0.9 for both. The amount of FLOPs represents the average from 100 samples and the dataset used is SQuAD.</p>
 
 <p align='center'>
 <img src="./blogpost_images/plots/Final Plot SamSum Rougl.png" alt="Rouge-L for T5-Large and T5-Finetuned with No, Fixed, or Decaying reduction applied to the W_j matrix" style="width:48%; display:inline-block; margin: 0 2.5%;" />
@@ -245,7 +245,7 @@ We create our experiments by using the available implementation as a baseline an
 </p>
 <p align='center'><b>FLOPs per sample</b> for T5-Large and T5-Finetuned with <i>No</i>, <i>Fixed</i>, or <i>Decaying</i> reduction applied to the <b>W_j</b> matrix</p>
 
-<p align='center'><b>Performance on Summarization Task</b>: Comparison of model performance in terms of ROUGE-L score and the amount of FLOPs generated per sample. The minimum exit layer was set to 7 for T5-Large and 2 for T5-Large Finetuned, with the confidence set at 0.9 for both. The amount of FLOPs represents the average from 100 samples. The dataset used is SamSum.</p>
+<p align='center'><a id='figure-6'><b>Figure 6:</b></a> <b>Performance on Summarization Task</b>: Comparison of model performance in terms of ROUGE-L score and the amount of FLOPs generated per sample. The minimum exit layer was set to 7 for T5-Large and 2 for T5-Large Finetuned, with the confidence set at 0.9 for both. The amount of FLOPs represents the average from 100 samples. The dataset used is SamSum.</p>
 
 
 The overall performance displays the following trend: similar performance is achieved across the evaluation metrics, but the amount of FLOPs decreases by a hundredfold for all tasks. Additionally, between fixed and decaying reduction, half of the FLOPs are utilized, but there is a 2% loss in performance. This illustrates the trade-off: choosing a smaller $k$ reduces the number of FLOPs but at the cost of lower performance. Additionally, due to Finetuned models exiting at earlier stages, fewer FLOPs are observed overall. However, the same trade-off can be observed.
@@ -270,7 +270,7 @@ Results from Figure 6 show Weighted contrastive decoding achieving comparable av
 </p>
 <p align='center'>F1 Accuracy</p>
 
-<p align='center'><b>SQuAD Average Exit and F1</b>. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SQuAD dataset.</p>
+<p align='center'><a id='figure-7'><b>Figure 7:</b></a> <b>SQuAD Average Exit and F1</b>. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SQuAD dataset.</p>
 
 
 Evaluation on SamSum dataset, Figure 7, shows even more impressive results. While weighted contrastive decoding is on par with softmax baseline, the Jensen-Shannon Divergence (JSD) confidence measure is exiting even earlier on average with an impressive 2.9 block difference gain on average with softmax. Additionally, JSD is notably attaining almost a 10% increase in Rouge-L performance on exit-layer 17.
@@ -285,7 +285,7 @@ Evaluation on SamSum dataset, Figure 7, shows even more impressive results. Whil
 </p>
 <p align='center'>Rouge-L Accuracy</p>
 
-<p align='center'><b>SamSum Average Exit and Rouge-L</b>. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SamSum dataset.</p>
+<p align='center'><a id='figure-8'><b>Figure 8:</b></a> <b>SamSum Average Exit and Rouge-L</b>. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SamSum dataset.</p>
 
 
 ### Speedup and Contrastive Decoding
@@ -325,7 +325,7 @@ Lastly, we highlight that the difference in results between Figures 4, 5, and Fi
 </p>
 <p align='center'><b>FLOPs per sample</b> for T5-Large and T5-Finetuned with <i>JSD base</i>, <i>Softmax Base</i>, <i>JSD and adaptive</i> and <i>Softmax and fixed</i>.</p>
 
-<p align='center'><b>Performance on Question-Answering Task</b>: Comparison of model performance in terms of F1 score and the amount of FLOPs generated per sample. The minimum exit layer was set to 7 for T5-Large and 2 for T5-Large Finetuned, with the confidence set at 0.9 for both. Results are reported across 100 samples on SQuAD.</p>
+<p align='center'><a id='figure-9'><b>Figure 9:</b></a> <b>Performance on Question-Answering Task</b>: Comparison of model performance in terms of F1 score and the amount of FLOPs generated per sample. The minimum exit layer was set to 7 for T5-Large and 2 for T5-Large Finetuned, with the confidence set at 0.9 for both. Results are reported across 100 samples on SQuAD.</p>
 
 <p align='center'>
 <img src="./blogpost_images/plots/rouge_final.png" alt="Rouge-L Metric for T5-Large and T5-Finetuned with JSD base, Softmax Base, JSD and adaptive and Softmax and fixed." style="width:48%; display:inline-block; margin: 0 2.5%;" />
@@ -337,7 +337,7 @@ Lastly, we highlight that the difference in results between Figures 4, 5, and Fi
 </p>
 <p align='center'><b>FLOPs per sample</b> for T5-Large and T5-Finetuned with <i>JSD base</i>, <i>Softmax Base</i>, <i>JSD and adaptive</i> and <i>Softmax and fixed</i>.</p>
 
-<p align='center'><b>Performance on Summarization Task</b>: Comparison of model performance in terms of ROUGE-L score and the amount of FLOPs generated per sample. The minimum exit layer was set to 19 across both T5-Large and T5-Large Finetuned, with the confidence set at 0.9 for both. Results are reported across 100 samples on SamSum.</p>
+<p align='center'><a id='figure-10'><b>Figure 10:</b></a> <b>Performance on Summarization Task</b>: Comparison of model performance in terms of ROUGE-L score and the amount of FLOPs generated per sample. The minimum exit layer was set to 19 across both T5-Large and T5-Large Finetuned, with the confidence set at 0.9 for both. Results are reported across 100 samples on SamSum.</p>
 
 ## Conclusions
 
@@ -420,7 +420,7 @@ Lastly, we highlight that the difference in results between Figures 4, 5, and Fi
 </p>
 <p align='center'>F1 Accuracy</p>
 
-<p align='center'><b>Contrastive Decoding Average Exit and F1</b>. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SQuAD dataset.</p>
+<p align='center'><a id='figure-11'><b>Figure 11:</b></a> <b>Contrastive Decoding Average Exit and F1</b>. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SQuAD dataset.</p>
 
 <p align='center'>
 <img src="./blogpost_images/plots/squadexitcd.png" alt="Average Exit Block" style="width:48%; display:inline-block; margin: 0 2.5%;" />
@@ -432,7 +432,7 @@ Lastly, we highlight that the difference in results between Figures 4, 5, and Fi
 </p>
 <p align='center'>Rouge-L Accuracy</p>
 
-<p align='center'><b>Contrastive Decoding Average Exit and Rouge-L</b>. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SamSum dataset.</p>
+<p align='center'><a id='figure-12'><b>Figure 12:</b></a> <b>Contrastive Decoding Average Exit and Rouge-L</b>. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SamSum dataset.</p>
 
 <p align='center'>
 <img src="./blogpost_images/plots/finalqaexit.png" alt="Average Exit Block" style="width:48%; display:inline-block; margin: 0 2.5%;" />
@@ -444,7 +444,7 @@ Lastly, we highlight that the difference in results between Figures 4, 5, and Fi
 </p>
 <p align='center'>F1 Accuracy</p>
 
-<p align='center'><b>SQuAD: Baselines vs Adaptive</b>. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SQuAD dataset.</p>
+<p align='center'><a id='figure-13'><b>Figure 13:</b></a> <b>SQuAD: Baselines vs Adaptive</b>. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SQuAD dataset.</p>
 
 <p align='center'>
 <img src="./blogpost_images/plots/finalsumexit.png" alt="Average Exit Block" style="width:48%; display:inline-block; margin: 0 2.5%;" />
@@ -456,4 +456,4 @@ Lastly, we highlight that the difference in results between Figures 4, 5, and Fi
 </p>
 <p align='center'>Rouge-L Accuracy</p>
 
-<p align='center'><b>SamSum: Baselines vs Adaptive</b>. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SamSum dataset.</p>
+<p align='center'><a id='figure-14'><b>Figure 14:</b></a> <b>SamSum: Baselines vs Adaptive</b>. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SamSum dataset.</p>
