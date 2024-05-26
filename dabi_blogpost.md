@@ -50,10 +50,9 @@ where
 <p align='center'>
 $\textbf{W}_L \in \mathbb{R}^{d_{\text{model}} \times d_{\text{vocab}}}$ 
 </p>
-is the linear classifier of block L responsible for mapping back the output of the FNN at that block from 
-<p align='center'>
-$d_{\text{model}}$ to $d_{\text{vocab}}$.
-</p>
+
+is the linear classifier of block L responsible for mapping back the output of the FNN at that block from $d_{\text{model}}$ to $d_{\text{vocab}}$.
+
 
 Our approach incorporates an early-exiting strategy, wherein the generation of the next token can occur at any layer $`\ell`$ if the computed confidence score $`c_\ell`$ exceeds a specified threshold $`\tau`$.
 
