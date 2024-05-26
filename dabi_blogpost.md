@@ -138,24 +138,28 @@ $k^*$ here indicates a lower bound on the size our pruned vocabulary matrix $\ti
 To summarize, our predicted token is often in the top-k ones, with a high value of $k$. Due to this, pruning the vocabulary matrix allows us to reduce the amount of computations we have to compute at each layer, while discarding only irrelevant tokens. While we trade-off some performance, this further speeds up the runtime of our model, allowing us to obtain notable efficiency gains.
 
 <p align='center'>
-
 <img src="./blogpost_images/plots/boxplot_topk_rank_evalsquad_google-t5_t5-large.png" alt="non fine-tuned T5-Large model, SQuAD Dataset" style="width:45%; display:inline-block; margin: 0 2.5%;" />
+</p>
+<p align='center'>
 <p style="text-align: center;">non fine-tuned T5-Large model, SQuAD Dataset</p>
-
 <img src="./blogpost_images/plots/boxplot_topk_rank_evalsquad_jvelja_t5-squad.png" alt="fine-tuned T5-Large model, SQuAD Dataset" style="width:45%; display:inline-block; margin: 0 2.5%;" />
 <p style="text-align: center;">fine-tuned T5-Large model, SQuAD Dataset</p>
-
+</p>
+<p align='center'>
 <img src="./blogpost_images/plots/boxplot_top1_rank_evalsamsum_google-t5_t5-large.png" alt="non fine-tuned T5-Large model, SamSum Dataset" style="width:45%; display:inline-block; margin: 0 2.5%;" />
 <p style="text-align: center;">non fine-tuned T5-Large model, SamSum Dataset</p>
-
+</p>
+<p align='center'>
 <img src="./blogpost_images/plots/boxplot_topk_rank_evalsquad_jvelja_t5-squad.png" alt="fine-tuned T5-Large model, SamSum Dataset" style="width:45%; display:inline-block; margin: 0 2.5%;" />
 <p style="text-align: center;">fine-tuned T5-Large model, SamSum Dataset</p>
-
+</p>
 <p style="text-align: center;">Boxplots of the rank of final predicted token at each layer, across 2 different models and 2 different datasets.</p>
 
+<p align='center'>
 <img src="./blogpost_images/plots/conf_metric_squad_google_t5.png" alt="Confidence vs F1 accuracy. T5-base model, SQuAD dataset" style="width:45%; display:inline-block; margin: 0 2.5%;" />
 <p style="text-align: center;">Confidence vs F1 accuracy. T5-base model, SQuAD dataset</p>
-
+</p>
+<p align='center'>
 <img src="./blogpost_images/plots/conf_metric_squad_tuned.png" alt="Confidence vs F1 accuracy. Fine-Tuned model, SQuAD dataset" style="width:45%; display:inline-block; margin: 0 2.5%;" />
 <p style="text-align: center;">Confidence vs F1 accuracy. Fine-Tuned model, SQuAD dataset</p>
 
