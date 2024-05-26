@@ -143,28 +143,30 @@ To summarize, our predicted token is often in the top-k ones, with a high value 
 <p align='center'>
 <p style="text-align: center;">non fine-tuned T5-Large model, SQuAD Dataset</p>
 <img src="./blogpost_images/plots/boxplot_topk_rank_evalsquad_jvelja_t5-squad.png" alt="fine-tuned T5-Large model, SQuAD Dataset" style="width:45%; display:inline-block; margin: 0 2.5%;" />
-<p style="text-align: center;">fine-tuned T5-Large model, SQuAD Dataset</p>
 </p>
+<p style="text-align: center;">fine-tuned T5-Large model, SQuAD Dataset</p>
+
 <p align='center'>
 <img src="./blogpost_images/plots/boxplot_top1_rank_evalsamsum_google-t5_t5-large.png" alt="non fine-tuned T5-Large model, SamSum Dataset" style="width:45%; display:inline-block; margin: 0 2.5%;" />
-<p style="text-align: center;">non fine-tuned T5-Large model, SamSum Dataset</p>
 </p>
+<p style="text-align: center;">non fine-tuned T5-Large model, SamSum Dataset</p>
+
 <p align='center'>
 <img src="./blogpost_images/plots/boxplot_topk_rank_evalsquad_jvelja_t5-squad.png" alt="fine-tuned T5-Large model, SamSum Dataset" style="width:45%; display:inline-block; margin: 0 2.5%;" />
-<p style="text-align: center;">fine-tuned T5-Large model, SamSum Dataset</p>
 </p>
-<p style="text-align: center;">Boxplots of the rank of final predicted token at each layer, across 2 different models and 2 different datasets.</p>
+<p style="text-align: center;">fine-tuned T5-Large model, SamSum Dataset</p>
+
+<p align='center' style="text-align: center;">Boxplots of the rank of final predicted token at each layer, across 2 different models and 2 different datasets.</p>
 
 <p align='center'>
-<img src="./blogpost_images/plots/conf_metric_squad_google_t5.png" alt="Confidence vs F1 accuracy. T5-base model, SQuAD dataset" style="width:45%; display:inline-block; margin: 0 2.5%;" />
+<img src="./blogpost_images/plots/conf_metric_squad_google_t5.png" alt="Confidence vs F1 accuracy. T5-base model, SQuAD dataset" style="width:45%; display:inline-block; margin: 0 2.5%;" /></p>
 <p style="text-align: center;">Confidence vs F1 accuracy. T5-base model, SQuAD dataset</p>
-</p>
+
 <p align='center'>
-<img src="./blogpost_images/plots/conf_metric_squad_tuned.png" alt="Confidence vs F1 accuracy. Fine-Tuned model, SQuAD dataset" style="width:45%; display:inline-block; margin: 0 2.5%;" />
+<img src="./blogpost_images/plots/conf_metric_squad_tuned.png" alt="Confidence vs F1 accuracy. Fine-Tuned model, SQuAD dataset" style="width:45%; display:inline-block; margin: 0 2.5%;" /></p>
 <p style="text-align: center;">Confidence vs F1 accuracy. Fine-Tuned model, SQuAD dataset</p>
 
-<p style="text-align: center;">Confidence vs F1 accuracy</p>
-</p>
+<p align='center' style="text-align: center;">Confidence vs F1 accuracy</p>
 
 ### Addressing the Trade-Off Via Contrastive Decoding
 The second approach (Figure 4) is based on results from [Li et al. (2023)](#contrastive-decoding-2023). The aforementioned work proposes contrastive decoding (CD) as a search-based decoding method. This is inspired by the fact that the failures of larger LMs, e.g., repetition, incoherence, are even more prevalent in smaller LMs. By contrasting outputs of smaller LMs with larger ones the impact of the aforementioned failure reduces as a consequence. In more detail, even when both types of models agree on a high-probability token—frequently a repetitive one—, expert models tend to distribute a significant portion of the probability across a variety of other plausible, non-repetitive token options. This behavior underlines the understanding of language contexts by the expert models, reflecting their ability to consider a broader array of potential continuations. By effectively sidelining these sub-optimal behaviors, CD leverages the more sophisticated predictive capabilities of the larger models. The core goal of this method is to refine the output text by filtering through the lens of larger models, retaining only their superior, diverse linguistic predictions while excluding the limitations typically exhibited by smaller models. This results in text generation that not only avoids redundancy but also enriches the content quality, aligning it to human-like language. The original implementation involves the use of two models in parallel, returning the difference between the probits $p_{\text{EXP}}$ of a large LM - called the expert - and the probits $p_{\text{AMA}}$ of a small LM - called the amateur.
