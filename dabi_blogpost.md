@@ -12,9 +12,9 @@ To address this limitation, we propose two-fold improvements over the existing e
 
 Concretely, we assume we are given a set $S := \{\{P_i\}^n_{i=1} \in \mathcal{P}^n\}$ of independent and identically distributed (i.i.d.) prompts, each belonging to different tasks (summarization, machine translation, question-answering). We allow $P_{test}$ be an i.i.d. test prompt to our LLM, where $Y_{early} := LM_{early}(P_{test})$ and $Y_{full} := LLM_{full}(P_{test})$ are the early exiting and standard outputs of our LLM, respectively. In order to be satisfied with $Y_{early}$, we require it to be both textually consistent - i.e., to be sensical, accurate to a constant - and to have a smaller decoding runtime with respect to $Y_{full}$. To formalize our framework, we thus provide the following constraint:
 
-$$
+$`
 \mathbb{P}\left(\mathbb{E}\left[\mathcal{D} \left( Y_{\text{early}}, Y_{\text{full}}\right)\right] \leq \delta \right) \geq 1 - \epsilon
-$$
+`$
 
 Constraining on textual consistency with the original $Y_{full}$, however, can be cumbersome for most tasks: in summarization, for example, multiple generations may be acceptable; or in question-answering, writing a date in different formats may cause inconsistencies with the ground truth. Within Eq. (1), the goal of our work is to find the most computationally efficient $Y_{early}$, that is, generations that exit as early as possible while still maintaining our desired performance guarantees.
 
@@ -44,7 +44,7 @@ where $\ell$ represents each layer from 1 to $L$, and $h^0_t$ denotes the output
 
 After processing through the $L$-th layer, the prediction for the next token, $\hat{x}_{t+1}$, is produced by
 
-$$p(\hat{x}_{t+1} \mid x_{<t+1}) = \text{softmax}(\textbf{W}_L h^L_{t})$$
+$`p(\hat{x}_{t+1} \mid x_{<t+1}) = \text{softmax}(\textbf{W}_L h^L_{t})`$
 
 where $`\textbf{W}_L \in \mathbb{R}^{d_{\text{model}} \times d_{\text{vocab}}}`$ is the linear classifier of block L responsible for mapping back the output of the FNN at that block from $d_{\text{model}}$ to $d_{\text{vocab}}$.
 
@@ -60,9 +60,9 @@ When an early exit is triggered at layer $\ell$, it necessitates updating the ke
 
 Our first approach aims to improve a limitation of the Softmax response method introduced by Schuster et al. (2022). We denote the final output of layer $\ell$ as
 
-$`\bm{v}^\ell = \text{Softmax}(\textbf{W}_\ell h^{\ell}_{t})`$
+$`\textbf{v}^\ell = \text{Softmax}(\textbf{W}_\ell h^{\ell}_{t})`$
 
-The so-called confidence measure is computed as the difference between the top two values of the probits vector $\bm{v}$, at each layer $\ell$. We denote this measure as $c^{\ell}_{t+1}$. Let us define an early-exit threshold $\tau^{\ell}_{t+1}$ at each layer. If our confidence measure exceeds the early exit-threshold,
+The so-called confidence measure is computed as the difference between the top two values of the probits vector $`textbf{v}`$, at each layer $\ell$. We denote this measure as $c^{\ell}_{t+1}$. Let us define an early-exit threshold $\tau^{\ell}_{t+1}$ at each layer. If our confidence measure exceeds the early exit-threshold,
 
 $`c^{\ell}_{t+1} \geq \tau^{\ell}_{t+1}`$
 
@@ -112,13 +112,13 @@ To summarize, our predicted token is often in the top-$k$ ones, with a high valu
 
 The second approach (Figure 4) is based on results from Li et al. (2023). The aforementioned work proposes contrastive decoding (CD) as a search-based decoding method. This is inspired by the fact that the failures of larger LMs, e.g., repetition, incoherence, are even more prevalent in smaller LMs. By contrasting outputs of smaller LMs with larger ones the impact of the aforementioned failure reduces as a consequence. In more detail, even when both types of models agree on a high-probability token—frequently a repetitive one—, expert models tend to distribute a significant portion of the probability across a variety of other plausible, non-repetitive token options. This behavior underlines the understanding of language contexts by the expert models, reflecting their ability to consider a broader array of potential continuations. By effectively sidelining these sub-optimal behaviors, CD leverages the more sophisticated predictive capabilities of the larger models. The core goal of this method is to refine the output text by filtering through the lens of larger models, retaining only their superior, diverse linguistic predictions while excluding the limitations typically exhibited by smaller models. This results in text generation that not only avoids redundancy but also enriches the content quality, aligning it to human-like language. The original implementation involves the use of two models in parallel, returning the difference between the probits $p_{\text{EXP}}$ of a large LM - called the expert - and the probits $p_{\text{AMA}}$ of a small LM - called the amateur.
 
-Following Li et al. (2023), we first implement the CD adaptive plausibility constraint, $\nu_{\text{head}}(x_{<t})$, defined by:
+Following Li et al. (2023), we first implement the CD adaptive plausibility constraint, $`\nu_{\text{head}}(x_{<t})`$, defined by:
 
-$$
+$`
 \nu_{\text{head}}(x_{<t}) = \{x_t \in V : p_{\text{EXP}}(x_t|x_{<t}) \geq \alpha \max_{x'_t \in V} p_{\text{EXP}}(x'_t|x_{<t})\}
-$$
+`$
 
-It’s important to recognize that smaller LMs, despite their limitations, do reliably capture basic elements of English grammar and essential common sense principles, such as subject-verb agreement. Therefore, applying the CD objective indiscriminately could inadvertently penalize these correct linguistic behaviors, leading to false negatives. Similarly, it might also erroneously reward implausible token choices, resulting in false positives. To address these potential pitfalls, we incorporate the aforementioned plausibility constraint into our framework. Given a preceding context $x_{<t}$, this constraint selects a subset of plausible next tokens, out of the vocabulary $V$, whose probabilities are above a threshold. The threshold is a fraction $\alpha$ of the probability of the token with the highest probability in the vocabulary. The hyperparameter $\alpha$ is in the range $[0, 1]$, and it is set by the authors of the original work to 0.1 without any explanation about the heuristic assumption. What we found in our experiments, instead, is that setting this parameter to 0.1 leads to overconfidence. For this reason, we thus propose a different way to address the parameter, not requiring tuning and taking into account the notion of confidence we already calculate for the purpose of EE. We therefore propose a hyperbolic decaying schedule for $\alpha$ defined as follows:
+It’s important to recognize that smaller LMs, despite their limitations, do reliably capture basic elements of English grammar and essential common sense principles, such as subject-verb agreement. Therefore, applying the CD objective indiscriminately could inadvertently penalize these correct linguistic behaviors, leading to false negatives. Similarly, it might also erroneously reward implausible token choices, resulting in false positives. To address these potential pitfalls, we incorporate the aforementioned plausibility constraint into our framework. Given a preceding context $`x_{<t}`$, this constraint selects a subset of plausible next tokens, out of the vocabulary $V$, whose probabilities are above a threshold. The threshold is a fraction $\alpha$ of the probability of the token with the highest probability in the vocabulary. The hyperparameter $\alpha$ is in the range $[0, 1]$, and it is set by the authors of the original work to 0.1 without any explanation about the heuristic assumption. What we found in our experiments, instead, is that setting this parameter to 0.1 leads to overconfidence. For this reason, we thus propose a different way to address the parameter, not requiring tuning and taking into account the notion of confidence we already calculate for the purpose of EE. We therefore propose a hyperbolic decaying schedule for $\alpha$ defined as follows:
 
 $$
 \alpha' = \left(\frac{\alpha}{1 + \text{decay rate} \times \ell}\right) \times (1 - \text{confidence})
@@ -126,19 +126,19 @@ $$
 
 The intuition for this is that we want to combine the decay of the threshold over iterations with the confidence of the predictions, allowing for a more relaxed threshold as confidence increases and iterations progress. Formally, to translate the concept of CD into a practical application, we introduce a contrastive objective, called Log Contrastive Difference (LCD), defined as:
 
-$$
+$`
 p_{\text{LCD}}(x_t | x_{<t}) = \text{Softmax}\left(\log \frac{p_{\text{EXP}}(x_t | x_{<t})}{p_{\text{AMA}}(x_t | x_{<t})}\right)
-$$
+`$
 
 This CD objective is designed to promote text patterns that are preferred by the larger, expert LMs and discourage those that are typically produced by the smaller, amateur LMs. It works in tandem with the plausibility constraint, to ensure that the penalization of amateur behaviors does not disregard grammatically correct and sensible language constructs. By doing this, we aim to refine the CD approach, enabling it to differentiate effectively between undesirable simplicity and necessary linguistic accuracy, thus avoiding common errors in model-generated text. Thus the final distribution will be:
 
-$$
+$`
 p_{\text{DCD}}(x_t | x_{<t}) =
 \begin{cases}
 p_{\text{LCD}}(x_t | x_{<t}) & \text{if} \ x_t \in V_{\text{head}}(x_{<t}) \\
 p_{\text{EXP}}(x_t | x_{<t}) & \text{otherwise}
 \end{cases}
-$$
+`$
 
 We take the original approach by Li et al. (2023) a step further: instead of running inference on parallel models, thus requiring significant compute overhead, we substitute the amateur, smaller model by proxying it with the distribution obtained at earlier layers of the attention stack, and the expert model distribution with the layer $\ell$ we find ourselves at. This intuition is aligned with findings by Elbayad et al. (2019) and Geva et al. (2021; 2022). One question that arises naturally from this idea is previous layer selection.
 
@@ -168,7 +168,7 @@ Finally, all the experiments in the following sections are done using the availa
 
 ### Softmax Speed-Up
 
-In this section, the results of the different Soft-max reductions applied to the $\textbf{W}_{j}$ matrix will be reported. The aim is to achieve similar performance with regards to the evaluation metrics while drastically reducing the amount of FLOPs. We acknowledge this trade-off: tolerating a slightly higher error rate in exchange for significantly reduced computations.
+In this section, the results of the different Soft-max reductions applied to the $`\textbf{W}_{j}`$ matrix will be reported. The aim is to achieve similar performance with regards to the evaluation metrics while drastically reducing the amount of FLOPs. We acknowledge this trade-off: tolerating a slightly higher error rate in exchange for significantly reduced computations.
 
 We create our experiments by using the available implementation as a baseline and determine the minimum exit layer based on the lowest confidence level found in Graphs 2 and 3. We then compare these results with our new functions, either fixed or decaying reduction, as presented in Section 4.1. We evaluate the models based on their respective performance metrics and the number of floating point operations (FLOPs) generated by one sample. This evaluation is conducted for both the question-answering task (see Figure 4) and the summarization task (see Figure 5).
 
