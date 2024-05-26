@@ -164,7 +164,7 @@ Additionally, we compare the performance and effects of our proposed methods bet
 
 Within our experiments, we rely on terminology which is dependent on the hyper-parameters used, the most important being the minimum exit layer. This is nothing but the earliest layer at which the model is allowed to exit.
 
-Finally, all the experiments in the following sections are done using the available codebase fast-robust-early-exit (Bae et al., 2023) as baseline.
+Finally, all the experiments in the following sections are done using the available codebase fast-robust-early-exit ([Bae et al., 2023](#Bae-Sangmin)) as baseline.
 
 ### Softmax Speed-Up
 
