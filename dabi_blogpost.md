@@ -46,8 +46,14 @@ After processing through the $L$-th layer, the prediction for the next token, $\
 <p align='center'>
 $p(\hat{x}_{t+1} \mid x_{< t+1}) = \text{softmax}(\textbf{W}_L h^L_{t})$
 </p>
-where $\textbf{W}_L \in \mathbb{R}^{d_{\text{model}} \times d_{\text{vocab}}}$ is the linear classifier of block L responsible for mapping back the output of the FNN at that block from $d_{\text{model}}$ to $d_{\text{vocab}}$.
-
+where 
+<p align='center'>
+$\textbf{W}_L \in \mathbb{R}^{d_{\text{model}} \times d_{\text{vocab}}}$ 
+</p>
+is the linear classifier of block L responsible for mapping back the output of the FNN at that block from 
+<p align='center'>
+$d_{\text{model}}$ to $d_{\text{vocab}}$.
+</p>
 Our approach incorporates an early-exiting strategy, wherein the generation of the next token can occur at any layer $\ell$ if the computed confidence score $c_\ell$ exceeds a specified threshold $\tau$.
 
 When an early exit is triggered at layer $\ell$, it necessitates updating the key and value pairs in subsequent layers to ensure proper attention mechanisms for future tokens. To efficiently manage this, a state copying technique is employed, where the hidden states from the early-exited layer $`h^{\ell}_{t+1}`$ are duplicated across subsequent layers ($`h^i_{t+1} = h^{\ell}_{t+1}`$ for every $i$ from $\ell + 1$ to $L$). This process maintains computational efficiency and model performance, even in compact - for today's standards - model configurations like T5 models.
