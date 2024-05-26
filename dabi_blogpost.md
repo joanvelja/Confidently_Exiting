@@ -40,7 +40,7 @@ The Transformer network, introduced by Vaswani et al. (2017), is structured into
 
 $$h^\ell_t = \text{Transformer}^\ell(h^{\ell-1}_t)$$
 
-where $\ell$ represents each layer from 1 to $L$, and $h^0_t$ denotes the output of the embedding layer $\textbf{W}_E$. The embedding layer $\textbf{W}_E \in \mathbb{R}^{d_{\text{vocab}} \times d_{\text{model}}}$, transforms the tokens $y_{1:t}$ having size $d_{\text{vocab}}$, into dense vector representations sized $d_{\text{model}}$.
+where $\ell$ represents each layer from 1 to $L$, and $h^0_t$ denotes the output of the embedding layer $`\textbf{W}_E`$. The embedding layer $\textbf{W}_E \in \mathbb{R}^{d_{\text{vocab}} \times d_{\text{model}}}$, transforms the tokens $y_{1:t}$ having size $d_{\text{vocab}}$, into dense vector representations sized $d_{\text{model}}$.
 
 After processing through the $L$-th layer, the prediction for the next token, $\hat{x}_{t+1}$, is produced by
 
