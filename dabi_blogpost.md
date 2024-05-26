@@ -403,18 +403,50 @@ Lastly, we highlight that the difference in results between Figures 4, 5, and Fi
 
 **Appendix A: Extra Plots on Contrastive Decoding**
 
-(a) Average Exit Block (b) F1 Accuracy
+<p align='center'>
+<img src="./blogpost_images/plots/squadexitcd.png" alt="Average Exit Block" style="width:48%; display:inline-block; margin: 0 2.5%;" />
+</p>
+<p align='center'>Average Exit Block</p>
 
-**Figure 10: Contrastive Decoding Average Exit and F1. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SQuAD dataset.**
+<p align='center'>
+<img src="./blogpost_images/plots/squadf1cd.png" alt="F1 Accuracy" style="width:48%; display:inline-block; margin: 0 2.5%;" />
+</p>
+<p align='center'>F1 Accuracy</p>
 
-(a) Average Exit Block (b) Rouge-L Accuracy
+<p align='center'><b>Contrastive Decoding Average Exit and F1</b>. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SQuAD dataset.</p>
 
-**Figure 11: Contrastive Decoding Average Exit and Rouge-L. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SamSum dataset.**
+<p align='center'>
+<img src="./blogpost_images/plots/squadexitcd.png" alt="Average Exit Block" style="width:48%; display:inline-block; margin: 0 2.5%;" />
+</p>
+<p align='center'>Average Exit Block</p>
 
-(a) Average Exit Block (b) F1 Accuracy
+<p align='center'>
+<img src="./blogpost_images/plots/samsumf1cd.png" alt="Rouge-L Accuracy" style="width:48%; display:inline-block; margin: 0 2.5%;" />
+</p>
+<p align='center'>Rouge-L Accuracy</p>
 
-**Figure 12: SQuAD: Baselines vs Adaptive. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SQuAD dataset.**
+<p align='center'><b>Contrastive Decoding Average Exit and Rouge-L</b>. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SamSum dataset.</p>
 
-(a) Average Exit Block (b) Rouge-L Accuracy
+<p align='center'>
+<img src="./blogpost_images/plots/finalqaexit.png" alt="Average Exit Block" style="width:48%; display:inline-block; margin: 0 2.5%;" />
+</p>
+<p align='center'>Average Exit Block</p>
 
-**Figure 13: SamSum: Baselines vs Adaptive. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SamSum dataset.**
+<p align='center'>
+<img src="./blogpost_images/plots/finalqaf1.png" alt="F1 Accuracy" style="width:48%; display:inline-block; margin: 0 2.5%;" />
+</p>
+<p align='center'>F1 Accuracy</p>
+
+<p align='center'><b>SQuAD: Baselines vs Adaptive</b>. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SQuAD dataset.</p>
+
+<p align='center'>
+<img src="./blogpost_images/plots/finalsumexit.png" alt="Average Exit Block" style="width:48%; display:inline-block; margin: 0 2.5%;" />
+</p>
+<p align='center'>Average Exit Block</p>
+
+<p align='center'>
+<img src="./blogpost_images/plots/finalsumf1.png" alt="Rouge-L Accuracy" style="width:48%; display:inline-block; margin: 0 2.5%;" />
+</p>
+<p align='center'>Rouge-L Accuracy</p>
+
+<p align='center'><b>SamSum: Baselines vs Adaptive</b>. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SamSum dataset.</p>
