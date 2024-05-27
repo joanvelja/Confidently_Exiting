@@ -154,29 +154,68 @@ Where:
 
 To summarize, our predicted token is often in the top-k ones, with a high-enough value of $k$. Due to this, pruning the vocabulary matrix allows us to reduce the amount of computations we have to compute at each layer, while discarding only irrelevant tokens. While we trade-off some performance, this further speeds up the runtime of our model, allowing us to obtain notable efficiency gains.
 
-<a id='figure-1a'></a> 
-<a id='figure-1b'></a>
-<a id='figure-1c'></a>
-<a id='figure-1d'><a>
-<p align='center'>
-<img src="./blogpost_images/plots/figure1.jpg" style="width:100%; display:inline-block; margin: 0 2.5%;" />
-</p>
-<p align='center'><a id='figure-1'><b>Figure 1:</b></a> Boxplots of the rank of final predicted token at each layer, across 2 different models and 2 different datasets.</p>
+
+<table align="center" style="width: 100%; border-collapse: collapse; margin: 20px auto;">
+    <tr>
+        <td style="text-align: center; padding: 10px;">
+            <img src="./blogpost_images/plots/boxplot_topk_rank_evalsquad_google-t5_t5-large.png" style="max-width: 100%; height: 300px;">
+            <br>
+            <div style="margin-top: 10px;"><a id='figure-1a'>Figure 1.a:</a> Non fine-tuned T5-Large model, SQuAD Dataset </div>
+        </td>
+        <td style="text-align: center; padding: 10px;">
+            <img src="./blogpost_images/plots/boxplot_topk_rank_evalsquad_jvelja_t5-squad.png" style="max-width: 100%; height: 300px;">
+            <br>
+            <div style="margin-top: 10px;"><a id='figure-1b'>Figure 1.b:</a> Fine-tuned T5-Large model, SQuAD Dataset</div>
+        </td>
+    </tr>
+    <tr>
+        <td style="text-align: center; padding: 10px;">
+            <img src="./blogpost_images/plots/boxplot_top1_rank_evalsamsum_google-t5_t5-large.png" style="max-width: 100%; height: 300px;">
+            <br>
+            <div style="margin-top: 10px;"><a id='figure-1c'>Figure 1.c:</a> Non fine-tuned T5-Large model, SamSum Dataset </div>
+        </td>
+        <td style="text-align: center; padding: 10px;">
+            <img src="./blogpost_images/plots/boxplot_topk_rank_evalsquad_jvelja_t5-squad.png" style="max-width: 100%; height: 300px;">
+            <br>
+            <div style="margin-top: 10px;"><a id='figure-1d'>Figure 1.d:</a> Fine-tuned T5-Large model, SamSum Dataset </div>
+        </td>
+    </tr>
+    <tr>
+      <td colspan="2" style="text-align: left; padding: 10px; font-size: 14px;">
+       <a id='figure-1'><b>Figure 1:</b></a> Boxplots of the rank of final predicted token at each layer, across 2 different models and 2 different datasets.
+      </td>
+  </tr>
+</table>
 
 
-<a id='figure-2'></a>
-<a id='figure-3'></a> 
-<p align='center'>
-<img src="./blogpost_images/plots/figures2_3.jpg" style="width:100%; display:inline-block; margin: 0 2.5%;" /></p>
-<p align='center'>Confidence vs F1 accuracy</p>
+
+
+<table align="center" style="width: 100%; border-collapse: collapse; margin: 20px auto;">
+    <tr>
+        <td style="text-align: center; padding: 10px;">
+            <img src="./blogpost_images/plots/conf_metric_squad_google_t5.png" style="max-width: 100%; height: 300px;">
+            <br>
+            <div style="margin-top: 10px;"><a id='figure-2'>Figure 2:</a> Confidence vs F1 accuracy. T5-base model, SQuAD dataset </div>
+        </td>
+        <td style="text-align: center; padding: 10px;">
+            <img src="./blogpost_images/plots/conf_metric_squad_tuned.png" style="max-width: 100%; height: 300px;">
+            <br>
+            <div style="margin-top: 10px;"><a id='figure-3'>Figure 3:</a> Confidence vs F1 accuracy. Fine-Tuned model, SQuAD dataset </div>
+        </td>
+    </tr>
+</table>
+
 
 ### Addressing the Trade-Off Via Contrastive Decoding
 
-<p align='center'>
-<img src="./blogpost_images/plots/IMG_0311.JPG" alt="Dynamic Contrastive Decoding: illustration of how we leverage Contrastive Decoding within model layers." style="width:90%; display:inline-block; margin: 0 2.5%;" />
-</p>
-<p align='center'><a id='figure-4'><b>Figure 4:</b></a> Dynamic Contrastive Decoding: illustration of how we leverage <i>Contrastive Decoding</i> within model layers.</p>
-
+<table align="center">
+  <tr align="center">
+      <th><img src="./blogpost_images/plots/IMG_0311.JPG" alt="Dynamic Contrastive Decoding: illustration of how we leverage Contrastive Decoding within model layers." style="width:90%; display:inline-block; margin: 0 2.5%;" /></th>
+  </tr>
+  <tr align="left">
+    <td colspan=2><b>Figure 4:</b> Dynamic Contrastive Decoding: illustration of how we leverage <i>Contrastive Decoding</i> within model layers.</td>
+  </tr>
+</table>
 
 The second approach ([Figure 4](#figure-4)) is based on results from [Li et al. (2023)](#contrastive-decoding-2023). The aforementioned work proposes contrastive decoding (CD) as a search-based decoding method. This is inspired by the fact that the failures of larger LMs, e.g., repetition, incoherence, are even more prevalent in smaller LMs. By contrasting outputs of smaller LMs with larger ones the impact of the aforementioned failure reduces as a consequence. In more detail, even when both types of models agree on a high-probability token—frequently a repetitive one—, expert models tend to distribute a significant portion of the probability across a variety of other plausible, non-repetitive token options. This behavior underlines the understanding of language contexts by the expert models, reflecting their ability to consider a broader array of potential continuations. By effectively sidelining these sub-optimal behaviors, CD leverages the more sophisticated predictive capabilities of the larger models. The core goal of this method is to refine the output text by filtering through the lens of larger models, retaining only their superior, diverse linguistic predictions while excluding the limitations typically exhibited by smaller models. This results in text generation that not only avoids redundancy but also enriches the content quality, aligning it to human-like language. The original implementation involves the use of two models in parallel, returning the difference between the probits $p_{\text{EXP}}$ of a large LM - called the expert - and the probits $p_{\text{AMA}}$ of a small LM - called the amateur.
 
@@ -223,18 +262,45 @@ In this section, the results of the different Soft-max reductions applied to the
 We create our experiments by using the available implementation as a baseline and determine the minimum exit layer based on the lowest confidence level found in Graphs 2 and 3. We then compare these results with our new functions, either fixed or decaying reduction, as presented in [Section "Early Exiting via the Softmax Approach"](#early-exiting-via-the-softmax-approach). We evaluate the models based on their respective performance metrics and the number of floating point operations (FLOPs) generated by one sample. This evaluation is conducted for both the question-answering task (see [Figure 4](#figure-4)) and the summarization task (see [Figure 5](#figure-5)).
 
 
+<table align="center" style="width: 100%; border-collapse: collapse; margin: 20px auto;">
+    <tr>
+        <td style="text-align: center; padding: 10px;">
+            <img src="./blogpost_images/plots/Final Plot Squad F1.png" style="max-width: 100%; height: auto;">
+            <br>
+            <div style="margin-top: 10px;"><b>F1 Metric</b> for T5-Large and T5-Finetuned with <i>No</i>, <i>Fixed</i>, or <i>Decaying</i> reduction applied to the matrix</div>
+        </td>
+        <td style="text-align: center; padding: 10px;">
+            <img src="./blogpost_images/plots/Final Plot Squad Flops.png" style="max-width: 100%; height: auto;">
+            <br>
+            <div style="margin-top: 10px;"><b>FLOPs per sample</b> for T5-Large and T5-Finetuned with <i>No</i>, <i>Fixed</i>, or <i>Decaying</i> reduction applied to the matrix</div>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" style="text-align: left; padding: 10px; font-size: 14px;">
+            <a id='figure-5'> <b>Figure 5:</a> Performance on Question-Answering Task:</b> Comparison of model performance in terms of F1 score and the amount of FLOPs generated per sample. The minimum exit layer was set to 7 for T5-Large and 2 for T5-Large Finetuned, with the confidence set at 0.9 for both. The amount of FLOPs represents the average from 100 samples and the dataset used is SQuAD.
+        </td>
+    </tr>
+</table>
 
-<p align='center'>
-<img src="./blogpost_images/plots/figure5.jpg" style="width:100%; display:inline-block; margin: 0 2.5%;" />
-</p>
-
-<p align='center'><a id='figure-5'><b>Figure 5:</b></a> <b>Performance on Question-Answering Task</b>: Comparison of model performance in terms of F1 score and the amount of FLOPs generated per sample. The minimum exit layer was set to 7 for T5-Large and 2 for T5-Large Finetuned, with the confidence set at 0.9 for both. The amount of FLOPs represents the average from 100 samples and the dataset used is SQuAD.</p>
-
-<p align='center'>
-<img src="./blogpost_images/plots/figure6.jpg" style="width:100%; display:inline-block; margin: 0 2.5%;" />
-</p>
-
-<p align='center'><a id='figure-6'><b>Figure 6:</b></a> <b>Performance on Summarization Task</b>: Comparison of model performance in terms of ROUGE-L score and the amount of FLOPs generated per sample. The minimum exit layer was set to 7 for T5-Large and 2 for T5-Large Finetuned, with the confidence set at 0.9 for both. The amount of FLOPs represents the average from 100 samples. The dataset used is SamSum.</p>
+<table align="center" style="width: 100%; border-collapse: collapse; margin: 20px auto;">
+    <tr>
+        <td style="text-align: center; padding: 10px;">
+            <img src="./blogpost_images/plots/Final Plot SamSum Rougl.png" style="max-width: 100%; height: auto;">
+            <br>
+            <div style="margin-top: 10px;"><b>RougeL Metric</b> for T5-Large and T5-Finetuned with <i>No</i>, <i>Fixed</i>, or <i>Decaying</i> reduction applied to the matrix</div>
+        </td>
+        <td style="text-align: center; padding: 10px;">
+            <img src="./blogpost_images/plots/Final Plot Samsum flops.png" style="max-width: 100%; height: auto;">
+            <br>
+            <div style="margin-top: 10px;"><b>FLOPs per sample</b> for T5-Large and T5-Finetuned with <i>No</i>, <i>Fixed</i>, or <i>Decaying</i> reduction applied to the matrix</div>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" style="text-align: left; padding: 10px; font-size: 14px;">
+             <a id='figure-6'><b>Figure 6:</b></a> <b>Performance on Summarization Task</b>: Comparison of model performance in terms of ROUGE-L score and the amount of FLOPs generated per sample. The minimum exit layer was set to 7 for T5-Large and 2 for T5-Large Finetuned, with the confidence set at 0.9 for both. The amount of FLOPs represents the average from 100 samples. The dataset used is SamSum.
+        </td>
+    </tr>
+</table>
 
 
 The overall performance displays the following trend: similar performance is achieved across the evaluation metrics, but the amount of FLOPs decreases by a hundredfold for all tasks. Additionally, between fixed and decaying reduction, half of the FLOPs are utilized, but there is a 2% loss in performance. This illustrates the trade-off: choosing a smaller $k$ reduces the number of FLOPs but at the cost of lower performance. Additionally, due to Finetuned models exiting at earlier stages, fewer FLOPs are observed overall. However, the same trade-off can be observed.
@@ -247,34 +313,64 @@ However, some limitations and future work can be established. Firstly, the funct
 
 In this section, we analyze the behavior of the two implemented versions of contrastive decoding confidence measures, Weighted and Jensen-Shannon Divergence (JSD) contrastive decoding. The aim of this section is to determine the impact of Contrastive Decoding techniques on performance and average exit. Due to time and compute constraints, the results displayed below are reported on 100 samples on both SQuAD and SamSum datasets.
 
-Results from [Figure 6](#figure-6) show Weighted contrastive decoding achieving comparable average exit layer with softmax baseline, while still retaining almost all the performance. More interesting is the behavior of JSD. The confidence measure consistently beats softmax baseline. The method is exiting earlier with an average gain of 2.5 blocks. Most importantly, it is also achieving higher performance with a 2% increase over both softmax and the no exiting network (green). The reason for the lack in performance in earlier layers for contrastive decoding confidences is in their intrinsic nature. [Figure 2](#figure-2) clearly shows that while confidence at earlier layers is very high, their accuracy is very low. This means that contrasting the probability outputs of the amateur layer with the expert, at early layers, results in catastrophically pushing the model towards the earlier end of the curve, resulting in the model being wrongly over-confident.
+Results from [Figure 6](#figure-6) show Weighted contrastive decoding achieving comparable average exit layer with softmax baseline, while still retaining almost all the performance. More interesting is the behaviour of JSD. The confidence measure consistently beats softmax baseline. The method is exiting earlier with an average gain of 2.5 blocks and, most importantly, it is also achieving higher performance with a 2\% increase over both softmax the no exiting network (green). The reason for the lack in performance in earlier layers for contrastive decoding confidences is in their intrinsic nature. [Figure 2](#figure-2) clearly shows that while confidence at earlier layers is very high, their accuracy is very low. This means that contrasting the probability outputs of the amateur layer with the expert, at early layers, results in catastrophically pushing the model towards the earlier end of the curve, resulting in the model being wrongly over-confident.
 
 
-<p align='center'>
-<img src="./blogpost_images/plots/figure7.jpg" style="width:100%; display:inline-block; margin: 0 2.5%;" />
-</p>
+<table align="center" style="width: 100%; border-collapse: collapse; margin: 20px auto;">
+    <tr>
+        <td style="text-align: center; padding: 10px;">
+            <img src="./blogpost_images/plots/squadexit.png" style="max-width: 100%; height: auto;">
+            <br>
+            <div style="margin-top: 10px;"><b> a) </b> Average Exit Block</div>
+        </td>
+        <td style="text-align: center; padding: 10px;">
+            <img src="./blogpost_images/plots/squadf1.png" style="max-width: 100%; height: auto;">
+            <br>
+            <div style="margin-top: 10px;"><b> b)</b> F1 Accuracy </div>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" style="text-align: left; padding: 10px; font-size: 14px;">
+             <a id='figure-7'><b>Figure 7:</b></a> <b>SQuAD Average Exit and F1</b>. The first picture shows the average exit layer across different minimum exit layers. The second is the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SQuAD dataset.
+        </td>
+    </tr>
+</table>
 
-<p align='center'><a id='figure-7'><b>Figure 7:</b></a> <b>SQuAD Average Exit and F1</b>. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SQuAD dataset.</p>
+Evaluation on SamSum dataset, [Figure 7](#figure-7), shows notable results. While weighted contrastive decoding is on par with softmax baseline, the Jensen-Shannon Divergence (JSD) confidence measure is exiting even earlier on average, with a 2.9 block gain against softmax. Additionally, JSD is remarkably attaining almost a 10\% increase in Rouge-L performance on exit-layer 17.
 
 
-Evaluation on SamSum dataset, [Figure 7](#figure-7), shows even more impressive results. While weighted contrastive decoding is on par with softmax baseline, the Jensen-Shannon Divergence (JSD) confidence measure is exiting even earlier on average with an impressive 2.9 block difference gain on average with softmax. Additionally, JSD is notably attaining almost a 10% increase in Rouge-L performance on exit-layer 17.
-
-<p align='center'>
-<img src="./blogpost_images/plots/figure8.jpg" alt="Rouge-L Accuracy" style="width:100%; display:inline-block; margin: 0 2.5%;" />
-</p>
-
-<p align='center'><a id='figure-8'><b>Figure 8:</b></a> <b>SamSum Average Exit and Rouge-L</b>. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SamSum dataset.</p>
+<table align="center" style="width: 100%; border-collapse: collapse; margin: 20px auto;">
+    <tr>
+        <td style="text-align: center; padding: 10px;">
+            <img src="./blogpost_images/plots/sam_avg.png" style="max-width: 100%; height: auto;">
+            <br>
+            <div style="margin-top: 10px;"><b> a) </b> Average Exit Block</div>
+        </td>
+        <td style="text-align: center; padding: 10px;">
+            <img src="./blogpost_images/plots/sam_rouge.png" style="max-width: 100%; height: auto;">
+            <br>
+            <div style="margin-top: 10px;"><b> b)</b> F1 Accuracy </div>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" style="text-align: left; padding: 10px; font-size: 14px;">
+          <a id='figure-8'><b>Figure 8:</b></a> <b>SamSum Average Exit and Rouge-L</b>. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SamSum dataset.
+        </td>
+    </tr>
+</table>
 
 
 ### Speedup and Contrastive Decoding
 
-Jensen-Shannon Divergence (JSD) confidence measure has shown notable performance gains with respect to softmax baseline and weighted contrastive decoding in [Section "Addressing the trade-off via Contrastive Decoding"](#addressing-the-trade-off-via-contrastive-decoding). In this chapter, we set out to investigate what could be the result when merging the softmax pruning of xxxxxxxxxxxxxx with JSD. Additionally, we compare the best pruning method for Contrastive Decoding of [Section "Softmax speed-up"](#softmax-speed-up) with the previously analyzed baselines. We show that combining the performant JSD technique with a compute efficient pruning mechanism significantly impacts the results. This will be done in terms of average exit, performance, and compute FLOPs.
+Jensen-Shannon Divergence (JSD) confidence measure has shown serious performance gains with respect to softmax baseline and weighted contrastive decoding in Section ["Addressing the trade-off via Contrastive Decoding"](#addressing-the-trade-off-via-contrastive-decoding). In this chapter we set out to investigate what could be the result of merging JSD with softmax pruning of Section ["Softmax Speed-Up"](#Softmax-Speed-Up). Additionally, we compare the best pruning method for Contrastive Decoding in Section ["Best JSD Pruning Combination"](#Best-JSD-Pruning-Combination) with the previously analyzed baselines. with the previously analysed baselines. We show that combining the performant JSD technique with a compute efficient pruning mechanism significantly impacts results.
+This will be done in terms of average exit, performance and compute FLOPs.
 
 #### Best JSD Pruning Combination
 
 First, we perform a series of experiments aimed at understanding the best possible pruning method for the best contrastive decoding confidence measure from [Section "Addressing the trade-off via Contrastive Decoding"](#addressing-the-trade-off-via-contrastive-decoding), Jensen-Shannon Divergence (JSD).
 
 Following the argument of [Section "Addressing the trade-off via Contrastive Decoding"](#addressing-the-trade-off-via-contrastive-decoding), we consider the most informative minimum exit layers to be the highest ones, meaning 15, 17, 18, 19, 20. Keeping this in mind, Table 1 represents the mean exit layer and performance averaged across these minimum exit layer parameters. We note how the adaptive pruning strategy consistently beats fixed and decaying, especially on earlier exiting, with an average gain of 1.2 blocks against fixed on SamSum. The only exception is the fixed pruning achieving the highest Rouge-L score in SamSum. For these reasons, we choose adaptive to be the most fitting pruning method in combination with Jensen-Shannon Divergence (JSD) confidence measure. We defer to Appendix A a series of detailed plots with all minimum exit layers in this setting.
+
 
 | **Model**                | **SQuAD Avg Exit** | **SQuAD F1 Score** | **SamSum Avg Exit** | **SamSum Rouge-L Score** |
 |--------------------------|--------------------|--------------------|---------------------|--------------------------|
@@ -289,22 +385,52 @@ Following the argument of [Section "Addressing the trade-off via Contrastive Dec
 
 Given the results of [Section "Speedup and Contrastive Decoding"](#speedup-and-contrastive-decoding), and our analysis of the best minimum exit layer parameters to use in the contrastive decoding setting, we now compare the most performing pruning method of [Section "Best JSD Pruning Combination"](#best-jsd-pruning-combination) with the baselines from Sections ["Contrastive Decoding"](#contrastive-decoding) and ["Softmax Speed-Up"](#softmax-speedup). We do so by selecting the minimum exit layer of 19 for all the analyzed methods. The choice is made by comparing the performance of each metric and selecting the best for each of them.
 
-As explained in [Section "Early Exiting via the Softmax Approach"](#early-exiting-via-the-softmax-approach), pruning was introduced to speed-up the softmax approach by reducing the un-embedding operations. In [Section "Addressing the trade-off via Contrastive Decoding"](#addressing-the-trade-off-via-contrastive-decoding) we show the big impact this has on FLOPs. Similarly, Figures [8](#figure-8) and [9](#figure-9) show that removing a large number of tokens has a huge effect on compute, reducing it by almost 250 times on SQuAD and 190 on SamSum between JSD baseline and JSD with adaptive pruning. This impressive gap is also more impressive when looking at the amount of performance retained. On both fine-tuned and non-finetuned models the decrease in performance between the techniques is never more than 2%, with JSD with adaptive even achieving a 1.9% increase on softmax baseline on SQuAD.
+As explained in [Section "Early Exiting via the Softmax Approach"](#early-exiting-via-the-softmax-approach), pruning was introduced to speed-up the softmax approach by reducing the un-embedding operations. In [Section "Addressing the trade-off via Contrastive Decoding"](#addressing-the-trade-off-via-contrastive-decoding) we show the considerable impact this has on FLOPs. Similarly, Figures [8](#figure-8) and [9](#figure-9) show that removing a large number of tokens has a notable effect on compute, reducing it by almost 250 times on SQuAD and 190 on SamSum between JSD baseline and JSD with adaptive pruning. This gap is also more noteworthy when looking at the amount of performance retained. On both fine-tuned and non-finetuned models the decrease in performance between the techniques is never more than 2%, with JSD with adaptive even achieving a 1.9% increase on softmax baseline on SQuAD.
 
 Lastly, we highlight that the difference in results between Figures [4](#figure-4), [5](#figure-5), and Figures [8](#figure-8), [9](#figure-9) are due to the different number of samples we perform evaluation on. While in [Section "Addressing the trade-off via Contrastive Decoding"](#addressing-the-trade-off-via-contrastive-decoding) we use the whole dataset, here we only employ 100 samples due to compute constraints. However, in both cases, our results are consistent both in terms of performance and FLOPs reduction.
 
 
-<p align='center'>
-<img src="./blogpost_images/plots/figure9.jpg" style="width:100%; display:inline-block; margin: 0 2.5%;" />
-</p>
 
-<p align='center'><a id='figure-9'><b>Figure 9:</b></a> <b>Performance on Question-Answering Task</b>: Comparison of model performance in terms of F1 score and the amount of FLOPs generated per sample. The minimum exit layer was set to 7 for T5-Large and 2 for T5-Large Finetuned, with the confidence set at 0.9 for both. Results are reported across 100 samples on SQuAD.</p>
+<table align="center" style="width: 100%; border-collapse: collapse; margin: 20px auto;">
+    <tr>
+        <td style="text-align: center; padding: 10px;">
+            <img src="./blogpost_images/plots/finalf1qa.png" style="max-width: 100%; height: auto;">
+            <br>
+            <div style="margin-top: 10px;"><b>F1 Metric</b> for T5-Large and T5-Finetuned with <i>No</i>, <i>Fixed</i>, or <i>Decaying</i> reduction applied to the matrix</div>
+        </td>
+        <td style="text-align: center; padding: 10px;">
+            <img src="./blogpost_images/plots/qa_no_log.png" style="max-width: 100%; height: auto;">
+            <br>
+            <div style="margin-top: 10px;"><b>FLOPs per sample</b> for T5-Large and T5-Finetuned with <i>No</i>, <i>Fixed</i>, or <i>Decaying</i> reduction applied to the matrix</div>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" style="text-align: left; padding: 10px; font-size: 14px;">
+          <a id='figure-9'><b>Figure 9:</b></a> <b>Performance on Question-Answering Task</b>: Comparison of model performance in terms of F1 score and the amount of FLOPs generated per sample. The minimum exit layer was set to 7 for T5-Large and 2 for T5-Large Finetuned, with the confidence set at 0.9 for both. Results are reported across 100 samples on SQuAD.</p>
+        </td>
+    </tr>
+</table>
 
-<p align='center'>
-<img src="./blogpost_images/plots/figure10.jpg" style="width:100%; display:inline-block; margin: 0 2.5%;" />
-</p>
+<table align="center" style="width: 100%; border-collapse: collapse; margin: 20px auto;">
+    <tr>
+        <td style="text-align: center; padding: 10px;">
+            <img src="./blogpost_images/plots/rouge_final.png" style="max-width: 100%; height: auto;">
+            <br>
+            <div style="margin-top: 10px;"><b>F1 Metric</b> for T5-Large and T5-Finetuned with <i>No</i>, <i>Fixed</i>, or <i>Decaying</i> reduction applied to the matrix</div>
+        </td>
+        <td style="text-align: center; padding: 10px;">
+            <img src="./blogpost_images/plots/sam_no_log.png" style="max-width: 100%; height: auto;">
+            <br>
+            <div style="margin-top: 10px;"><b>FLOPs per sample</b> for T5-Large and T5-Finetuned with <i>No</i>, <i>Fixed</i>, or <i>Decaying</i> reduction applied to the matrix</div>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" style="text-align: left; padding: 10px; font-size: 14px;">
+          <a id='figure-10'><b>Figure 10:</b></a> <b>Performance on Summarization Task</b>: Comparison of model performance in terms of ROUGE-L score and the amount of FLOPs generated per sample. The minimum exit layer was set to 19 across both T5-Large and T5-Large Finetuned, with the confidence set at 0.9 for both. Results are reported across 100 samples on SamSum.</p>
+        </td>
+    </tr>
+</table>
 
-<p align='center'><a id='figure-10'><b>Figure 10:</b></a> <b>Performance on Summarization Task</b>: Comparison of model performance in terms of ROUGE-L score and the amount of FLOPs generated per sample. The minimum exit layer was set to 19 across both T5-Large and T5-Large Finetuned, with the confidence set at 0.9 for both. Results are reported across 100 samples on SamSum.</p>
 
 ## Conclusions
 
