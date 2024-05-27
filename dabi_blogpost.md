@@ -141,7 +141,7 @@ To summarize, our predicted token is often in the top-k ones, with a high value 
 <a id='figure-1c'></a>
 <a id='figure-1d'><a>
 <p align='center'>
-<img src="./blogpost_images/plots/figure_1.jpg" style="width:100%; display:inline-block; margin: 0 2.5%;" />
+<img src="./blogpost_images/plots/figure1.jpg" style="width:100%; display:inline-block; margin: 0 2.5%;" />
 </p>
 <p align='center'><a id='figure-1'><b>Figure 1:</b></a> Boxplots of the rank of final predicted token at each layer, across 2 different models and 2 different datasets.</p>
 
