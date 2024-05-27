@@ -79,11 +79,11 @@ Finally, all the experiments in the following sections are done using the availa
 
   
   <tr align="left">
-    <td colspan=2><b>Figure 4:</b> Softmax Pruning approaches: illustration of (1) <i>fixed</i> and (2) <i>decaying</i> pruning methods for token importance preservation. (3) <i> Adaptive </i> decaying not illustrated.</td>
+    <td colspan=2><b>Figure 1:</b> Softmax Pruning approaches: illustration of (1) <i>fixed</i> and (2) <i>decaying</i> pruning methods for token importance preservation. (3) <i> Adaptive </i> decaying not illustrated.</td>
   </tr>
 </table>
 
-Our first approach ([Figure 5](#figure-4)) aims to improve a limitation of the Softmax response method introduced by [Schuster et al. (2022)](#confident-adaptive-language-modeling-2022). We denote the final output of layer $\ell$ as
+Our first approach ([Figure 1](#figure-1)) aims to improve a limitation of the Softmax response method introduced by [Schuster et al. (2022)](#confident-adaptive-language-modeling-2022). We denote the final output of layer $\ell$ as
 
 <p align='center'>
 $\textbf{v}^\ell = \text{Softmax}(\textbf{W}_\ell h^{\ell}_{t})$
@@ -97,7 +97,7 @@ $c^{\ell}_{t+1} \geq \tau^{\ell}_{t+1}$
 
 the model exits early, providing us with the prediction for the next token computed at that layer. Otherwise, it continues by going into the next Transformer block. However, the matrix multiplication inside Softmax, i.e., $`\textbf{W}_\ell h^{\ell}_{t}`$ is computationally expensive, especially when iterated over multiple layers. The exact number of computations for the matrix multiplication above corresponds to $d_{\text{model}} \times d_{\text{vocab}} \times L$. Hence, if we prune at the first layer the vocabulary size from $d_{\text{vocab}}$ to $k$, the number of computations required will reduce to $d_{\text{model}} \times k \times L$.
 
-Note that $`\textbf{W}_\ell \in \mathbb{R}^{d_{\text{vocab}} \times d_{\text{model}}}`$, where $d_{\text{vocab}} \approx 32,000$ is our vocabulary size, and $d_{\text{model}}$ is equal to the size of the last hidden representation of our FNN. Both parameters are on a scaling upwards trend in SOTA architectures. We note and argue that most of these computations are redundant, and potentially not necessary for some tasks, in line with the literature. In [Figure 1](#figure-1), we show the boxplots for the rank of the final predicted token at each layer, across not fine-tuned and fine-tuned models, for two different datasets. The main takeaway from these images is that the final predicted token is often already highly ranked from the first few layers of our model. This behavior is more explicit in Figures [1b](#figure-1b) and [1d](#figure-1d), where we use fine-tuned models for our downstream tasks. On the other hand, confidence alone can be a deceiving measure. LLMs can be overconfident in the first layers, causing the model to exit prematurely. Our desiderata is for the model to be confident at the same time when its prediction has a high accuracy, that is, to be calibrated. However, we interestingly note that such behavior is rarely observed at early layers. In Figures [2](#figure-2) and [3](#figure-3), we see the accuracy and the confidence across each layer. The model in the first layers presents an anomalously high confidence, while its performance is still poor. Early exiting only based on the Softmax response would result in bad performance. We decide to set a minimum exit layer parameter $j$, which forces the model to consider exiting only after this layer. Note that this parameter is highly dependent on the model and dataset one experiments on. For fine-tuned models for example, one expects this parameter to be smaller.
+Note that $`\textbf{W}_\ell \in \mathbb{R}^{d_{\text{vocab}} \times d_{\text{model}}}`$, where $d_{\text{vocab}} \approx 32,000$ is our vocabulary size, and $d_{\text{model}}$ is equal to the size of the last hidden representation of our FNN. Both parameters are on a scaling upwards trend in SOTA architectures. We note and argue that most of these computations are redundant, and potentially not necessary for some tasks, in line with the literature. In [Figure 2](#figure-2), we show the boxplots for the rank of the final predicted token at each layer, across not fine-tuned and fine-tuned models, for two different datasets. The main takeaway from these images is that the final predicted token is often already highly ranked from the first few layers of our model. This behavior is more explicit in Figures [2b](#figure-1b) and [2d](#figure-1d), where we use fine-tuned models for our downstream tasks. On the other hand, confidence alone can be a deceiving measure. LLMs can be overconfident in the first layers, causing the model to exit prematurely. Our desiderata is for the model to be confident at the same time when its prediction has a high accuracy, that is, to be calibrated. However, we interestingly note that such behavior is rarely observed at early layers. In Figures [3](#figure-3) and [4](#figure-4), we see the accuracy and the confidence across each layer. The model in the first layers presents an anomalously high confidence, while its performance is still poor. Early exiting only based on the Softmax response would result in bad performance. We decide to set a minimum exit layer parameter $j$, which forces the model to consider exiting only after this layer. Note that this parameter is highly dependent on the model and dataset one experiments on. For fine-tuned models for example, one expects this parameter to be smaller.
 
 Motivated by these findings, we introduce three additional modifications to the Softmax response approach.
 
@@ -124,7 +124,7 @@ $\mathcal{O}\left(\frac{d_{\text{vocab}}}{k} \times (L-j)\right)$
 
 **Softmax response via decaying pruning** 
 
-As one can note from [Figure 1b](#figure-1b), the rank of the predicted token smoothly decreases across layers, especially for non-fine-tuned models. Again, we prune the $`\textbf{W}_j`$ matrix, given a minimum early exit layer $j$. We retain its top $k$-tokens, obtaining the new pruned vocabulary matrix
+As one can note from [Figure 2b](#figure-2b), the rank of the predicted token smoothly decreases across layers, especially for non-fine-tuned models. Again, we prune the $`\textbf{W}_j`$ matrix, given a minimum early exit layer $j$. We retain its top $k$-tokens, obtaining the new pruned vocabulary matrix
 
 <p align='center'>
 $$
@@ -146,7 +146,7 @@ $k^*$ here indicates a lower bound on the size our pruned vocabulary matrix $\ti
 
 **Softmax response via adaptive pruning**
 
-It can be seen in Figures [2](#figure-2) and [3](#figure-3) that, after some initial layers, the confidence and the F1 score of each layer are highly correlated. Together with [Figure 1](#figure-1), this poses the basis for an experiment where the amount of retained top-k tokens at each layer is adapted to the confidence at the previous layer.
+It can be seen in Figures [3](#figure-2) and [4](#figure-3) that, after some initial layers, the confidence and the F1 score of each layer are highly correlated. Together with [Figure 2](#figure-2), this poses the basis for an experiment where the amount of retained top-k tokens at each layer is adapted to the confidence at the previous layer.
 To compute the amount of retained tokens, we use the following formula:
 
 ```math
@@ -167,29 +167,29 @@ To summarize, our predicted token is often in the top-k ones, with a high-enough
         <td style="text-align: center; padding: 10px;">
             <img src="./blogpost_images/plots/boxplot_topk_rank_evalsquad_google-t5_t5-large.png" style="max-width: 100%; height: 300px;">
             <br>
-            <div style="margin-top: 10px;"><a id='figure-1a'>Figure 1.a:</a> Non fine-tuned T5-Large model, SQuAD Dataset </div>
+            <div style="margin-top: 10px;"><a id='figure-2a'>Figure 2.a:</a> Non fine-tuned T5-Large model, SQuAD Dataset </div>
         </td>
         <td style="text-align: center; padding: 10px;">
             <img src="./blogpost_images/plots/boxplot_topk_rank_evalsquad_jvelja_t5-squad.png" style="max-width: 100%; height: 300px;">
             <br>
-            <div style="margin-top: 10px;"><a id='figure-1b'>Figure 1.b:</a> Fine-tuned T5-Large model, SQuAD Dataset</div>
+            <div style="margin-top: 10px;"><a id='figure-2b'>Figure 2.b:</a> Fine-tuned T5-Large model, SQuAD Dataset</div>
         </td>
     </tr>
     <tr>
         <td style="text-align: center; padding: 10px;">
             <img src="./blogpost_images/plots/boxplot_top1_rank_evalsamsum_google-t5_t5-large.png" style="max-width: 100%; height: 300px;">
             <br>
-            <div style="margin-top: 10px;"><a id='figure-1c'>Figure 1.c:</a> Non fine-tuned T5-Large model, SamSum Dataset </div>
+            <div style="margin-top: 10px;"><a id='figure-2c'>Figure 2.c:</a> Non fine-tuned T5-Large model, SamSum Dataset </div>
         </td>
         <td style="text-align: center; padding: 10px;">
             <img src="./blogpost_images/plots/boxplot_topk_rank_evalsquad_jvelja_t5-squad.png" style="max-width: 100%; height: 300px;">
             <br>
-            <div style="margin-top: 10px;"><a id='figure-1d'>Figure 1.d:</a> Fine-tuned T5-Large model, SamSum Dataset </div>
+            <div style="margin-top: 10px;"><a id='figure-2d'>Figure 2.d:</a> Fine-tuned T5-Large model, SamSum Dataset </div>
         </td>
     </tr>
     <tr>
       <td colspan="2" style="text-align: left; padding: 10px; font-size: 14px;">
-       <a id='figure-1'><b>Figure 1:</b></a> Boxplots of the rank of final predicted token at each layer, across 2 different models and 2 different datasets.
+       <a id='figure-2'><b>Figure 2:</b></a> Boxplots of the rank of final predicted token at each layer, across 2 different models and 2 different datasets.
       </td>
   </tr>
 </table>
@@ -202,12 +202,12 @@ To summarize, our predicted token is often in the top-k ones, with a high-enough
         <td style="text-align: center; padding: 10px;">
             <img src="./blogpost_images/plots/conf_metric_squad_google_t5.png" style="max-width: 100%; height: 300px;">
             <br>
-            <div style="margin-top: 10px;"><a id='figure-2'>Figure 2:</a> Confidence vs F1 accuracy. T5-base model, SQuAD dataset </div>
+            <div style="margin-top: 10px;"><a id='figure-3'>Figure 3:</a> Confidence vs F1 accuracy. T5-base model, SQuAD dataset </div>
         </td>
         <td style="text-align: center; padding: 10px;">
             <img src="./blogpost_images/plots/conf_metric_squad_tuned.png" style="max-width: 100%; height: 300px;">
             <br>
-            <div style="margin-top: 10px;"><a id='figure-3'>Figure 3:</a> Confidence vs F1 accuracy. Fine-Tuned model, SQuAD dataset </div>
+            <div style="margin-top: 10px;"><a id='figure-4'>Figure 4:</a> Confidence vs F1 accuracy. Fine-Tuned model, SQuAD dataset </div>
         </td>
     </tr>
 </table>
@@ -220,11 +220,11 @@ To summarize, our predicted token is often in the top-k ones, with a high-enough
       <th><img src="./blogpost_images/plots/IMG_0311.JPG" alt="Dynamic Contrastive Decoding: illustration of how we leverage Contrastive Decoding within model layers." style="width:90%; display:inline-block; margin: 0 2.5%;" /></th>
   </tr>
   <tr align="left">
-    <td colspan=2><b>Figure 5:</b> Dynamic Contrastive Decoding: illustration of how we leverage <i>Contrastive Decoding</i> within model layers.</td>
+    <td colspan=2><b id='figure-5'>Figure 5:</b> Dynamic Contrastive Decoding: illustration of how we leverage <i>Contrastive Decoding</i> within model layers.</td>
   </tr>
 </table>
 
-The second approach ([Figure 5](#figure-4)) is based on results from [Li et al. (2023)](#contrastive-decoding-2023). The aforementioned work proposes contrastive decoding (CD) as a search-based decoding method. This is inspired by the fact that the failures of larger LMs, e.g., repetition, incoherence, are even more prevalent in smaller LMs. By contrasting outputs of smaller LMs with larger ones the impact of the aforementioned failure reduces as a consequence. In more detail, even when both types of models agree on a high-probability token—frequently a repetitive one—, expert models tend to distribute a significant portion of the probability across a variety of other plausible, non-repetitive token options. This behavior underlines the understanding of language contexts by the expert models, reflecting their ability to consider a broader array of potential continuations. By effectively sidelining these sub-optimal behaviors, CD leverages the more sophisticated predictive capabilities of the larger models. The core goal of this method is to refine the output text by filtering through the lens of larger models, retaining only their superior, diverse linguistic predictions while excluding the limitations typically exhibited by smaller models. This results in text generation that not only avoids redundancy but also enriches the content quality, aligning it to human-like language. The original implementation involves the use of two models in parallel, returning the difference between the probits $p_{\text{EXP}}$ of a large LM - called the expert - and the probits $p_{\text{AMA}}$ of a small LM - called the amateur.
+The second approach ([Figure 5](#figure-5)) is based on results from [Li et al. (2023)](#contrastive-decoding-2023). The aforementioned work proposes contrastive decoding (CD) as a search-based decoding method. This is inspired by the fact that the failures of larger LMs, e.g., repetition, incoherence, are even more prevalent in smaller LMs. By contrasting outputs of smaller LMs with larger ones the impact of the aforementioned failure reduces as a consequence. In more detail, even when both types of models agree on a high-probability token—frequently a repetitive one—, expert models tend to distribute a significant portion of the probability across a variety of other plausible, non-repetitive token options. This behavior underlines the understanding of language contexts by the expert models, reflecting their ability to consider a broader array of potential continuations. By effectively sidelining these sub-optimal behaviors, CD leverages the more sophisticated predictive capabilities of the larger models. The core goal of this method is to refine the output text by filtering through the lens of larger models, retaining only their superior, diverse linguistic predictions while excluding the limitations typically exhibited by smaller models. This results in text generation that not only avoids redundancy but also enriches the content quality, aligning it to human-like language. The original implementation involves the use of two models in parallel, returning the difference between the probits $p_{\text{EXP}}$ of a large LM - called the expert - and the probits $p_{\text{AMA}}$ of a small LM - called the amateur.
 
 Following [Li et al. (2023)](#contrastive-decoding-2023), we first implement the CD adaptive plausibility constraint, $`\nu_{\text{head}}(x_{< t})`$, defined by:
 
@@ -260,7 +260,7 @@ Finally, to get the best of both worlds, we experiment with a mixed approach bet
 
 In this section, the results of the different Soft-max reductions applied to the $`\textbf{W}_{j}`$ matrix will be reported. The aim is to achieve similar performance with regards to the evaluation metrics while drastically reducing the amount of FLOPs. We acknowledge this trade-off: tolerating a slightly higher error rate in exchange for significantly reduced computations.
 
-We create our experiments by using the available implementation as a baseline and determine the minimum exit layer based on the lowest confidence level found in Graphs 2 and 3. We then compare these results with our new functions, either fixed or decaying reduction, as presented in [Section "Early Exiting via the Softmax Approach"](#early-exiting-via-the-softmax-approach). We evaluate the models based on their respective performance metrics and the number of floating point operations (FLOPs) generated by one sample. This evaluation is conducted for both the question-answering task (see [Figure 4](#figure-4)) and the summarization task (see [Figure 5](#figure-5)).
+We create our experiments by using the available implementation as a baseline and determine the minimum exit layer based on the lowest confidence level found in Graphs 2 and 3. We then compare these results with our new functions, either fixed or decaying reduction, as presented in [Section "Early Exiting via the Softmax Approach"](#early-exiting-via-the-softmax-approach). We evaluate the models based on their respective performance metrics and the number of floating point operations (FLOPs) generated by one sample. This evaluation is conducted for both the question-answering task (see [Figure 5](#figure-5)) and the summarization task (see [Figure 6](#figure-6)).
 
 
 <table align="center" style="width: 100%; border-collapse: collapse; margin: 20px auto;">
@@ -278,7 +278,7 @@ We create our experiments by using the available implementation as a baseline an
     </tr>
     <tr>
         <td colspan="2" style="text-align: left; padding: 10px; font-size: 14px;">
-            <a id='figure-5'> <b>Figure 5:</a> Performance on Question-Answering Task:</b> Comparison of model performance in terms of F1 score and the amount of FLOPs generated per sample. The minimum exit layer was set to 7 for T5-Large and 2 for T5-Large Finetuned, with the confidence set at 0.9 for both. The amount of FLOPs represents the average from 100 samples and the dataset used is SQuAD.
+            <a id='figure-6'> <b>Figure 6:</a> Performance on Question-Answering Task:</b> Comparison of model performance in terms of F1 score and the amount of FLOPs generated per sample. The minimum exit layer was set to 7 for T5-Large and 2 for T5-Large Finetuned, with the confidence set at 0.9 for both. The amount of FLOPs represents the average from 100 samples and the dataset used is SQuAD.
         </td>
     </tr>
 </table>
