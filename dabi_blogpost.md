@@ -137,7 +137,9 @@ $k^*$ here indicates a lower bound on the size our pruned vocabulary matrix $\ti
 It can be seen in Figures [2](#figure-2) and [3](#figure-3) that, after some initial layers, the confidence and the F1 score of each layer are highly correlated. Together with [Figure 1](#figure-1), this poses the basis for an experiment where the amount of retained top-k tokens at each layer is adapted to the confidence at the previous layer.
 To compute the amount of retained tokens, we use the following formula:
 
-$$k^\ell = \text{vocab\_size} \times (1 - \text{confidence}^{\ell - 1} \times \text{scaling factor}) $$
+```math
+k^\ell = \text{vocab\_size} \times (1 - \text{confidence}^{\ell - 1} \times \text{scaling factor})
+```
 
 Where:
 - $k^\ell$ is the amount of retained tokens at layer $\ell$
