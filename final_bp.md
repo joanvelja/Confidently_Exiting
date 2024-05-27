@@ -237,7 +237,7 @@ It’s important to recognize that smaller LMs, despite their limitations, do re
 
 
 $$
-p_{\text{LCD}}(x_t | x_{< t}) = \text{Softmax}\left(\log \frac{p_{\text{EXP}}(x_t | x_{< t})}{p_{\text{AMA}}(x_t | x_{< t})}\right) \sum_{x_t \in V_{head}(x_{< t})} p_{EXP}(x_t | x_{< t})
+p_{\text{LCD}}(x_t | x_{< t}) = \text{Softmax}\left(\log \frac{p_{\text{EXP}}(x_t | x_{< t})}{p_{\text{AMA}}(x_t | x_{< t})}\right)
 $$
 
 
@@ -251,9 +251,18 @@ p_{\text{EXP}}(x_t | x_{< t}) & \text{otherwise}
 \end{cases}
 $$
 
-We take the original approach by [Li et al. (2023)](#contrastive-decoding-2023) a step further: instead of running inference on parallel models, thus requiring significant compute overhead, we substitute the amateur, smaller model by proxying it with the distribution obtained at earlier layers of the attention stack, and the expert model distribution with the layer $\ell$ we find ourselves at. This intuition is aligned with findings by [Elbayad et al. (2019)](#contrastive-decoding-2019) and [Geva et al. (2021)](#transformer-key-value-memories-2021); [Geva et al. (2022)](#transformer-promoting-concepts-2022). One question that arises naturally from this idea is previous layer selection.
+We take the original approach by [Li et al. (2023)](#contrastive-decoding-2023) a step further: instead of running inference on parallel models, thus requiring significant compute overhead, we substitute the amateur, smaller model by proxying it with the distribution obtained at earlier layers of the attention stack, and the expert model distribution with the layer $\ell$ we find ourselves at. This intuition is aligned with findings by [Elbayad et al. (2019)](#contrastive-decoding-2019) and [Geva et al. (2021)](#transformer-key-value-memories-2021); [Geva et al. (2022)](#transformer-promoting-concepts-2022).
 
-We therefore thought of a simple, yet effective way of addressing this choice. Previous works ([Chuang et al., 2024](#dola-contrasting-layers-2024)) suggest selection via distance-in-distribution through Jensen-Shannon Divergence. This way, they claim, it is possible to find the most fit amateur layer for the contrastive objective. They do so by contrasting the final distribution against a set of candidate layers for premature layer selection $J$. They also divide the layers into 2 to 4 buckets of $J$ based on the total number of layers, relying on a validation set to choose the best bucket for each task. With an Occam’s razor perspective, we claim that the bucketing strategy is suboptimal for several reasons. First, it requires task-specific selection, which is undesirable, given how these models are deployed and utilized by end users, that is, usually, for open-ended generation. Second, bucketing does not address the bias JSD will have towards the lower layers of the distribution. Earlier representations are necessarily more diverse, since the set of plausible tokens for autoregressive generation gets narrower as one goes deeper into the stack. For this reason, we discount the JSD value between two distributions $i, j$ by the layer distance between the two distributions $\ell_j - \ell_i$. By doing this, we are able to capture the layers at which there is a more significant distribution change w.r.t. the layer $\ell_j$ we find ourselves at, thus obtaining meaningful signal from the chosen contrastive distribution. 
+Building up on [Gera et al., 2023](#auto-contrastive-decoding-2023) we include their variant of auto-contrastive decoding into our early-exiting framework. We do so by adding a weigthing term in the above formula, where the Amateur layer is choosen to be the one which is an integer division by 2 away from the current Expert. 
+
+
+$$
+p_{\text{LCD}}(x_t | x_{< t}) = \text{Softmax}\left(\log \frac{p_{\text{EXP}}(x_t | x_{< t})}{p_{\text{AMA}}(x_t | x_{< t})}\right) \sum_{x_t \in V_{head}(x_{< t})} p_{EXP}(x_t | x_{< t})
+$$
+We will refer to this auto-contrastive decoding strategy as "Weighted contrastive decoding". 
+
+One question that arises naturally from this idea is previous layer selection. Clearly this choice of Amateur layer in "Weighted contrastive decoding" very arbitrary and up to parameter tuning. We therefore thought of a simple, yet effective way of addressing this choice. Previous works ([Chuang et al., 2024](#dola-contrasting-layers-2024)) suggest selection via distance-in-distribution through Jensen-Shannon Divergence. This way, they claim, it is possible to find the most fit amateur layer for the contrastive objective. They do so by contrasting the final distribution against a set of candidate layers for premature layer selection $J$. They also divide the layers into 2 to 4 buckets of $J$ based on the total number of layers, relying on a validation set to choose the best bucket for each task. With an Occam’s razor perspective, we claim that the bucketing strategy is suboptimal for several reasons. First, it requires task-specific selection, which is undesirable, given how these models are deployed and utilized by end users, that is, usually, for open-ended generation. Second, bucketing does not address the bias JSD will have towards the lower layers of the distribution. Earlier representations are necessarily more diverse, since the set of plausible tokens for autoregressive generation gets narrower as one goes deeper into the stack. For this reason, we discount the JSD value between two distributions $i, j$ by the layer distance between the two distributions $\ell_j - \ell_i$. By doing this, we are able to capture the layers at which there is a more significant distribution change w.r.t. the layer $\ell_j$ we find ourselves at, thus obtaining meaningful signal from the chosen contrastive distribution. 
+We will call this technique "Jensen-Shannon Divergence (JSD) contrastive decoding".
 
 Finally, to get the best of both worlds, we experiment with a mixed approach between Contrastive Decoding and Softmax pruning. The rationale here is that we can use CD with the relevant top-k tokens in the logits we find with the pruning done for softmax response, thus making what we claim to be a choice as informed as possible.
 
@@ -510,6 +519,8 @@ These conjectures inspire us to further work in this promising direction, and we
 <a id="attention-is-all-you-need-2017">Vaswani Ashish, Shazeer Noam, Parmar Niki, Uszkoreit Jakob, Jones Llion, Gomez Aidan N, Kaiser Łukasz, Polosukhin Illia. (2017). Attention is all you need. Advances in neural information processing systems.</a>
 
 <a id="leebert-2021">Wei Zhu. (2021). LeeBERT: Learned early exit for BERT with cross-level optimization.</a>
+
+<a id="n">
 
 
 **Appendix A: Extra Plots on Contrastive Decoding**
