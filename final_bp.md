@@ -79,7 +79,7 @@ Finally, all the experiments in the following sections are done using the availa
 
   
   <tr align="left">
-    <td colspan=2><b>Figure 1:</b> Softmax Pruning approaches: illustration of (1) <i>fixed</i> and (2) <i>decaying</i> pruning methods for token importance preservation. (3) <i> Adaptive </i> decaying not illustrated.</td>
+    <td colspan=2><a id='figure-1'><b id>Figure 1:</b> Softmax Pruning approaches: illustration of (1) <i>fixed</i> and (2) <i>decaying</i> pruning methods for token importance preservation. (3) <i> Adaptive </i> decaying not illustrated.</td>
   </tr>
 </table>
 
@@ -146,7 +146,7 @@ $k^*$ here indicates a lower bound on the size our pruned vocabulary matrix $\ti
 
 **Softmax response via adaptive pruning**
 
-It can be seen in Figures [3](#figure-2) and [4](#figure-3) that, after some initial layers, the confidence and the F1 score of each layer are highly correlated. Together with [Figure 2](#figure-2), this poses the basis for an experiment where the amount of retained top-k tokens at each layer is adapted to the confidence at the previous layer.
+It can be seen in Figures [3](#figure-3) and [4](#figure-4) that, after some initial layers, the confidence and the F1 score of each layer are highly correlated. Together with [Figure 2](#figure-2), this poses the basis for an experiment where the amount of retained top-k tokens at each layer is adapted to the confidence at the previous layer.
 To compute the amount of retained tokens, we use the following formula:
 
 ```math
