@@ -1,5 +1,9 @@
 # Early Exit LLMs - Collaborative Content
 
+### J. Velja, J. Vincenti, M. Nulli, G. Desimini, K.A. Abdel Sadek
+
+---
+
 ## Introduction
 
 Recent advancements in Large Language Models (LLMs) have significantly bolstered performance across various Natural Language Processing (NLP) tasks ([Devlin et al., 2019](#bert-pre-training-2019); [Brown et al., 2020](#language-models-few-shot-2020); [Rae et al., 2021](#scaling-language-models-2021); [Smith et al., 2022](#using-deepspeed-megatron-2022); [Chowdhery et al., 2023](#palm-scaling-2023), inter alia). Efforts at improving the capabilities of these models have revolved around scaling the number of parameters and data ([Kaplan et al., 2020](#scaling-laws-2020); [Hoffmann et al., 2022](#training-compute-optimal-2022)). However, the substantial computational load presents a practical challenge during inference, particularly in resource-constrained applications. To address this issue, early-exiting mechanisms ([Teerapittayanon et al., 2016](#branchynet-2016); [Schwartz et al., 2020](#right-tool-2020); [Zhu, 2021](#leebert-2021); [Simoulin & Crabbé, 2021](#model-depth-analysis-2021); [Bae et al., 2023](#fast-robust-early-exiting-2023)) have been proposed, which allow LLMs to dynamically decide the number of layers to use based on the complexity of the input, thus reducing the inference time without significantly compromising performance. This approach is crucial because while scaling model architectures is beneficial during training, the same extensive computation may not be necessary at inference time for every input, especially for simpler tasks ([Geva et al., 2021](#transformer-key-value-memories-2021); [2022](#transformer-promoting-concepts-2022)). By enabling intermediate layer decoding, early exiting offers a promising solution to balance computational efficiency and model accuracy, ensuring that LLMs remain practical and effective in diverse application scenarios.
@@ -454,6 +458,24 @@ Another limitation is given by the fact that the overall runtime performance has
 With regards to vocabulary reduction, the function that shrinks the $k$ values is based on the worst-case scenario observed in the data (see [Figure 3](#figure-3)). This function could be adjusted depending on the problem type or the model. For instance, a Finetuned model, as depicted in [Figure 2b](#figure-2b), might benefit from more aggressive shrinkage compared to its non-Finetuned counterpart.
 Additionally, we plan on further refining the integration of the vocabulary pruning method with Contrastive Decoding: we hypothesize that, by leveraging the list of top-k tokens within Contrastive Decoding, we can get rid of the plausibility constraint, and thus potentially even address overconfidence, overall reducing further the reliance on hyperparameter setting to none. 
 These conjectures inspire us to further work in this promising direction, and we hope the same applies to the reader. 
+
+
+
+## Authors' Contributions
+
+- Joan worked mainly on contrastive decoding, focusing on Jensen-Shannon Divergence by implementing the code together with Matteo, collecting material for the implementation. He wrote the introduction, the methodology on contrastive decoding and the conclusion and Future Work section. 
+
+- Jort worked on Softmax pruning. He worked on the code implementation of the pruning part of the code together with Karim. He was responsible for runnning experiments on Softmax pruning, and wrote the results section of softmax pruning. He wrote together with Matteo the Experimental Set up section.
+
+- Matteo worked mainly on contrastive decoding, focusing on the code implementation together with Joan of Weighted and Jensen-Shannon Divergence. He ran experiments on contrastive decoding wrote the Related Work, contrastive decoding results section, and the Experimental Set up section with Jort. 
+
+- Karim worked primarly on Softmax pruning. He implemented the code for that part together with Jort. He wrote the methodology section on Softmax pruning, and the Transfomers section in Preliminaries and Experimental Set up. 
+
+- Gabriele wrote the Related work section with Matteo and worked on Adaptive Pruning. He also curated the blogpost reduction.
+
+The contributions were not even, they divide as follows: 
+Joan 23%, Jort 23%, Matteo 23%, Karim 23%, Gabriele 8%.
+
 
 **References**
 
