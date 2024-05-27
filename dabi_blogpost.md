@@ -242,7 +242,7 @@ Results from [Figure 6](#figure-6) show Weighted contrastive decoding achieving 
 Evaluation on SamSum dataset, [Figure 7](#figure-7), shows even more impressive results. While weighted contrastive decoding is on par with softmax baseline, the Jensen-Shannon Divergence (JSD) confidence measure is exiting even earlier on average with an impressive 2.9 block difference gain on average with softmax. Additionally, JSD is notably attaining almost a 10% increase in Rouge-L performance on exit-layer 17.
 
 <p align='center'>
-<img src="./blogpost_images/plots/figure8.jpg" alt="Rouge-L Accuracy" style="width:48%; display:inline-block; margin: 0 2.5%;" />
+<img src="./blogpost_images/plots/figure8.jpg" alt="Rouge-L Accuracy" style="width:100%; display:inline-block; margin: 0 2.5%;" />
 </p>
 
 <p align='center'><a id='figure-8'><b>Figure 8:</b></a> <b>SamSum Average Exit and Rouge-L</b>. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SamSum dataset.</p>
