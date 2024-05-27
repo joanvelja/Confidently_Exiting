@@ -74,14 +74,16 @@ Finally, all the experiments in the following sections are done using the availa
 
 <table align="center">
   <tr align="center">
-      <th><img src="./blogpost_images/plots/IMG_0311.JPG" alt="Dynamic Contrastive Decoding: illustration of how we leverage Contrastive Decoding within model layers." style="width:90%; display:inline-block; margin: 0 2.5%;" /></th>
+      <th><img src="./plots/softmax_shrink.jpeg" alt="Softmax Pruning approaches: illustration of (1) fixed and (2) decaying pruning methods for token importance preservation." style="width:90%; display:inline-block; margin: 0 2.5%;" /></th>
   </tr>
+
+  
   <tr align="left">
-    <td colspan=2><b>Figure 4:</b> Dynamic Contrastive Decoding: illustration of how we leverage <i>Contrastive Decoding</i> within model layers.</td>
+    <td colspan=2><b>Figure 4:</b> Softmax Pruning approaches: illustration of (1) <i>fixed</i> and (2) <i>decaying</i> pruning methods for token importance preservation. (3) <i> Adaptive </i> decaying not illustrated.</td>
   </tr>
 </table>
 
-Our first approach aims to improve a limitation of the Softmax response method introduced by [Schuster et al. (2022)](#confident-adaptive-language-modeling-2022). We denote the final output of layer $\ell$ as
+Our first approach ([Figure 5](#figure-4)) aims to improve a limitation of the Softmax response method introduced by [Schuster et al. (2022)](#confident-adaptive-language-modeling-2022). We denote the final output of layer $\ell$ as
 
 <p align='center'>
 $\textbf{v}^\ell = \text{Softmax}(\textbf{W}_\ell h^{\ell}_{t})$
@@ -218,11 +220,11 @@ To summarize, our predicted token is often in the top-k ones, with a high-enough
       <th><img src="./blogpost_images/plots/IMG_0311.JPG" alt="Dynamic Contrastive Decoding: illustration of how we leverage Contrastive Decoding within model layers." style="width:90%; display:inline-block; margin: 0 2.5%;" /></th>
   </tr>
   <tr align="left">
-    <td colspan=2><b>Figure 4:</b> Dynamic Contrastive Decoding: illustration of how we leverage <i>Contrastive Decoding</i> within model layers.</td>
+    <td colspan=2><b>Figure 5:</b> Dynamic Contrastive Decoding: illustration of how we leverage <i>Contrastive Decoding</i> within model layers.</td>
   </tr>
 </table>
 
-The second approach ([Figure 4](#figure-4)) is based on results from [Li et al. (2023)](#contrastive-decoding-2023). The aforementioned work proposes contrastive decoding (CD) as a search-based decoding method. This is inspired by the fact that the failures of larger LMs, e.g., repetition, incoherence, are even more prevalent in smaller LMs. By contrasting outputs of smaller LMs with larger ones the impact of the aforementioned failure reduces as a consequence. In more detail, even when both types of models agree on a high-probability token—frequently a repetitive one—, expert models tend to distribute a significant portion of the probability across a variety of other plausible, non-repetitive token options. This behavior underlines the understanding of language contexts by the expert models, reflecting their ability to consider a broader array of potential continuations. By effectively sidelining these sub-optimal behaviors, CD leverages the more sophisticated predictive capabilities of the larger models. The core goal of this method is to refine the output text by filtering through the lens of larger models, retaining only their superior, diverse linguistic predictions while excluding the limitations typically exhibited by smaller models. This results in text generation that not only avoids redundancy but also enriches the content quality, aligning it to human-like language. The original implementation involves the use of two models in parallel, returning the difference between the probits $p_{\text{EXP}}$ of a large LM - called the expert - and the probits $p_{\text{AMA}}$ of a small LM - called the amateur.
+The second approach ([Figure 5](#figure-4)) is based on results from [Li et al. (2023)](#contrastive-decoding-2023). The aforementioned work proposes contrastive decoding (CD) as a search-based decoding method. This is inspired by the fact that the failures of larger LMs, e.g., repetition, incoherence, are even more prevalent in smaller LMs. By contrasting outputs of smaller LMs with larger ones the impact of the aforementioned failure reduces as a consequence. In more detail, even when both types of models agree on a high-probability token—frequently a repetitive one—, expert models tend to distribute a significant portion of the probability across a variety of other plausible, non-repetitive token options. This behavior underlines the understanding of language contexts by the expert models, reflecting their ability to consider a broader array of potential continuations. By effectively sidelining these sub-optimal behaviors, CD leverages the more sophisticated predictive capabilities of the larger models. The core goal of this method is to refine the output text by filtering through the lens of larger models, retaining only their superior, diverse linguistic predictions while excluding the limitations typically exhibited by smaller models. This results in text generation that not only avoids redundancy but also enriches the content quality, aligning it to human-like language. The original implementation involves the use of two models in parallel, returning the difference between the probits $p_{\text{EXP}}$ of a large LM - called the expert - and the probits $p_{\text{AMA}}$ of a small LM - called the amateur.
 
 Following [Li et al. (2023)](#contrastive-decoding-2023), we first implement the CD adaptive plausibility constraint, $`\nu_{\text{head}}(x_{< t})`$, defined by:
 
