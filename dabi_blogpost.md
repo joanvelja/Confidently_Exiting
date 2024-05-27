@@ -69,12 +69,12 @@ Each dataset has its own evaluation metrics. Question Answering on SQuAD will be
 
 Additionally, we compare the performance and effects of our proposed methods between:
 
-- Pre-trained-only version of T5, from t5-large,
-- Fine-tuned version of T5, t5-squad, t5-samsum. Each fine-tuned version is fine-tuned on the training dataset of the corresponding name.
+- Pre-trained-only version of T5, from <a href="https://huggingface.co/google-t5/t5-large" target="_blank" rel="noopener noreferrer">t5-large</a>,
+- Fine-tuned version of T5, <a href="https://huggingface.co/jvelja/t5-squad" target="_blank" rel="noopener noreferrer">t5-squad</a>, <a href="https://huggingface.co/jvelja/t5-samsum" target="_blank" rel="noopener noreferrer">t5-samsum</a>. Each fine-tuned version is fine-tuned on the training dataset of the corresponding name.
 
 Within our experiments, we rely on terminology which is dependent on the hyper-parameters used, the most important being the minimum exit layer. This is nothing but the earliest layer at which the model is allowed to exit.
 
-Finally, all the experiments in the following sections are done using the available <a href="https://github.com/raymin0223/fast_robust_early_exit" target="_blank"> codebase fast-robust-early-exit</a> ([Bae et al., 2023](#fast-robust-early-exiting-2023)) as baseline.
+Finally, all the experiments in the following sections are done using the available <a href="https://github.com/raymin0223/fast_robust_early_exit" target="_blank" rel="noopener noreferrer"> codebase fast-robust-early-exit</a> ([Bae et al., 2023](#fast-robust-early-exiting-2023)) as baseline.
 
 ## Methodology
 
