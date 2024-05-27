@@ -103,9 +103,10 @@ $\tilde{\textbf{W}}_{j+i} \in \mathbb{R}^{d_{\text{model}} \times k}, \quad \tex
 Hence, we prune our matrix at layer $j+1$, and keep the size fixed to $k$ for all subsequent layers. Theoretically, calculating the ratio between the original number of computations required in the original approach with ours, we get
 
 <p align='center'>
-$
-\frac{d_{\text{model}}^2 \times d_{\text{vocab}} \times L}{d_{\text{model}}^2 \times k \times (L - j) + d_{\text{model}}^2 \times d_{\text{vocab}} \times j}
-$
+$$
+\Large
+\frac{d_{\text{model}} \times d_{\text{vocab}} \times L}{d_{\text{model}} \times k \times (L - j) + d_{\text{model}}^2 \times d_{\text{vocab}} \times j}
+$$
 </p>
 
 which corresponds to an approximate efficiency gain of order
@@ -119,13 +120,17 @@ $\mathcal{O}\left(\frac{d_{\text{vocab}}}{k} \times (L-j)\right)$
 As one can note from [Figure 1b](#figure-1b), the rank of the predicted token smoothly decreases across layers, especially for non-fine-tuned models. Again, we prune the $`\textbf{W}_j`$ matrix, given a minimum early exit layer $j$. We retain its top $k$-tokens, obtaining the new pruned vocabulary matrix
 
 <p align='center'>
-$\tilde{\textbf{W}}_{j+i} \in \mathbb{R}^{k \times d_{\text{model}}}$.
+$$
+  \Large
+\tilde{\textbf{W}}_{j+i} \in \mathbb{R}^{k \times d_{\text{model}}}
+$$
 </p>
 
 Now, instead of keeping the reduced matrix size fixed, we further prune it after every layer. Given the vocabulary matrix $\tilde{\textbf{W}}_{j+i}$ at layer $j+i$ of size $k_1$, we prune it for layer $j+i+1$ to a reduced matrix of size $k_2$, where
 
 <p align='center'>
 $$
+\Large
 k_2 = \max\left( k^*, \frac{k_1}{1 + \frac{k_1 - k^*}{k^*} \cdot \frac{j + i}{\text{num\_layers}}} \right)
 $$
 </p>
