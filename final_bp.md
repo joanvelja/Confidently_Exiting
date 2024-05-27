@@ -79,7 +79,7 @@ Finally, all the experiments in the following sections are done using the availa
 
   
   <tr align="left">
-    <td colspan=2><a id='figure-1'><b id>Figure 1:</b> Softmax Pruning approaches: illustration of (1) <i>fixed</i> and (2) <i>decaying</i> pruning methods for token importance preservation. (3) <i> Adaptive </i> decaying not illustrated.</td>
+    <td colspan=2><a id='figure-1'><b>Figure 1:</b> Softmax Pruning approaches: illustration of (1) <i>fixed</i> and (2) <i>decaying</i> pruning methods for token importance preservation. (3) <i> Adaptive </i> decaying not illustrated.</td>
   </tr>
 </table>
 
@@ -308,13 +308,13 @@ The overall performance displays the following trend: similar performance is ach
 
 We set the minimum confidence required for an exit at 0.9 to achieve a speed-up while maintaining good results. It is important to note that if this value would be lowered, our model would exit earlier, thus poorer predictions but quicker performance would be observed regardless of the implementation type. As a result, similarly to the observation between the fine-tuned and non-fine-tuned models, we claim that the gains in FLOPs would be less significant but still observable.
 
-However, some limitations and future work can be established. Firstly, the function that shrinks the $k$ values is based on the worst-case scenario observed in the data (see [Figure 2](#figure-2)). This function could be adjusted depending on the problem type or the model. For instance, a Finetuned model, as depicted in [Figure 2b](#figure-2b), might benefit from more aggressive shrinkage compared to its non-Finetuned counterpart. Secondly, the overall runtime performance has not yet matched the improvements seen in FLOPs. This discrepancy is largely due to the hyper-optimization of the Torch library, which optimizes matrix multiplications, thereby reducing overall runtime. Additionally, since we are working with pre-trained tokenizers, reducing the $W_j$ matrix leads to incorrect predictions, necessitating a remapping back to the original vocabulary size. This process introduces an overhead that further worsens runtime.
+However, some limitations and future work can be established. Firstly, the function that shrinks the $k$ values is based on the worst-case scenario observed in the data (see [Figure 3](#figure-3)). This function could be adjusted depending on the problem type or the model. For instance, a Finetuned model, as depicted in [Figure 2b](#figure-2b), might benefit from more aggressive shrinkage compared to its non-Finetuned counterpart. Secondly, the overall runtime performance has not yet matched the improvements seen in FLOPs. This discrepancy is largely due to the hyper-optimization of the Torch library, which optimizes matrix multiplications, thereby reducing overall runtime. Additionally, since we are working with pre-trained tokenizers, reducing the $W_j$ matrix leads to incorrect predictions, necessitating a remapping back to the original vocabulary size. This process introduces an overhead that further worsens runtime.
 
 ### Contrastive Decoding
 
 In this section, we analyze the behavior of the two implemented versions of contrastive decoding confidence measures, Weighted and Jensen-Shannon Divergence (JSD) contrastive decoding. The aim of this section is to determine the impact of Contrastive Decoding techniques on performance and average exit. Due to time and compute constraints, the results displayed below are reported on 100 samples on both SQuAD and SamSum datasets.
 
-Results from [Figure 7](#figure-7) show Weighted contrastive decoding achieving comparable average exit layer with softmax baseline, while still retaining almost all the performance. More interesting is the behaviour of JSD. The confidence measure consistently beats softmax baseline. The method is exiting earlier with an average gain of 2.5 blocks and, most importantly, it is also achieving higher performance with a 2\% increase over both softmax the no exiting network (green). The reason for the lack in performance in earlier layers for contrastive decoding confidences is in their intrinsic nature. [Figure 2](#figure-2) clearly shows that while confidence at earlier layers is very high, their accuracy is very low. This means that contrasting the probability outputs of the amateur layer with the expert, at early layers, results in catastrophically pushing the model towards the earlier end of the curve, resulting in the model being wrongly over-confident.
+Results from [Figure 8](#figure-8) show Weighted contrastive decoding achieving comparable average exit layer with softmax baseline, while still retaining almost all the performance. More interesting is the behaviour of JSD. The confidence measure consistently beats softmax baseline. The method is exiting earlier with an average gain of 2.5 blocks and, most importantly, it is also achieving higher performance with a 2\% increase over both softmax the no exiting network (green). The reason for the lack in performance in earlier layers for contrastive decoding confidences is in their intrinsic nature. [Figure 3](#figure-3) clearly shows that while confidence at earlier layers is very high, their accuracy is very low. This means that contrasting the probability outputs of the amateur layer with the expert, at early layers, results in catastrophically pushing the model towards the earlier end of the curve, resulting in the model being wrongly over-confident.
 
 
 <table align="center" style="width: 100%; border-collapse: collapse; margin: 20px auto;">
@@ -337,7 +337,7 @@ Results from [Figure 7](#figure-7) show Weighted contrastive decoding achieving 
     </tr>
 </table>
 
-Evaluation on SamSum dataset, [Figure 7](#figure-7), shows notable results. While weighted contrastive decoding is on par with softmax baseline, the Jensen-Shannon Divergence (JSD) confidence measure is exiting even earlier on average, with a 2.9 block gain against softmax. Additionally, JSD is remarkably attaining almost a 10\% increase in Rouge-L performance on exit-layer 17.
+Evaluation on SamSum dataset, [Figure 8](#figure-8), shows notable results. While weighted contrastive decoding is on par with softmax baseline, the Jensen-Shannon Divergence (JSD) confidence measure is exiting even earlier on average, with a 2.9 block gain against softmax. Additionally, JSD is remarkably attaining almost a 10\% increase in Rouge-L performance on exit-layer 17.
 
 
 <table align="center" style="width: 100%; border-collapse: collapse; margin: 20px auto;">
