@@ -134,6 +134,17 @@ $k^*$ here indicates a lower bound on the size our pruned vocabulary matrix $\ti
 
 **Softmax response via adaptive pruning**
 
+It can be seen in Figures [2](#figure-2) and [3](#figure-3) that, after some initial layers, the confidence and the F1 score of each layer are highly correlated. Together with [Figure 1](#figure-1), this poses the basis for an experiment where the amount of retained top-k tokens at each layer is adapted to the confidence at the previous layer.
+To compute the amount of retained tokens, we use the following formula:
+
+$$k^\ell = \text{vocab\_size} \times (1 - \text{confidence}^{\ell - 1} \times \text{scaling factor}) $$
+
+Where:
+- $k^\ell$ is the amount of retained tokens at layer $\ell$
+- $vocab_size$ is the size of the full vocabulary 
+- $\text{confidence}^{\ell - 1}$ is the confidence at layer $\ell - 1$ 
+- $\text{scaling factor}$ is a coefficient that is introduced to avoid having retaining 0 tokens in case of conficence = 1. For simplicity, this has been set to 0.9 during our experiments.
+
 To summarize, our predicted token is often in the top-k ones, with a high value of $k$. Due to this, pruning the vocabulary matrix allows us to reduce the amount of computations we have to compute at each layer, while discarding only irrelevant tokens. While we trade-off some performance, this further speeds up the runtime of our model, allowing us to obtain notable efficiency gains.
 
 <a id='figure-1a'></a> 
