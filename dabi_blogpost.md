@@ -332,7 +332,7 @@ Lastly, we highlight that the difference in results between Figures [4](#figure-
 <p align='center'><b>Rouge-L Metric</b> for T5-Large and T5-Finetuned with <i>JSD base</i>, <i>Softmax Base</i>, <i>JSD and adaptive</i> and <i>Softmax and fixed</i>.</p>
 
 <p align='center'>
-<img src="./blogpost_images/plots/sam_no_log.png" alt="FLOPs per sample for T5-Large and T5-Finetuned with JSD base, Softmax Base, JSD and adaptive and Softmax and fixed." style="width:48%; display:inline-block; margin: 0 2.5%;" />
+<img src="./blogpost_images/plots/sam_final_no_log.png" alt="FLOPs per sample for T5-Large and T5-Finetuned with JSD base, Softmax Base, JSD and adaptive and Softmax and fixed." style="width:48%; display:inline-block; margin: 0 2.5%;" />
 </p>
 <p align='center'><b>FLOPs per sample</b> for T5-Large and T5-Finetuned with <i>JSD base</i>, <i>Softmax Base</i>, <i>JSD and adaptive</i> and <i>Softmax and fixed</i>.</p>
 
