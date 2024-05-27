@@ -145,7 +145,7 @@ Where:
 - $k^\ell$ is the amount of retained tokens at layer $\ell$
 - $vocab_size$ is the size of the full vocabulary 
 - $\text{confidence}^{\ell - 1}$ is the confidence at layer $\ell - 1$ 
-- $\text{scaling factor}$ is a coefficient that is introduced to avoid having retaining 0 tokens in case of conficence = 1. For simplicity, this has been set to 0.9 during our experiments.
+- $\text{scaling_factor}$ is a coefficient that is introduced to avoid having retaining 0 tokens in case of conficence = 1. For simplicity, this has been set to 0.9 during our experiments.
 
 To summarize, our predicted token is often in the top-k ones, with a high-enough value of $k$. Due to this, pruning the vocabulary matrix allows us to reduce the amount of computations we have to compute at each layer, while discarding only irrelevant tokens. While we trade-off some performance, this further speeds up the runtime of our model, allowing us to obtain notable efficiency gains.
 
