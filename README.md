@@ -1,4 +1,7 @@
 # Optimizing Predictions: Vocabulary Reduction and Contrastive Decoding in LLMs 
 
 
-### Karim Abdel Sadek, Gabriele Desimini, Matteo Nulli, Joan Velja, Jort Vincenti
+### J. Velja, J. Vincenti, M. Nulli, G. Desimini, K.A. Abdel Sadek
+
+
+---
