@@ -238,7 +238,7 @@ It’s important to recognize that smaller LMs, despite their limitations, do re
 
 $$
 
-p_{\text{LCD}}(x_t | x_{< t}) = \text{Softmax}\left(\log \frac{p_{\text{EXP}}(x_t | x_{< t})}{p_{\text{AMA}}(x_t | x_{< t})}\right) \cdot \sum_{x_t  V_{head}(x_{<t})} p_{EXP} (x_t | x_{< t}) 
+p_{\text{LCD}}(x_t | x_{< t}) = \text{Softmax}\left(\log \frac{p_{\text{EXP}}(x_t | x_{< t})}{p_{\text{AMA}}(x_t | x_{< t})}\right) ∑_{x \in V}
 
 $$
 
