@@ -86,7 +86,7 @@ Finally, all the experiments in the following sections are done using the availa
 Our first approach ([Figure 1](#figure-1)) aims to improve a limitation of the Softmax response method introduced by [Schuster et al. (2022)](#confident-adaptive-language-modeling-2022). We denote the final output of layer $\ell$ as
 
 <p align='center'>
-$\textbf{v}^\ell = \text{Softmax}(\textbf{W}_\ell h^{\ell}_{t})$
+$\textbf{v}^\ell = \text{Softmax}(\textbf{W}_\ell h^{\ell}_{t}) \sum_{x_t \in V_{head}(x_{<t}) p_{exp} (x_t | x_{<t})}$
 </p>
 
 The so-called confidence measure is computed as the difference between the top two values of the probits vector $`\textbf{v}`$, at each layer $\ell$. We denote this measure as $`c^{\ell}_{t+1}`$. Let us define an early-exit threshold $\tau^{\ell}_{t+1}$ at each layer. If our confidence measure exceeds the early exit-threshold,
