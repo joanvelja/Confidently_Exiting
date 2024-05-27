@@ -149,7 +149,7 @@ To summarize, our predicted token is often in the top-k ones, with a high value 
 <a id='figure-2'></a>
 <a id='figure-3'></a> 
 <p align='center'>
-<img src="./blogpost_images/plots/git add3.jpg" style="width:100%; display:inline-block; margin: 0 2.5%;" /></p>
+<img src="./blogpost_images/plots/figures2_3.jpg" style="width:100%; display:inline-block; margin: 0 2.5%;" /></p>
 <p align='center'>Confidence vs F1 accuracy</p>
 
 ### Addressing the Trade-Off Via Contrastive Decoding
@@ -233,7 +233,7 @@ Results from [Figure 6](#figure-6) show Weighted contrastive decoding achieving 
 
 
 <p align='center'>
-<img src="./blogpost_images/plots/figure7.jpf" style="width:100%; display:inline-block; margin: 0 2.5%;" />
+<img src="./blogpost_images/plots/figure7.jpg" style="width:100%; display:inline-block; margin: 0 2.5%;" />
 </p>
 
 <p align='center'><a id='figure-7'><b>Figure 7:</b></a> <b>SQuAD Average Exit and F1</b>. The first picture shows the average exit layer across different minimum exit layers. The second the F1 score across different minimum exit layers. Results are reported on t5-large non-finetuned model on SQuAD dataset.</p>
