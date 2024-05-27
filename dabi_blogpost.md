@@ -32,7 +32,7 @@ Differently, [Zhu (2021)](#leebert-2021) introduces a new learning scheme. LeeBE
 
 This research paper is based on the Early-Exit Framework introduced by [Schuster et al. (2022)](#confident-adaptive-language-modeling-2022). We propose an alternative, which reduces the number of Floating Point Operations per second (FLOPs), making it faster and computationally more efficient. Additionally, we combine it with a Contrastive Decoding framework ([Li et al., 2023](#contrastive-decoding-2023)). Contrastive Decoding is a technique used to reduce unwanted behaviors in Large Language Models such as repetition and incoherence. The method employs two models, a smaller one called amateur and a larger one, called expert. They both perform auto-regressive text generation on the same data, and the final predicted token is selected based on the output difference between the predictions of the expert and amateur. While this method is innovative, employing two LLMs is highly inefficient, both in terms of memory and compute. Alternative methods have been proposed, which employ the contrastive decoding scheme, without the necessity of using two large models. An example of such work is the idea of Auto-Contrastive Decoding ([Gera et al., 2023](#auto-contrastive-decoding-2023)). The authors show how contrasting outputs of different layers within the same model can benefit text generation outputs. The study proves that predictions of shallow layers, which are often overlooked, can help those of deeper ones to attain better results. Other studies have adapted this technique to different tasks such as reducing hallucination in LLMs ([Chuang et al., 2024](#dola-contrasting-layers-2024)). Our proposed contrastive decoding techniques are based on both [Gera et al. (2023)](#auto-contrastive-decoding-2023) and [Chuang et al. (2024)](#dola-contrasting-layers-2024) and adapted to the aforementioned early-exiting framework of [Schuster et al. (2022)](#confident-adaptive-language-modeling-2022).
 
-## Preliminaries
+## Preliminaries and Experimental Setting
 
 ### Transformer Architecture
 
@@ -319,7 +319,7 @@ Lastly, we highlight that the difference in results between Figures [4](#figure-
 <p align='center'><b>Rouge-L Metric</b> for T5-Large and T5-Finetuned with <i>JSD base</i>, <i>Softmax Base</i>, <i>JSD and adaptive</i> and <i>Softmax and fixed</i>.</p>
 
 <p align='center'>
-<img src="./blogpost_images/plots/sam_no_log.png" alt="FLOPs per sample for T5-Large and T5-Finetuned with JSD base, Softmax Base, JSD and adaptive and Softmax and fixed." style="width:48%; display:inline-block; margin: 0 2.5%;" />
+<img src="./blogpost_images/plots/sam_final_no_log.png" alt="FLOPs per sample for T5-Large and T5-Finetuned with JSD base, Softmax Base, JSD and adaptive and Softmax and fixed." style="width:48%; display:inline-block; margin: 0 2.5%;" />
 </p>
 <p align='center'><b>FLOPs per sample</b> for T5-Large and T5-Finetuned with <i>JSD base</i>, <i>Softmax Base</i>, <i>JSD and adaptive</i> and <i>Softmax and fixed</i>.</p>
 
