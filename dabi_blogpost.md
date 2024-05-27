@@ -138,7 +138,7 @@ It can be seen in Figures [2](#figure-2) and [3](#figure-3) that, after some ini
 To compute the amount of retained tokens, we use the following formula:
 
 ```math
-k^\ell = \text{vocab\_size} \times (1 - \text{confidence}^{\ell - 1} \times \text{scaling factor})
+k^\ell = \text{vocab\_size} \times (1 - \text{confidence}^{\ell - 1} \times \text{scaling\_factor})
 ```
 
 Where:
