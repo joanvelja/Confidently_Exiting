@@ -149,7 +149,7 @@ To summarize, our predicted token is often in the top-k ones, with a high value 
 <a id='figure-2'></a>
 <a id='figure-3'></a> 
 <p align='center'>
-<img src="./blogpost_images/plots/figures2_3.jpg" style="width:100%; display:inline-block; margin: 0 2.5%;" /></p>
+<img src="./blogpost_images/plots/git add3.jpg" style="width:100%; display:inline-block; margin: 0 2.5%;" /></p>
 <p align='center'>Confidence vs F1 accuracy</p>
 
 ### Addressing the Trade-Off Via Contrastive Decoding
