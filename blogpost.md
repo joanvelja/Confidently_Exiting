@@ -83,7 +83,7 @@ Finally, all the experiments in the following sections are done using the availa
 
   
   <tr align="left">
-    <td colspan=2><a id='figure-1'><b>Figure 1:</b> Softmax Pruning approaches: illustration of (1) <i>fixed</i> and (2) <i>decaying</i> pruning methods for token importance preservation. (3) <i> Adaptive </i> decaying not illustrated.</td>
+    <td colspan=2><a id='figure-1'><b>Figure 1:</b></a> Softmax Pruning approaches: illustration of (1) <i>fixed</i> and (2) <i>decaying</i> pruning methods for token importance preservation. (3) <i> Adaptive </i> decaying not illustrated.</td>
   </tr>
 </table>
 
@@ -171,24 +171,24 @@ To summarize, our predicted token is often in the top-k ones, with a high-enough
         <td style="text-align: center; padding: 10px;">
             <img src="./blogpost_images/plots/boxplot_topk_rank_evalsquad_google-t5_t5-large.png" style="max-width: 100%; height: 300px;">
             <br>
-            <div style="margin-top: 10px;"><a id='figure-2a'>Figure 2.a:</a> Non fine-tuned T5-Large model, SQuAD Dataset </div>
+            <div style="margin-top: 10px;"><a id='figure-2a'><b>Figure 2.a:</b></a> Non fine-tuned T5-Large model, SQuAD Dataset </div>
         </td>
         <td style="text-align: center; padding: 10px;">
             <img src="./blogpost_images/plots/boxplot_topk_rank_evalsquad_jvelja_t5-squad.png" style="max-width: 100%; height: 300px;">
             <br>
-            <div style="margin-top: 10px;"><a id='figure-2b'>Figure 2.b:</a> Fine-tuned T5-Large model, SQuAD Dataset</div>
+            <div style="margin-top: 10px;"><a id='figure-2b'><b>Figure 2.b:</b></a> Fine-tuned T5-Large model, SQuAD Dataset</div>
         </td>
     </tr>
     <tr>
         <td style="text-align: center; padding: 10px;">
             <img src="./blogpost_images/plots/boxplot_top1_rank_evalsamsum_google-t5_t5-large.png" style="max-width: 100%; height: 300px;">
             <br>
-            <div style="margin-top: 10px;"><a id='figure-2c'>Figure 2.c:</a> Non fine-tuned T5-Large model, SamSum Dataset </div>
+            <div style="margin-top: 10px;"><a id='figure-2c'><b>Figure 2.c:</b></a> Non fine-tuned T5-Large model, SamSum Dataset </div>
         </td>
         <td style="text-align: center; padding: 10px;">
             <img src="./blogpost_images/plots/boxplot_topk_rank_evalsquad_jvelja_t5-squad.png" style="max-width: 100%; height: 300px;">
             <br>
-            <div style="margin-top: 10px;"><a id='figure-2d'>Figure 2.d:</a> Fine-tuned T5-Large model, SamSum Dataset </div>
+            <div style="margin-top: 10px;"><a id='figure-2d'><b>Figure 2.d:</b></a> Fine-tuned T5-Large model, SamSum Dataset </div>
         </td>
     </tr>
     <tr>
@@ -206,12 +206,12 @@ To summarize, our predicted token is often in the top-k ones, with a high-enough
         <td style="text-align: center; padding: 10px;">
             <img src="./blogpost_images/plots/conf_metric_squad_google_t5.png" style="max-width: 100%; height: 300px;">
             <br>
-            <div style="margin-top: 10px;"><a id='figure-3'>Figure 3:</a> Confidence vs F1 accuracy. T5-base model, SQuAD dataset </div>
+            <div style="margin-top: 10px;"><a id='figure-3'><b>Figure 3:</b></a> Confidence vs F1 accuracy. T5-base model, SQuAD dataset </div>
         </td>
         <td style="text-align: center; padding: 10px;">
             <img src="./blogpost_images/plots/conf_metric_squad_tuned.png" style="max-width: 100%; height: 300px;">
             <br>
-            <div style="margin-top: 10px;"><a id='figure-4'>Figure 4:</a> Confidence vs F1 accuracy. Fine-Tuned model, SQuAD dataset </div>
+            <div style="margin-top: 10px;"><a id='figure-4'><b>Figure 4:</b></a> Confidence vs F1 accuracy. Fine-Tuned model, SQuAD dataset </div>
         </td>
     </tr>
 </table>
@@ -224,7 +224,7 @@ To summarize, our predicted token is often in the top-k ones, with a high-enough
       <th><img src="./blogpost_images/plots/IMG_0311.JPG" alt="Dynamic Contrastive Decoding: illustration of how we leverage Contrastive Decoding within model layers." style="width:90%; display:inline-block; margin: 0 2.5%;" /></th>
   </tr>
   <tr align="left">
-    <td colspan=2><b id='figure-5'>Figure 5:</b> Dynamic Contrastive Decoding: illustration of how we leverage <i>Contrastive Decoding</i> within model layers.</td>
+    <td colspan=2><a id='figure-5'><b>Figure 5:</b></a> Dynamic Contrastive Decoding: illustration of how we leverage <i>Contrastive Decoding</i> within model layers.</td>
   </tr>
 </table>
 
@@ -295,7 +295,7 @@ We create our experiments by using the available implementation as a baseline an
     </tr>
     <tr>
         <td colspan="2" style="text-align: left; padding: 10px; font-size: 14px;">
-            <a id='figure-6'> <b>Figure 6:</a> Performance on Question-Answering Task:</b> Comparison of model performance in terms of F1 score and the amount of FLOPs generated per sample. The minimum exit layer was set to 7 for T5-Large and 2 for T5-Large Finetuned, with the confidence set at 0.9 for both. The amount of FLOPs represents the average from 100 samples and the dataset used is SQuAD.
+            <a id='figure-6'> <b>Figure 6:</a></b> Performance on Question-Answering Task: Comparison of model performance in terms of F1 score and the amount of FLOPs generated per sample. The minimum exit layer was set to 7 for T5-Large and 2 for T5-Large Finetuned, with the confidence set at 0.9 for both. The amount of FLOPs represents the average from 100 samples and the dataset used is SQuAD.
         </td>
     </tr>
 </table>
@@ -321,15 +321,16 @@ We create our experiments by using the available implementation as a baseline an
 </table>
 
 
-The overall performance displays the following trend: similar performance is achieved across the evaluation metrics, but the amount of FLOPs decreases by a hundredfold for all tasks. Additionally, between fixed and decaying reduction, half of the FLOPs are utilized, but there is a 2% loss in performance. This illustrates the trade-off: choosing a smaller $k$ reduces the number of FLOPs but at the cost of lower performance. Additionally, due to Finetuned models exiting at earlier stages, fewer FLOPs are observed overall. However, the same trade-off can be observed.
+  The overall performance displays the following trend: similar performance is achieved across the evaluation metrics, but the amount of FLOPs decreases by a hundredfold for all tasks. Additionally, between fixed and decaying reduction, half of the FLOPs are utilized, but there is a 2% loss in performance. This illustrates the trade-off: choosing a smaller $k$ reduces the number of FLOPs but at the cost of lower performance. Additionally, due to Finetuned models exiting at earlier stages, fewer FLOPs are observed overall. However, the same trade-off can be observed.
 
-We set the minimum confidence required for an exit at 0.9 to achieve a speed-up while maintaining good results. It is important to note that if this value would be lowered, our model would exit earlier, thus poorer predictions but quicker performance would be observed regardless of the implementation type. As a result, similarly to the observation between the fine-tuned and non-fine-tuned models, we claim that the gains in FLOPs would be less significant but still observable.
+  We set the minimum confidence required for an exit at 0.9 to achieve a speed-up while maintaining good results. It is important to note that if this value would be lowered, our model would exit earlier, thus poorer predictions but quicker performance would be observed regardless of the implementation type. As a result, similarly to the observation between the fine-tuned and non-fine-tuned models, we claim that the gains in FLOPs would be less significant but still observable.
 
-### Contrastive Decoding
+  ### Contrastive Decoding
 
-In this section, we analyze the behavior of the two implemented versions of contrastive decoding confidence measures, Weighted and Jensen-Shannon Divergence (JSD) contrastive decoding. The aim of this section is to determine the impact of Contrastive Decoding techniques on performance and average exit. Due to time and compute constraints, the results displayed below are reported on 100 samples on both SQuAD and SamSum datasets.
+  In this section, we analyze the behavior of the two implemented versions of contrastive decoding confidence measures, Weighted and Jensen-Shannon Divergence (JSD) contrastive decoding. The aim of this section is to determine the impact of Contrastive Decoding techniques on performance and average exit. Due to time and compute constraints, the results displayed below are reported on 100 samples on both SQuAD and SamSum datasets.
 
-Results from [Figure 8](#figure-8) show Weighted contrastive decoding achieving comparable average exit layer with softmax baseline, while still retaining almost all the performance. More interesting is the behaviour of JSD. The confidence measure consistently beats softmax baseline. The method is exiting earlier with an average gain of 2.5 blocks and, most importantly, it is also achieving higher performance with a 2\% increase over both softmax the no exiting network (green). The reason for the lack in performance in earlier layers for contrastive decoding confidences is in their intrinsic nature. [Figure 3](#figure-3) clearly shows that while confidence at earlier layers is very high, their accuracy is very low. This means that contrasting the probability outputs of the amateur layer with the expert, at early layers, results in catastrophically pushing the model towards the earlier end of the curve, resulting in the model being wrongly over-confident.
+
+  Results from [Figure 8](#figure-8) show Weighted contrastive decoding achieving comparable average exit layer with softmax baseline, while still retaining almost all the performance. More interesting is the behaviour of JSD. The confidence measure consistently beats softmax baseline. The method is exiting earlier with an average gain of 2.5 blocks and, most importantly, it is also achieving higher performance with a 2\% increase over both softmax the no exiting network (green). The reason for the lack in performance in earlier layers for contrastive decoding confidences is in their intrinsic nature. [Figure 3](#figure-3) clearly shows that while confidence at earlier layers is very high, their accuracy is very low. This means that contrasting the probability outputs of the amateur layer with the expert, at early layers, results in catastrophically pushing the model towards the earlier end of the curve, resulting in the model being wrongly over-confident.
 
 
 <table align="center" style="width: 100%; border-collapse: collapse; margin: 20px auto;">
@@ -353,7 +354,6 @@ Results from [Figure 8](#figure-8) show Weighted contrastive decoding achieving 
 </table>
 
 Evaluation on SamSum dataset, [Figure 9](#figure-9), shows notable results. While weighted contrastive decoding is on par with softmax baseline, the Jensen-Shannon Divergence (JSD) confidence measure is exiting even earlier on average, with a 2.9 block gain against softmax. Additionally, JSD is remarkably attaining almost a 10\% increase in Rouge-L performance on exit-layer 17.
-
 
 <table align="center" style="width: 100%; border-collapse: collapse; margin: 20px auto;">
     <tr>
@@ -400,6 +400,7 @@ Following the argument of [Section "Addressing the trade-off via Contrastive Dec
 #### Comparison with Baseline Models
 
 Given the results of [Section "Speedup and Contrastive Decoding"](#speedup-and-contrastive-decoding), and our analysis of the best minimum exit layer parameters to use in the contrastive decoding setting, we now compare the most performing pruning method of [Section "Best JSD Pruning Combination"](#best-jsd-pruning-combination) with the baselines from Sections ["Contrastive Decoding"](#contrastive-decoding) and ["Softmax Speed-Up"](#softmax-speedup). We do so by selecting the minimum exit layer of 19 for all the analyzed methods. The choice is made by comparing the performance of each metric and selecting the best for each of them.
+
 
 As explained in [Section "Early Exiting via the Softmax Approach"](#early-exiting-via-the-softmax-approach), pruning was introduced to speed-up the softmax approach by reducing the un-embedding operations. In [Section "Addressing the trade-off via Contrastive Decoding"](#addressing-the-trade-off-via-contrastive-decoding) we show the considerable impact this has on FLOPs. Similarly, Figures [10](#figure-8) and [11](#figure-9) show that removing a large number of tokens has a notable effect on compute, reducing it by almost 250 times on SQuAD and 190 on SamSum between JSD baseline and JSD with adaptive pruning. This gap is also more noteworthy when looking at the amount of performance retained. On both fine-tuned and non-finetuned models the decrease in performance between the techniques is never more than 2%, with JSD with adaptive even achieving a 1.9% increase on softmax baseline on SQuAD.
 
@@ -451,7 +452,6 @@ Lastly, we highlight that the difference in results between Figures [4](#figure-
 ## Conclusion and Future Work
 
 In this study, we have explored the application of early exiting strategies within Large Language Models (LLMs) to address the challenge of computational efficiency during inference. Our research integrates traditional early exiting mechanisms with concrete gains in efficiency obtained from vocabulary pruning. Additionally, we apply the idea of contrastive decoding to the early exiting setting and show that sensible improvements can be achieved by imposing a clever heuristic on the choice of the layer to contrast. Finally, we combine the aforementioned techniques and demonstrate that we can both retain almost all performance while still attain a considerably lower number of FLOPs during inference, resulting in a solution that satisfies both efficiency and performance constraints. We believe our lack of reliance on task-specific tweaks is what differentiates our work from those of many peers, thus highlighting the flexibility of our idea. 
-
 
 In future work, we aim to expand our analysis to include a wider array of tasks - machine translation, open ended generation and long context tasks - and evaluation on larger datasets to further validate our proposal. 
 Another limitation is given by the fact that the overall runtime performance has not yet matched the improvements seen in FLOPs. This discrepancy is largely due to the hyper-optimization of the PyTorch library, which optimizes matrix multiplications, thereby reducing overall runtime, though it is worth noting that our gains in FLOPs should increase as a function of model scale. We also plan on addressing scaling laws in future works. Additionally, since we are working with pre-trained tokenizers, reducing the $W_j$ matrix leads to incorrect predictions, necessitating a remapping back to the original vocabulary size. This process introduces an overhead that further worsens runtime, as we are forced to apply the same operation twice (reducing first, and then expanding again). Several engineering reliant optimizations are still possible in this direction, though we did not fully explore them due to the previously mentioned constraints. 
