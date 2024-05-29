@@ -519,8 +519,7 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
             metrics = output.metrics
             if additional_args.count_flops:
                 final_flops = model.decoder.flop_counter/len(eval_dataset)
-                wandb.log({"final_flops": final_flops})    
-            
+                print(f"Final FLOPS: {final_flops}")
         else:
             metrics = trainer.evaluate(metric_key_prefix="eval")
 
@@ -644,25 +643,7 @@ if __name__ == "__main__":
     trainer_cls = SumTrainer
 
     if not additional_args.plotting_logits:
-        wandb.login()
-
-        wandb.init(
-                # set the wandb project where this run will be logged
-                project="flops_calculations_Matteo",
-                entity="uva24",
-                # track hyperparameters and run metadata
-                config={
-                    "dataset": data_args.dataset_name,
-                    "model": model_args.model_name_or_path, 
-                    "exit_conf_type": additional_args.exit_conf_type,
-                    "exit_conf_threshold": additional_args.exit_conf_threshold,
-                    "exit_min_layer": additional_args.exit_min_layer,
-                    "type_vocab_reduct": additional_args.type_vocab_reduct,
-                    },
-                mode="disabled" if False else "online",
-                )
         main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
-        wandb.finish()
     else:
         mean_block_confidence = main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
         block_k_metric = []
