@@ -518,6 +518,9 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
         if training_args.include_inputs_for_metrics:
             output = trainer.evaluate(metric_key_prefix="eval")
             metrics = output.metrics
+            if additional_args.count_flops:
+                final_flops = model.decoder.flop_counter/len(eval_dataset)
+                wandb.log({"final_flops": final_flops})    
             
         else:
             metrics = trainer.evaluate(metric_key_prefix="eval")
@@ -660,7 +663,7 @@ if __name__ == "__main__":
 
         wandb.init(
                 # set the wandb project where this run will be logged
-                project="small_subset_Matteo",
+                project="flops_calculations_Matteo",
                 entity="uva24",
                 # track hyperparameters and run metadata
                 config={
