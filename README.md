@@ -4,51 +4,46 @@
 
 # Optimizing Predictions: Vocabulary Reduction and Contrastive Decoding in LLMs
 
-### Karim Abdel Sadek, Gabriele Desimini, Matteo Nulli, Joan Velja, Jort Vincenti
+This repo is cloned from the code-base <a href="https://github.com/raymin0223/fast_robust_early_exit" target="_blank" rel="noopener noreferrer">  fast_robust_early_exit</a> with the original [paper](https://arxiv.org/abs/2310.05424). We futher extend their works by adding prunning options on the logits before softmax evaluation, and implemented contrastive decoding. Our discussion and findings can be found in the [blogpost](blogpost.md) file.
 
-
-[**Fast and Robust Early-Exiting Framework for Autoregressive Language Models with Synchronized Parallel Decoding**](https://arxiv.org/abs/2310.05424)       
-[Sangmin Bae](https://www.raymin0223.com)$^\*$,
-[Jongwoo Ko](https://sites.google.com/view/jongwooko)$^\*$,
-[Hwanjun Song](https://songhwanjun.github.io)$^\dagger$,
-[Se-Young Yun](https://fbsqkd.github.io)$^\dagger$<br/>
-\* equal contribution $&nbsp$ $\dagger$ corresponding author
-
-- **Early-Exiting** dynamically allocates computation paths based on the complexity of generation for each token.
-- Conventional framework failed to show actual speedup due to the large number of exit points and state copying mechanism.
-- We propose **FREE**, consists of (1) shallow-deep module, (2) synchronized parallel decoding, and (3) adaptive threshold estimator.
-- In contrast to conventional approaches, FREE achieved larger inference speedup on extensive generation tasks.
 
 ## Requirements
 Install the necessary packages with: 
 ```
 $ pip install -r requirements.txt
 ```
+Or via the environment file:
+```
+conda env create --name environment_name -f environment.yml
+```
 
 ## Experiments
-We experimented with 4 summarization tasks, 1 question answering task, and 1 machine translation task.     
-Please see the [scripts](scripts/) and run shell files to train or evaluate on each dataset.    
+We experimented with 1 summarization and 1 question answering task. 
+Please see the [scripts/softmax_experiments](src/scripts/softmax_experiments) shell files to reproduce the softmax experiments on each dataset.    
 ```bash
-$ bash run_[TASK_NAME]_[DATASET_NAME].sh
+sh jobname.run > jobname.out
 ```
 
 ### Methods
 
-In addition to the previous implementation we added a few paramters for our task. Please refer [additional_args](src/util/additional_args.py) for more details.   
+In addition to the previous implementation parameters we added new paramters for our task. Please refer [additional_args](src/util/additional_args.py) for more details.   
 
 #### Plotting Softmax: 
-- `--plotting_logits False`: If set to True this will plot the confidence, f1, and boxplot of the paper.
-- `--final_flops False`: If set to True this will showcase the amount of flops calculated during confidence estimation
 - `type_vocab_reduct [str]`: Can be either fixed, decaying, or adaptive and will prune the vocabulary matrix.
+- `--plotting_logits False`: If set to True this will plot the confidence, f1, and boxplots (Figure 2,3, and 4 of the [blogpost](blogpost.md)).
+- `--final_flops False`: If set to True this will showcase the amount of flops calculated during confidence estimation (Figure 6 and 7 of the [blogpost](blogpost.md)).
+
 
 
 ### Checkpoints
 
 
-We share finetuned checkpoints in [google drive](https://drive.google.com/drive/folders/1covxgJtIbFgH_xI-sXIuashX2zsY42w_?usp=share_link).     
-Note that you must download `tokenizer.json` for each model individually from HuggingFace to run it without errors. (refer to Issue [#3](https://github.com/raymin0223/fast_robust_early_exit/issues/3))
+To run the finetuned models they are available at [jveila](https://huggingface.co/jvelja) on the HuggingFace platform.
 
 
 ## Contact
-- Sangmin Bae: bsmn0223@kaist.ac.kr
-- Jongwoo Ko: jongwoo.ko@kaist.ac.kr
+- Karim Abdel Sadek
+- Gabriele Desimini
+- Matteo Nulli
+- Joan Velja
+- Jort Vincenti
