@@ -146,32 +146,32 @@ $$
 $$
 </p>
 
-**Softmax response via decaying pruning** 
+**Softmax response via decaying vocabulary pruning** 
 
-As one can note from [Figure 2](#figure-2), the rank of the predicted token smoothly decreases across layers. Again, we prune the $`\textbf{W}_j`$ matrix, given a minimum early exit layer $j$. We retain its top $k$-tokens, obtaining the new pruned vocabulary matrix
+As one can note from [Figure 2](#figure-2), the rank of the predicted token smoothly decreases across layers. Similarly, we start by pruning the $`\textbf{W}_{j+1}`$ matrix, given a minimum early exit layer $j$. We retain its top $k$-tokens, obtaining 
 
 <p align='center'>
 $$
-  \Large
+\large
 \tilde{\textbf{W}}_{j+i} \in \mathbb{R}^{k \times d_{\text{model}}}
 $$
 </p>
 
-Now, instead of keeping the reduced matrix size fixed, we further prune it at every successor layer. Given the vocabulary matrix $\tilde{\textbf{W}}_{j+i}$ at layer $j+i$ of size $k_1$, we prune it for layer $j+i+1$ to a reduced matrix of size $k_2$, where
+Now, instead of keeping the reduced matrix size fixed, we further prune it at every successive layer. Given $\tilde{\textbf{W}}_{j+i}$ of size $k_1$, we prune it at layer $j+i+1$ to a reduced matrix of size $k_2$, where
 
 <p align='center'>
 $$
-\Large
+\large
 k_2 = \max\left( k^*, \frac{k_1}{1 + \frac{k_1 - k^*}{k^*} \cdot \frac{j + i}{\text{num\_layers}}} \right)
 $$
 </p>
 
-$k^*$ here indicates a lower bound on the size $\tilde{\textbf{W}}_{j+i+1}$ can reach. This function has been chosen based on [Figure 2a](#figure-2a), hence to be robust against the worst case scenario among all datasets and models. The function we defined here above approximates the decaying in ranking of the top-k token in that case. The efficiency gain is, in theory, even more prominent than in the case of fixed pruning.
+$k^*$ here indicates a lower bound on the size $\tilde{\textbf{W}}_{j+i+1}$ can reach. The function we define has been chosen based on [Figure 2a](#figure-2a), hence to be robust against the worst case scenario. It approximates the decay in ranking of the top-k token in that case. The efficiency gain is even more prominent than in the case of fixed pruning.
 
-**Softmax response via adaptive pruning**
+**Softmax response via adaptive vocabulary pruning**
 
-It can be seen in Figures [3](#figure-3) and [4](#figure-4) that, after few blocks, the confidence and the F1 score of each layer are highly correlated. Together with [Figure 2](#figure-2), this poses the basis for an approach where the amount of retained top-k tokens at each layer is adapted to the confidence at the previous layer.
-To adapt the amount of retained tokens, we propose the following:
+It can be seen in Figures [3](#figure-3) and [4](#figure-4) that, after few blocks, the confidence and the F1 score of each layer are highly correlated. Together with [Figure 2](#figure-2), this poses a basis for an approach where the amount of retained top-k tokens at each layer is adapted to the confidence at the previous one.
+We propose the following:
 
 ```math
 k^\ell = \text{vocab\_size} \times (1 - \text{confidence}^{\ell - 1} \times \text{scaling\_factor})
@@ -185,7 +185,7 @@ Where:
 
 </br></br>
 
-To summarize, our predicted token is often in the top-k ones, with a high-enough value of $k$. Due to this, pruning the vocabulary matrix allows us to reduce the amount of computations we have to compute at each layer, while discarding only irrelevant tokens. While we trade-off some performance, this further speeds up the runtime of our model, allowing us to obtain considerable efficiency gains FLOPS wise.
+To summarize, our final predicted token is often highly ranked across all layers. Due to this, pruning the vocabulary matrix allows us to reduce the amount of computations at each block, discarding only irrelevant tokens. While we may potentially trade-off some performance, this further speeds up the runtime of our model, allowing us to obtain considerable efficiency gains.
 
 
 <table align="center" style="width: 100%; border-collapse: collapse; margin: 20px auto;">
@@ -250,20 +250,21 @@ To summarize, our predicted token is often in the top-k ones, with a high-enough
   </tr>
 </table>
 
-The second approach ([Figure 5](#figure-5)) is based on results from [Li et al. (2023)](#contrastive-decoding-2023). The aforementioned work proposes Contrastive Decoding (CD) as a search-based decoding method. This is inspired by the fact that the failures of larger LMs, such as repetition, incoherence for example, are even more prevalent in smaller LMs. By contrasting outputs of smaller LMs with larger ones,the impact of these failures potentially reduce as a consequence. In more detail, even when both types of models agree on a high-probability token ( which is frequently a repetitive one), expert models tend to distribute a significant portion of the probability across a variety of other plausible, non-repetitive token options. This behavior underlines the understanding of language contexts by the expert models, reflecting their ability to consider a broader array of potential continuations. 
+The second approach ([Figure 5](#figure-5)) is based on results from [Li et al. (2023)](#contrastive-decoding-2023). The aforementioned work proposes Contrastive Decoding (CD) as a novel decoding method. This is inspired by the fact that the failures of larger LMs, such as repetition, and incoherence, are even more prevalent in smaller LMs. By contrasting outputs of smaller LMs with larger ones, the impact of these failures potentially reduce as a consequence. In more detail, even when both types of models agree on a high-probability token (frequently a repetitive one), expert models tend to distribute a significant portion of the probability across a variety of other plausible, non-repetitive tokens. 
 
 <!--
+This behavior underlines the understanding of language contexts by the expert models, reflecting their ability to consider a broader array of potential continuations. 
 By effectively sidelining these sub-optimal behaviors, CD leverages the more sophisticated predictive capabilities of the larger models. 
 --> 
 
 
 
-The core goal of this method is to refine the output text by filtering through the lens of larger models, retaining only their superior, diverse linguistic predictions while excluding the limitations typically exhibited by smaller models. This results in text generation that not only avoids redundancy, but that also enriches the content quality. The original implementation involves the use of two models in parallel, returning the difference between the probits $p_{\text{EXP}}$ of a large LM - called the expert - and the probits $p_{\text{AMA}}$ of a small LM - called the amateur.
+The core goal of this method is to refine the output text by filtering through the lens of larger models, retaining only their superior linguistic predictions. This results in text generation that not only avoids redundancy, but that also enriches the content quality. The original implementation involves the use of two models in parallel, returning the difference between the probits $p_{\text{EXP}}$ of a large LM - called the expert - and the probits $p_{\text{AMA}}$ of a small LM - called the amateur.
 
 Following [Li et al. (2023)](#contrastive-decoding-2023), we first implement the CD adaptive plausibility constraint, $`\nu_{\text{head}}(x_{< t})`$, defined as:
 
 <p align='center'>
-$\nu_{\text{head}}(x_{< t}) = \{x_t \in V : p_{\text{EXP}}(x_t|x_{< t}) \geq \alpha \max_{x'_t \in V} p_{\text{EXP}}(x'_t|x_{< t})\}$
+$\nu_{\text{head}}(x_{< t}) = \{x_t \in \text{Vocab} : p_{\text{EXP}}(x_t|x_{< t}) \geq \alpha \max_{x'_t \in V} p_{\text{EXP}}(x'_t|x_{< t})\}$
 </p>
 
 It’s important to recognize that smaller LMs, despite their limitations, do reliably capture basic elements of English grammar and essential common sense principles, such as subject-verb agreement. Applying the CD objective indiscriminately could inadvertently penalize these correct linguistic behaviors, leading to false negatives. Similarly, it might also erroneously reward implausible token choices, resulting in false positives. To address these potential pitfalls, we incorporate the plausibility constraint $\nu_{\text{head}}$ into our framework. Given a preceding context $`x_{< t}`$, this constraint selects a subset of plausible next tokens, out of the vocabulary $V$, whose probabilities are above a threshold. The threshold is a fraction $\alpha$ of the probability of the token with the highest probability in the vocabulary. We set the hyperparameter $\alpha \in[0, 1]$ to 0.1, as done by [cite dola]. Formally, to translate the concept of CD into a practical application, we introduce a contrastive objective, called Log Contrastive Difference (LCD), defined as:
