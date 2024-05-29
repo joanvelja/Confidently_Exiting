@@ -253,16 +253,14 @@ To summarize, our final predicted token is often highly ranked across all layers
   </tr>
 </table>
 
-The second approach ([Figure 5](#figure-5)) is based on results from [Li et al. (2023)](#contrastive-decoding-2023). The aforementioned work proposes Contrastive Decoding (CD) as a novel decoding method. This is inspired by the fact that the failures of larger LMs, such as repetition, and incoherence, are even more prevalent in smaller LMs. By contrasting outputs of smaller LMs with larger ones, the impact of these failures potentially reduce as a consequence. In more detail, even when both types of models agree on a high-probability token (frequently a repetitive one), expert models tend to distribute a significant portion of the probability across a variety of other plausible, non-repetitive tokens. 
+The second approach ([Figure 5](#figure-5)) is inspired by [Li et al. (2023)](#contrastive-decoding-2023).
+We propose to apply their framework to address one of the limitations of (Schulter). Namely, as introduced in previous sections, the Softmax response approach relies on a static notion of confidence, which depends only on the probability distribution computed at the current layer. Such approach may ignore the evolution of the probits' magnitudes across the model. 
 
-<!--
-This behavior underlines the understanding of language contexts by the expert models, reflecting their ability to consider a broader array of potential continuations. 
-By effectively sidelining these sub-optimal behaviors, CD leverages the more sophisticated predictive capabilities of the larger models. 
---> 
+By contrasting outputs of smaller LMs with larger ones, Contrastive Decoding (CD) accounts for the difference in representations computed by amateur and mature layers. 
+The core goal of this method is to refine the output distribution by filtering through the lens of larger models, retaining only their superior linguistic predictions. 
+The original implementation involves the use of two models in parallel, returning the log-ratio between the probits $p_{\text{EXP}}$ of a large LM - called the expert - and the probits $p_{\text{AMA}}$ of a small LM - called the amateur.
 
-
-
-The core goal of this method is to refine the output text by filtering through the lens of larger models, retaining only their superior linguistic predictions. This results in text generation that not only avoids redundancy, but that also enriches the content quality. The original implementation involves the use of two models in parallel, returning the difference between the probits $p_{\text{EXP}}$ of a large LM - called the expert - and the probits $p_{\text{AMA}}$ of a small LM - called the amateur.
+Naturally, this captures the dynamical change of the token's distribution when computed at different heights of the Attention's stack.
 
 Following [Li et al. (2023)](#contrastive-decoding-2023), we first implement the CD adaptive plausibility constraint, $`\nu_{\text{head}}(x_{< t})`$, defined as:
 
@@ -271,21 +269,18 @@ $\nu_{\text{head}}(x_{< t}) = \{x_t \in V : p_{\text{EXP}}(x_t|x_{< t}) \geq \al
 </p>
 where $V$ is our vocabulary.
 
-It’s important to recognize that smaller LMs, despite their limitations, do reliably capture basic elements of English grammar, such as subject-verb agreement. Applying the CD objective indiscriminately could penalize these correct linguistic behaviors, leading to false negatives. It might also erroneously reward implausible token choices, resulting in false positives. To address these potential pitfalls, we incorporate the plausibility constraint $\nu_{\text{head}}$ into our framework. Given a preceding context $`x_{< t}`$, this constraint selects a subset of plausible next tokens, out of the vocabulary $V$, whose probabilities are above a threshold. The threshold is a fraction $\alpha$ of the max probability token in the vocabulary. We set the hyperparameter $\alpha \in[0, 1]$ to 0.1, as done by [Li et al. (2023)](#contrastive-decoding-2023). Formally, to translate the concept of CD into a practical application, we introduce a contrastive objective, called Log Contrastive Difference (LCD), defined as:
+It’s important to recognize that smaller LMs, despite their limitations, do reliably capture basic elements of English grammar, such as subject-verb agreement. Applying the CD objective indiscriminately could penalize these correct linguistic behaviors, leading to false negatives. It might also erroneously reward implausible token choices, resulting in false positives. To address these potential pitfalls, we incorporate the plausibility constraint $\nu_{\text{head}}$ into our framework. Given a preceding context $`x_{< t}`$, this constraint selects a subset of plausible next tokens, out of the vocabulary $V$, whose probabilities are above a threshold. The threshold is a fraction $\alpha$ of the max probability token in the vocabulary. We set the hyperparameter $\alpha \in[0, 1]$ to 0.1, as done by [Li et al. (2023)](#contrastive-decoding-2023). Borrowing from [Gera et al. (2023)](#auto-contrastive-decoding-2023), the  contrastive objective, called Log Contrastive Difference (LCD), is defined as:
 
 $$
 \large
 p_{\text{LCD}}(x_t | x_{< t}) = \text{Softmax}\left(\log \frac{p_{\text{EXP}}(x_t | x_{< t})}{p_{\text{AMA}}(x_t | x_{< t})}\right) \sum_{x_t \in V_{head}(x_{< t})} p_{EXP}(x_t | x_{< t})
 $$
 
-$$
-p_{\text{LCD}}(x_t | x_{< t}) = \text{Softmax}\left(\log \frac{p_{\text{EXP}}(x_t | x_{< t})}{p_{\text{AMA}}(x_t | x_{< t})}\right)
-$$
 
-
-The LCD objective is designed to promote text patterns that are preferred by the larger, expert LMs and discourage those that are typically produced by the smaller, amateur LMs. It works in tandem with the plausibility constraint, to ensure that the penalization of amateur behaviors does not disregard grammatically correct and sensible language constructs. By doing this, we aim to refine the CD approach, thus to be able to avoid common errors in model-generated text. Thus the final distribution FIX THIS will be:
+The LCD objective is designed to promote text patterns that are preferred by the expert LMs and discourage those that are typically produced by the amateur LMs. It works in tandem with the plausibility constraint, to ensure that the penalization of amateur behaviors does not disregard grammatically correct and sensible language constructs. The final distribution will be:
 
 $$
+\large
 p_{\text{DCD}}(x_t | x_{< t}) =
 \begin{cases}
 p_{\text{LCD}}(x_t | x_{< t}) & \text{if} \ x_t \in V_{\text{head}}(x_{< t}) \\
@@ -293,23 +288,30 @@ p_{\text{EXP}}(x_t | x_{< t}) & \text{otherwise}
 \end{cases}
 $$
 
-We take the original approach by [Li et al. (2023)](#contrastive-decoding-2023) a step further: instead of running inference on parallel models, thus requiring significant compute overhead, we substitute the amateur model. We do this by proxying it with the distribution obtained at earlier layers of the attention stack. The expert model distribution is substituted with the layer $\ell$ we find ourselves at. This intuition is aligned with findings by [Elbayad et al. (2019)](#contrastive-decoding-2019) and [Geva et al. (2021)](#transformer-key-value-memories-2021); [Geva et al. (2022)](#transformer-promoting-concepts-2022).
 
-Building up on [Gera et al., 2023](#auto-contrastive-decoding-2023), we include their variant of auto-contrastive decoding into our early-exiting framework. We do so by adding a weigthing term in the above formul. Here, the amateur layer is choosen to be the one which is an integer division by 2 away from the current expert layer.  EXPLAIN THAN THEN YOU APPLY A WEIGHT OR SOMEHIN
+We utilize this defined distribution to compute the new confidence $c^{\ell}_t$. On the other hand, we remind that our approach is based on the use of one single model.
 
+Building up on [Gera et al., 2023](#auto-contrastive-decoding-2023), we include their variant of auto-contrastive decoding into our early-exiting framework. Here, $p_{\text{EXP}}$ and $p_{\text{AMA}}$ are respectively proxied by the current layer $\ell$ and by the layer $\lfloor{\frac{\ell}{2}}\rfloor$. This intuition is aligned with findings by [Elbayad et al. (2019)](#contrastive-decoding-2019) and [Geva et al. (2021)](#transformer-key-value-memories-2021); [Geva et al. (2022)](#transformer-promoting-concepts-2022).
+We will refer to this auto-contrastive decoding strategy as "Weighted Contrastive Decoding". 
 
-$$
-p_{\text{LCD}}(x_t | x_{< t}) = \text{Softmax}\left(\log \frac{p_{\text{EXP}}(x_t | x_{< t})}{p_{\text{AMA}}(x_t | x_{< t})}\right) \sum_{x_t \in V_{head}(x_{< t})} p_{EXP}(x_t | x_{< t})
-$$
-
-We will refer to this auto-contrastive decoding strategy as "Weighted contrastive decoding". 
-
-One question that arises naturally from this idea is previous layer selection. Clearly this choice of the amateur layer in "Weighted contrastive decoding" is very arbitrary. 
+One question that arises from this idea is previous layer selection. Clearly, this choice of the amateur layer is very arbitrary. 
 
 <!--
+We take the original approach by [Li et al. (2023)](#contrastive-decoding-2023) a step further: instead of running inference on parallel models, thus requiring significant compute overhead, we substitute the amateur model. We do this by proxying it with the distribution obtained at earlier layers of the attention stack. The expert model distribution is substituted with the layer $\ell$ we find ourselves at.
 We  (you did not , dola did...)therefore thought of a simple, yet effective way of addressing this choice. 
 --> 
-Previous works ([Chuang et al., 2024](#dola-contrasting-layers-2024)) suggest selection via distance-in-distribution through Jensen-Shannon Divergence. This way, they claim, it is possible to find the most fit amateur layer for the contrastive objective. They do so by contrasting the final distribution against a set of candidate layers for premature layer selection $J$. The layer selected is the one with highest JSD w.r.t. the expert one. ADD HEURISTIC AND FORMULA
+We tackle this problem drawing from [Chuang et al., 2024](#dola-contrasting-layers-2024). The authors suggest selection via distance-in-distribution through Jensen-Shannon Divergence. 
+
+This way, they claim, it is possible to find the most fit amateur layer for the contrastive objective. They do so by contrasting the final distribution against a set of candidate layers for premature layer selection $J = \{ 2, ..., L-1 \}$. Consider we are The selected layer $m$ is obtained by 
+
+<p>
+$$
+\large
+m = \argmax_{j \in J} JSD($p^{\ell}_{\text{DCD}}$, $p^{\j}_{\text{DCD}}$ )
+$$
+</p>
+
+The layer selected is the one with highest JSD w.r.t. the expert one. ADD HEURISTIC AND FORMULA
  They also divide the layers into 2 to 4 buckets of $J$ based on the total number of layers, relying on a validation set to choose the best bucket for each task. Our claim is that the bucketing strategy is suboptimal for several reasons. First, it requires task-specific selection, which is undesirable since these models are utilized by end users for open-ended generation. Second, bucketing does not address the implicit bias JSD will have towards the lower layers of the distribution. Earlier representations are necessarily more diverse, since the set of plausible tokens for autoregressive generation gets narrower as one goes deeper into the stack. For this reason, we discount the JSD value between two distributions $i, j$ by the layer distance between the two distributions $\ell_j - \ell_i$. The discounting allows to capture the layers at which there is a more significant distribution change w.r.t. the layer $\ell_j$ we find ourselves at, thus obtaining meaningful signal from the chosen contrastive distribution. 
 We will call this technique "Jensen-Shannon Divergence (JSD) contrastive decoding".
 
