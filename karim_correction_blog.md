@@ -82,7 +82,6 @@ Additionally, we compare the performance and effects of our proposed methods on:
 - Pre-trained-only version of T5, from <a href="https://huggingface.co/google-t5/t5-large" target="_blank" rel="noopener noreferrer">t5-large</a>,
 - Fine-tuned version of T5, <a href="https://huggingface.co/jvelja/t5-squad" target="_blank" rel="noopener noreferrer">t5-squad</a>, <a href="https://huggingface.co/jvelja/t5-samsum" target="_blank" rel="noopener noreferrer">t5-samsum</a>. Both are fine-tuned on the corresponding training dataset.
 
-In our experiments, the minimum exit layer is nothing but the earliest point at which the model is potentially allowed to exit.
 
 Our code is heavily based and builds on top of the publicly available codebase <a href="https://github.com/raymin0223/fast_robust_early_exit" target="_blank" rel="noopener noreferrer"> fast-robust-early-exit</a> ([Bae et al., 2023](#fast-robust-early-exiting-2023)). 
 
@@ -114,31 +113,37 @@ The so-called confidence measure is computed as the difference between the top t
 $c^{\ell}_{t+1} \geq \tau^{\ell}_{t+1}$
 <p>
 
-the model exits early, providing us with the prediction for the next token computed at layer $\ell$. Otherwise, it continues by going into the next Transformer block. However, the matrix multiplication inside Softmax, i.e., $`\textbf{W}_\ell h^{\ell}_{t}`$ is computationally expensive, especially when iterated over multiple layers. The exact number of computations for the operation above corresponds to $d_{\text{model}} \times d_{\text{vocab}} \times L$. Hence, by pruning the vocabulary size at the first layer from $d_{\text{vocab}}$ to $k$, the number of computations required will reduce to $d_{\text{model}} \times k \times L$.
+the model exits early, providing us with the prediction for the next token computed at layer $\ell$. Otherwise, it continues by going into the next Transformer block. However, the matrix multiplication inside Softmax, i.e., $`\textbf{W}_\ell h^{\ell}_{t}`$ is computationally expensive, especially when iterated over multiple layers. The exact number of Floating Point Operations (FLOPs) for the above corresponds to $d_{\text{model}} \times d_{\text{vocab}} \times L$. Hence, by pruning the vocabulary size at the first layer from $d_{\text{vocab}}$ to $k$, the number of computations required will reduce to $d_{\text{model}} \times k \times L$.
 
- Recall that $`\textbf{W}_\ell \in \mathbb{R}^{d_{\text{vocab}} \times d_{\text{model}}}`$, where $d_{\text{vocab}} \approx 32,000$ is our vocabulary size, and $d_{\text{model}}$ is equal to the size of the last hidden representation of our FNN. Both parameters are on a scaling upwards trend in SOTA architectures. We argue that most of these computations are redundant, and potentially not necessary for some tasks. In [Figure 2](#figure-2), we show the boxplots for the rank of the final predicted token at each layer, across not fine-tuned and fine-tuned models, for two different datasets. The main takeaway from these images is that the final predicted token is often already highly ranked from the first few layers of our model. This behavior is more explicit in Figures [2b](#figure-1b) and [2d](#figure-1d), where we use fine-tuned models for our downstream tasks. On the other hand, confidence alone can be a deceiving measure. LLMs can be overconfident in the first layers, causing the model to exit prematurely. Our desiderata is for the model to be confident at the same time when its prediction has a high accuracy, that is, to be calibrated. However, we interestingly note that such behavior is rarely observed at early layers. In Figures [3](#figure-3) and [4](#figure-4), we see the accuracy and the confidence across each layer. The model in the first layers presents an anomalously high confidence, while its performance is still poor. Early exiting only based on the Softmax response would result in bad performance. We decide to set a minimum exit layer parameter $j$, which forces the model to consider exiting only after this layer. Note that this parameter is highly dependent on the model and dataset one experiments on. For fine-tuned models for example, one expects this parameter to be smaller.
+ Recall that $`\textbf{W}_\ell \in \mathbb{R}^{d_{\text{vocab}} \times d_{\text{model}}}`$, where $d_{\text{vocab}} \approx 32,000$ is our vocabulary size, and $d_{\text{model}}$ is equal to the size of the last hidden representation of our FFN. Both parameters are on a scaling upwards trend in SOTA architectures. We argue that most of these computations are redundant, and potentially not necessary for some tasks. In [Figure 2](#figure-2), we show the boxplots for the rank of the final predicted token at each layer, across not fine-tuned and fine-tuned models, for two different datasets. The main takeaway from these images is that the final predicted token is often already highly-ranked from the first few layers of our model. This behavior is more explicit in Figures [2b](#figure-1b) and [2d](#figure-1d), where we use fine-tuned models on our downstream tasks. On the other hand, confidence alone can be a deceiving measure. LLMs can be overconfident in the first layers, causing the model to exit prematurely. Our desiderata is for the model to be confident at the same time when its prediction has a high accuracy, that is, to be calibrated. However, we interestingly note that such behavior is rarely observed at early layers. In Figures [3](#figure-3) and [4](#figure-4), we see the accuracy and the confidence across each layer. The model in the first layers presents an anomalously high confidence, while its performance is still poor. Early exiting only based on the Softmax response would result in bad performance. We decide to set a minimum exit layer parameter $j$, which forces the model to consider exiting only after this layer. Note that this parameter is highly dependent on the model and dataset one experiments on. For fine-tuned models for example, one expects this parameter to be smaller.
 
 Motivated by these findings, we introduce three additional modifications to the Softmax response approach.
 
-**Softmax response via fixed pruning** After the minimum early exit layer $j$, we prune $`\textbf{W}_j`$, retaining its top-k tokens in the new unembedding matrix. We define the size of the new pruned matrix as
-
-<p align='center'>
-$\tilde{\textbf{W}}_{j+i} \in \mathbb{R}^{d_{\text{model}} \times k}, \quad \textrm{for} \quad i = 1, \ldots, L-j \quad \textrm{and} \quad k \ll d_{\text{vocab}}$
-</p>
-
-We prune our matrix at layer $j+1$, and keep its size fixed to $k$ for all subsequent layers. Theoretically, calculating the ratio between the original number of computations required in the original approach with ours, we get
+**Softmax response via fixed vocabulary pruning** After the minimum early exit layer $j$, we prune $`\textbf{W}_{j+1}`$, retaining its top-k tokens in the new unembedding matrix. We define the size of the new pruned matrix as
 
 <p align='center'>
 $$
-\Large
-\frac{d_{\text{model}} \times d_{\text{vocab}} \times L}{d_{\text{model}} \times k \times (L - j) + d_{\text{model}}^2 \times d_{\text{vocab}} \times j}
+\large
+\tilde{\textbf{W}}_{j+i} \in \mathbb{R}^{d_{\text{model}} \times k}, \quad \textrm{for} \quad i = 1, \ldots, L-j \quad \textrm{and} \quad k \ll d_{\text{vocab}}
+$$
+</p>
+
+The size is kept fixed to $k$ for all subsequent layers. Theoretically, calculating the ratio between the original number of computations required in the original approach and ours, we get
+
+<p align='center'>
+$$
+\large
+\frac{d_{\text{model}} \times d_{\text{vocab}} \times L}{d_{\text{model}} \times k \times (L - j) + d_{\text{model}}\times d_{\text{vocab}} \times j}
 $$
 </p>
 
 which corresponds to an approximate efficiency gain in the order of
 
 <p align='center'>
-$\mathcal{O}\left(\frac{d_{\text{vocab}}}{k} \times (L-j)\right)$
+$$
+\large
+\mathcal{O}\left(\frac{d_{\text{vocab}}}{k} \times (L-j)\right)
+$$
 </p>
 
 **Softmax response via decaying pruning** 
