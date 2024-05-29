@@ -575,7 +575,6 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
 
     # adjust training arguments
     training_args = adjust_training_args(training_args, data_args, additional_args)
-    training_args.include_inputs_for_metrics = True
     
     trainer = trainer_cls(
         model=model,
@@ -628,7 +627,9 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
         if training_args.include_inputs_for_metrics:
             output = trainer.evaluate(max_length=max_length, num_beams=num_beams, metric_key_prefix="eval")
             metrics = output.metrics
-            
+            if additional_args.count_flops:
+                final_flops = model.decoder.flop_counter/len(eval_dataset)
+                print(f"Average FLOPS: {final_flops}")
         else:
             metrics = trainer.evaluate(max_length=max_length, num_beams=num_beams, metric_key_prefix="eval")
 
@@ -725,39 +726,9 @@ if __name__ == "__main__":
         model_cls = T5ForConditionalGeneration if not additional_args.deploy_scenario \
             else DeployT5ForConditionalGeneration
     trainer_cls = QATrainer
-
-    exit_min_layer_list = [2,3,6,15,17,18,19,20]
-    exit_conf_type_list = ["JSD_contrastive_confidence"]
-    type_vocab_reduct_list = ["fixed", "decaying", "adaptive"]
-    average_exit_block_list = []
     
     if not additional_args.plotting_logits:
-        for type_vocab_reduct in type_vocab_reduct_list:
-            for exit_min_layer in exit_min_layer_list:
-                additional_args.type_vocab_reduct = type_vocab_reduct
-                additional_args.exit_min_layer = exit_min_layer
-                # if exit_conf_type == "softmax" and not exit_min_layer in [19, 20]:
-                #     continue
-
-                wandb.login()
-
-                wandb.init(
-                        # set the wandb project where this run will be logged
-                        project="small_subset_Matteo",
-                        entity="uva24",
-                        # track hyperparameters and run metadata
-                        config={
-                            "dataset": data_args.dataset_name,
-                            "model": model_args.model_name_or_path, 
-                            "exit_conf_type": additional_args.exit_conf_type,
-                            "exit_conf_threshold": additional_args.exit_conf_threshold,
-                            "exit_min_layer": additional_args.exit_min_layer,
-                            "type_vocab_reduct": additional_args.type_vocab_reduct,
-                            },
-                        mode="disabled" if False else "online",
-                        )
-                main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
-                wandb.finish()
+        main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
     else:
         mean_block_confidence = main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
         block_k_metric = []
@@ -778,34 +749,3 @@ if __name__ == "__main__":
         plt.legend()
         plt.grid(True)
         plt.savefig("plots/conf_metric_blocks" + data_args.dataset_name.replace("/","_") + "_" + model_args.model_name_or_path.replace("/","_") + ".png")
-
-        
-                
-        
-
-    
-
-    # for framework in exit_conf_type_list:
-    #     additional_args.exit_conf_type = framework
-    # for layer in exit_min_layer_list:
-    #     additional_args.exit_min_layer = layer
-    #     wandb.login()
-
-    #     wandb.init(
-    #             # set the wandb project where this run will be logged
-    #             project="contrastive_decoding",
-    #             entity="uva24",
-    #             # track hyperparameters and run metadata
-    #             config={
-    #                 "dataset": data_args.dataset_name,
-    #                 "model": model_args.model_name_or_path, 
-    #                 "exit_conf_type": additional_args.exit_conf_type,
-    #                 "exit_conf_threshold": additional_args.exit_conf_threshold,
-    #                 "exit_min_layer": additional_args.exit_min_layer,
-    #                 },
-    #             mode="disabled" if TESTING else "online",
-    #             )
-        
-    #main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
-
-        # average_exit_block_list.append(average_exit_block)

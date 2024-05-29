@@ -432,14 +432,13 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
 
     def compute_metrics(eval_preds, compute_metrics=True):
         if compute_metrics:
-            preds, labels, _ = eval_preds
+            preds, labels = eval_preds
         else:
             preds, labels = eval_preds
         if isinstance(preds, tuple):
             preds = preds[0]
             
         try:
-            print("preds", preds)
             decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
         except:
             
@@ -518,7 +517,9 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
         if training_args.include_inputs_for_metrics:
             output = trainer.evaluate(metric_key_prefix="eval")
             metrics = output.metrics
-            
+            if additional_args.count_flops:
+                final_flops = model.decoder.flop_counter/len(eval_dataset)
+                print(f"Final FLOPS: {final_flops}")
         else:
             metrics = trainer.evaluate(metric_key_prefix="eval")
 
@@ -641,38 +642,8 @@ if __name__ == "__main__":
 
     trainer_cls = SumTrainer
 
-    
-    exit_min_layer_list = [2,3,6,15,17,18,19,20]
-    exit_conf_type_list = ["JSD_contrastive_confidence"]
-    type_vocab_reduct_list = ["fixed", "decaying", "adaptive"]
-    average_exit_block_list = []
-    
     if not additional_args.plotting_logits:
-        for type_vocab_reduct in type_vocab_reduct_list:
-            for exit_min_layer in exit_min_layer_list:
-                additional_args.type_vocab_reduct = type_vocab_reduct
-                additional_args.exit_min_layer = exit_min_layer
-                # if seed == 41 and exit_conf_type != "reweight_contrastive_decoding":
-                #     continue
-                wandb.login()
-
-                wandb.init(
-                        # set the wandb project where this run will be logged
-                        project="small_subset_Matteo",
-                        entity="uva24",
-                        # track hyperparameters and run metadata
-                        config={
-                            "dataset": data_args.dataset_name,
-                            "model": model_args.model_name_or_path, 
-                            "exit_conf_type": additional_args.exit_conf_type,
-                            "exit_conf_threshold": additional_args.exit_conf_threshold,
-                            "exit_min_layer": additional_args.exit_min_layer,
-                            "type_vocab_reduct": additional_args.type_vocab_reduct,
-                            },
-                        mode="disabled" if False else "online",
-                        )
-                main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
-                wandb.finish()
+        main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
     else:
         mean_block_confidence = main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
         block_k_metric = []
