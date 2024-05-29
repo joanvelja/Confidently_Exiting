@@ -432,14 +432,13 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
 
     def compute_metrics(eval_preds, compute_metrics=True):
         if compute_metrics:
-            preds, labels, _ = eval_preds
+            preds, labels = eval_preds
         else:
             preds, labels = eval_preds
         if isinstance(preds, tuple):
             preds = preds[0]
             
         try:
-            print("preds", preds)
             decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
         except:
             
@@ -644,21 +643,7 @@ if __name__ == "__main__":
 
     trainer_cls = SumTrainer
 
-    
-    exit_min_layer_list = [19]
-    # exit_conf_type_list = ["softmax"]
-    type_vocab_reduct_list = ["decaying"]
-
-    average_exit_block_list = []
-    
     if not additional_args.plotting_logits:
-        # for type_vocab_reduct in type_vocab_reduct_list:
-        #     for exit_min_layer in exit_min_layer_list:
-        #         additional_args.type_vocab_reduct = type_vocab_reduct
-        #         additional_args.exit_min_layer = exit_min_layer
-        #         additional_args.exit_conf_type = "softmax"
-                # if seed == 41 and exit_conf_type != "reweight_contrastive_decoding":
-                #     continue
         wandb.login()
 
         wandb.init(

@@ -1019,7 +1019,6 @@ class DeployT5Stack(T5Stack):
                                         self.flop_counter +=  (self.config.d_model**2)* k * 1 # Seq length is always one
                                     # Note: There is no bias in self.lm_head = nn.Linear(config.d_model, config.vocab_size, bias=False)
                                     #lm_logits = selected_weights(_hidden_states) # Get new logits with the top-200 weights
-                                    #print(_hidden_states.shape, selected_weights.T.shape)
                                     a = _hidden_states * (self.config.d_model ** -0.5)
                                     lm_logits_temp = torch.nn.functional.linear(_hidden_states, selected_weights)  if not self.config.tie_word_embeddings \
                                         else torch.nn.functional.linear(a, selected_weights)
@@ -1178,8 +1177,7 @@ class DeployT5Stack(T5Stack):
 
                         if not skip_mask: self.block_op[i] += 1                    
                         if skip_mask: 
-                            # print("Layer: ", i)
-                             
+                            
                             self.lm_logits = lm_logits # This is where the logits are sent to do the predictions.
     
                             plot = False
@@ -1256,7 +1254,6 @@ class DeployT5Stack(T5Stack):
         if self.is_decoder and self.config.plotting_logits:
             # Get the top-1 index of last block.
             index_top_1 = torch.topk(previous_logits[-1], 1)[1][0][0][0].item()
-            #print(torch.softmax(previous_logits[-1], dim=-1).shape)
             confidence, max_index = torch.max(torch.softmax(previous_logits[-1], dim=-1), dim=-1)
             confidence = confidence[0].item()
 
@@ -1275,7 +1272,7 @@ class DeployT5Stack(T5Stack):
 
                 conf, max_index = torch.max(torch.softmax(previous_logits[i], dim=-1), dim=-1)
                 conf = conf[0].item()
-                #print(i ,rank, conf)
+
                 # Store the rank positions
                 ranks_at_layers.append(rank[0])
                 confidences_at_layers.append(conf)
