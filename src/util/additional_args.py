@@ -15,6 +15,9 @@ class AdditionalArguments:
         default=False, metadata={"help": ("Plotting the logits confidence, accuracy and top1 tokens accorss blocks.")},
     )
 
+    count_flops : Optional[bool] = field( 
+        default=False, metadata={"help": ("Counting the number of FLOPs for each block.")},
+    )
 
     # deployment scenario
     deploy_scenario: Optional[bool] = field(
@@ -155,7 +158,8 @@ def update_autoconfig(config, additional_args, **kwargs):
         'train_meta_cm_head': additional_args.train_meta_cm_head,
         'max_answer_length': kwargs.get('max_answer_length', None),
         'type_vocab_reduct': additional_args.type_vocab_reduct,
-        'plotting_logits': additional_args.plotting_logits
+        'plotting_logits': additional_args.plotting_logits,
+        'count_flops': additional_args.count_flops
     }
     config.update(early_exit_config)
     
