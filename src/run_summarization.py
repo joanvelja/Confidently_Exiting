@@ -642,9 +642,10 @@ if __name__ == "__main__":
     trainer_cls = SumTrainer
 
     
-    exit_min_layer_list = [2,3,6,15,17,18,19,20]
-    exit_conf_type_list = ["JSD_contrastive_confidence"]
-    type_vocab_reduct_list = ["fixed", "decaying", "adaptive"]
+    exit_min_layer_list = [19]
+    exit_conf_type_list = ["softmax"]
+    type_vocab_reduct_list = ["fixed"]
+
     average_exit_block_list = []
     
     if not additional_args.plotting_logits:

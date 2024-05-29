@@ -628,6 +628,9 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
         if training_args.include_inputs_for_metrics:
             output = trainer.evaluate(max_length=max_length, num_beams=num_beams, metric_key_prefix="eval")
             metrics = output.metrics
+            if additional_args.count_flops:
+                final_flops = model.decoder.flop_counter/len(eval_dataset)
+                wandb.log({"final_flops": final_flops})    
             
         else:
             metrics = trainer.evaluate(max_length=max_length, num_beams=num_beams, metric_key_prefix="eval")
@@ -726,14 +729,15 @@ if __name__ == "__main__":
             else DeployT5ForConditionalGeneration
     trainer_cls = QATrainer
 
-    exit_min_layer_list = [2,3,6,15,17,18,19,20]
+    exit_min_layer_list = [19]
     exit_conf_type_list = ["JSD_contrastive_confidence"]
-    type_vocab_reduct_list = ["fixed", "decaying", "adaptive"]
+    type_vocab_reduct_list = ["adaptive"]
     average_exit_block_list = []
     
     if not additional_args.plotting_logits:
         for type_vocab_reduct in type_vocab_reduct_list:
             for exit_min_layer in exit_min_layer_list:
+                additional_args.exit_conf_type = exit_conf_type_list[0]
                 additional_args.type_vocab_reduct = type_vocab_reduct
                 additional_args.exit_min_layer = exit_min_layer
                 # if exit_conf_type == "softmax" and not exit_min_layer in [19, 20]:

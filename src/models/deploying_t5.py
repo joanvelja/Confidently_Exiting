@@ -557,6 +557,7 @@ class DeployT5Stack(T5Stack):
         
         self.embed_tokens = embed_tokens
         self.is_decoder = config.is_decoder
+        self.flop_counter = 0.0
 
         self.block = nn.ModuleList(
             [DeployT5Block(config, has_relative_attention_bias=bool(i == 0)) for i in range(config.num_layers)]
@@ -979,10 +980,15 @@ class DeployT5Stack(T5Stack):
                         prev_probits[i] = probits
                         self.block_op[i] += 1
 
+                        if self.config.count_flops:
+                                self.flop_counter += (self.config.d_model**2)* self.config.vocab_size * 1 # Seq length is always one
+
+
                     else:
                         if self.config.use_synchronize: torch.cuda.synchronize()
                         start = datetime.datetime.now()
                         _hidden_states = self.dropout(self.final_layer_norm(hidden_states))
+
 
                         
                         # SHRINKING VOCAB PART:
@@ -990,9 +996,13 @@ class DeployT5Stack(T5Stack):
                             a = _hidden_states * (self.config.d_model ** -0.5)
                             lm_logits = lm_head(_hidden_states) if not self.config.tie_word_embeddings \
                                 else lm_head(a)
+                            
+                            if self.config.count_flops:
+                                self.flop_counter += (self.config.d_model**2)* self.config.vocab_size * 1 # Seq length is always one
+
+                            
                         else:
                             starting_layer = self.config.exit_min_layer if self.config.exit_min_layer > 1  else 1 # Start where exit_min_layer is set or start at 2.
-                            
                             if i == starting_layer: # if it is the first layer where we compute the logits
                                 lm_logits = lm_head(_hidden_states) if not self.config.tie_word_embeddings \
                                     else lm_head(_hidden_states * (self.config.d_model ** -0.5))
@@ -1001,38 +1011,40 @@ class DeployT5Stack(T5Stack):
                                 minimum_k_size = 250 # where 50 is the minimum number of weights to keep
                                 num_layers = len(self.block) # This is the number of layers in the model
                                 k = self.func_inverse(i,maximum_k_size, minimum_k_size, num_layers)
-                                #self.top_k_indices = torch.topk(lm_logits[0][0], k, largest=True, sorted=True)[1].sort()[0]
-                                _, top_k_indices_unsorted = torch.topk(lm_logits[0][0], k, largest=True, sorted=True)
-                                # Preserve the original order of the indices
-                                original_order_indices = torch.arange(lm_logits[0][0].size(0), device=lm_logits.device)
-                                top_k_mask = torch.zeros_like(lm_logits[0][0], dtype=torch.bool)
-                                top_k_mask[top_k_indices_unsorted] = True
-                                self.top_k_indices = original_order_indices[top_k_mask]
+                                self.top_k_indices = torch.topk(lm_logits[0][0], k, largest=True, sorted=True)[1].sort()[0]
 
                                 selected_weights = lm_head.weight[self.top_k_indices, : ] # THis can be done here to win some compute time
                             else: # For all the other layers either use fixed, decaying or adaptive pruning
                                 if self.config.type_vocab_reduct == "fixed":
+
+                                    if self.config.count_flops:
+                                        self.flop_counter +=  (self.config.d_model**2)* k * 1 # Seq length is always one
                                     # Note: There is no bias in self.lm_head = nn.Linear(config.d_model, config.vocab_size, bias=False)
                                     #lm_logits = selected_weights(_hidden_states) # Get new logits with the top-200 weights
                                     #print(_hidden_states.shape, selected_weights.T.shape)
-
                                     a = _hidden_states * (self.config.d_model ** -0.5)
                                     lm_logits_temp = torch.nn.functional.linear(_hidden_states, selected_weights)  if not self.config.tie_word_embeddings \
                                         else torch.nn.functional.linear(a, selected_weights)
-                                    
+               
                                     # Initialize lm_logits with -inf
-                                    #lm_logits = torch.full((1, 1, self.config.vocab_size), -float("inf"), device=lm_logits_temp.device)
+                                    lm_logits = torch.full((1, 1, self.config.vocab_size), -float("inf"), device=lm_logits_temp.device)
                                     #lm_logits = torch.full((1, 1, self.config.vocab_size), -10000.00, device=lm_logits_temp.device)
 
                                     # Create a mask for the top_k_indices
-                                    #top_k_mask = torch.zeros(self.config.vocab_size, dtype=torch.bool, device=lm_logits_temp.device)
-                                    #top_k_mask[self.top_k_indices] = True
+                                    top_k_mask = torch.zeros(self.config.vocab_size, dtype=torch.bool, device=lm_logits_temp.device)
+                                    top_k_mask[self.top_k_indices] = True
 
                                     # Use the mask to assign values from lm_logits_temp to lm_logits
-                                    #lm_logits[0, 0, top_k_mask] = lm_logits_temp[0, 0, :len(self.top_k_indices)]
+                                    lm_logits[0, 0, top_k_mask] = lm_logits_temp[0, 0, :len(self.top_k_indices)]
+
+                                    # Update lm_logits_temp by removing the used elements
+                                    lm_logits_temp = lm_logits_temp[:, :, len(self.top_k_indices):]
 
                                 elif self.config.type_vocab_reduct == "decaying":  # Smoothed pruning! For all the other layers -> smoothed pruning
                                     current_k = self.func_inverse(i,maximum_k_size, minimum_k_size, num_layers)
+                                    
+                                    if self.config.count_flops:
+                                        self.flop_counter +=  (self.config.d_model**2)* current_k * 1 # Seq length is always one
                                     # top_k_list = [4500, 2500, 2000, 1000, 750, 700, 600, 500, 400, 300, 100, 50] # This is the list of top_k values for each block based on graph for based as an indicator.
                                     selected_weights = lm_head.weight[self.top_k_indices[:current_k], :]
                     
@@ -1048,6 +1060,8 @@ class DeployT5Stack(T5Stack):
                                     top_k_mask = torch.zeros(self.config.vocab_size, dtype=torch.bool, device=lm_logits_temp.device)
                                     top_k_mask[self.top_k_indices[:current_k]] = True
 
+                                    # Use the mask to assign values from lm_logits_temp to lm_logits
+                                    lm_logits[0, 0, top_k_mask] = lm_logits_temp[0, 0, :len(self.top_k_indices[:current_k])]
 
                                     # Update lm_logits_temp by removing the used elements
                                     lm_logits_temp = lm_logits_temp[:, :, len(self.top_k_indices[:current_k]):]

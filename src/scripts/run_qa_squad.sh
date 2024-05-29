@@ -50,6 +50,7 @@ CUDA_VISIBLE_DEVICES=0 python -m run_question_answering \
     --max_eval_samples 100 \
     --use_auth_token True \
     --type_vocab_reduct decaying \
+    --count_flops True \
 
 
    # JSD_contrastive_confidence
