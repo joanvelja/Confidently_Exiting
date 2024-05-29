@@ -1089,7 +1089,7 @@ class DeployT5Stack(T5Stack):
                                         lm_logits[0, 0, top_k_mask] = lm_logits_temp[0, 0, :len(self.top_k_indices[:retained_top_k])]
 
                                         # Update lm_logits_temp by removing the used elements
-                                        #lm_logits_temp = lm_logits_temp[:, :, len(self.top_k_indices[:retained_top_k]):]
+                                        lm_logits_temp = lm_logits_temp[:, :, len(self.top_k_indices[:retained_top_k]):]
                                 
                                 else: 
                                     raise("Please provide a valid type_vocab_reduct argument. Either use fixed, decaying, or adaptive.")
