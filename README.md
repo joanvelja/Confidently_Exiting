@@ -45,7 +45,7 @@ In addition to the parameters previously implemented, we have introduced new one
 
 ### Model Checkpoints
 
-The non-finetuned and finetuned models are available at  [google](https://huggingface.co/google-t5) and [jveila](https://huggingface.co/jvelja) respectively on HuggingFace. 
+The non-finetuned and finetuned models are available at  [google](https://huggingface.co/google-t5) and [jvelja](https://huggingface.co/jvelja) respectively on HuggingFace. 
 
 ## Contact
 - Karim Abdel Sadek: karim.abdel.sadek@student.uva.nl
