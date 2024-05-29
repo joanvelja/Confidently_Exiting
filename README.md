@@ -4,7 +4,7 @@
 
 # Optimizing Predictions: Vocabulary Reduction and Contrastive Decoding in LLMs
 
-This repository is cloned from the code-base <a href="https://github.com/raymin0223/fast_robust_early_exit" target="_blank" rel="noopener noreferrer">  fast_robust_early_exit</a> with its original [paper](https://arxiv.org/abs/2310.05424). We further extend their work by implementing pruning on the logits obtained before applying softmax, and implemented contrastive decoding. Our discussion and findings can be found in the [blogpost](blogpost.md) file.
+This repository is cloned from the code-base <a href="https://github.com/raymin0223/fast_robust_early_exit" target="_blank" rel="noopener noreferrer">  Fast_Robust_Early_Exit</a>( [paper](https://arxiv.org/abs/2310.05424)) . We further extend their work by implementing our two proposed approaches: softmax exiting with reduced voabulary size, and implemented contrastive decoding. Our discussion and findings can be found in the [blogpost](blogpost.md) file.
 
 
 ## Requirements
