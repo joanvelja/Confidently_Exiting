@@ -307,7 +307,7 @@ This way, they claim, it is possible to find the most fit amateur layer for the 
 <p>
 $$
 \large
-m = \argmax_{j \in J} JSD($p^{\ell}_{\text{DCD}}$, $p^{\j}_{\text{DCD}}$ )
+m = \underset{j\in J}{\operatorname{argmax}} JSD(p^{\ell}_{\text{DCD}}, p^{j}_{\text{DCD}} )
 $$
 </p>
 
