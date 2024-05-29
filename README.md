@@ -4,7 +4,7 @@
 
 # Optimizing Predictions: Vocabulary Reduction and Contrastive Decoding in LLMs
 
-This repository is cloned from the code-base <a href="https://github.com/raymin0223/fast_robust_early_exit" target="_blank" rel="noopener noreferrer">  Fast_Robust_Early_Exit</a>( [paper](https://arxiv.org/abs/2310.05424)) . We further extend their work by implementing our two proposed approaches: softmax exiting with reduced voabulary size, and implemented contrastive decoding. Our discussion and findings can be found in the [blogpost](blogpost.md) file.
+This repository is cloned from the code-base <a href="https://github.com/raymin0223/fast_robust_early_exit" target="_blank" rel="noopener noreferrer">  Fast_Robust_Early_Exit</a> (their [paper](https://arxiv.org/abs/2310.05424)) . We further extend their work by implementing our two proposed approaches: Softmax Exiting with reduced voabulary size, and implemented Contrastive Decoding. Our discussion and findings can be found in our [blogpost](blogpost.md) file.
 
 
 ## Requirements
@@ -19,7 +19,7 @@ conda env create --name environment_name -f environment.yml
 
 ## Experiments
 We experimented with 1 summarization and 1 question answering task. 
-Please see the [scripts/softmax_experiments](src/scripts/softmax_experiments) shell files to reproduce the softmax experiments on each dataset.    
+Please see the [scripts/softmax_experiments](src/scripts/softmax_experiments) shell files to reproduce the Softmax experiments on each dataset.    
 ```bash
 sh jobname.run > jobname.out
 ```
@@ -36,17 +36,16 @@ In addition to the parameters previously implemented, we have introduced new one
 #### Softmax: 
 - `--exit_conf_type softmax`: set the confidence measure to softmax values
 - `--type_vocab_reduct [str]`: Can be either fixed, decaying, or adaptive. This will prune the vocabulary matrix.
-- `--plotting_logits False`: If set to True this will plot the confidence, f1, and boxplots (Figure 2,3, and 4 of the [blogpost](blogpost.md)).
-- `--final_flops False`: If set to True this will showcase the amount of flops calculated during confidence estimation (Figure 6 and 7 of the [blogpost](blogpost.md)).
+- `--plotting_logits False`: if set to True this will plot the confidence, f1, and boxplots (Figure 2,3, and 4 of the [blogpost](blogpost.md)).
+- `--final_flops False`: if set to True this will showcase the amount of flops calculated during confidence estimation (Figure 6 and 7 of the [blogpost](blogpost.md)).
 
 #### Contrastive Decoding:
-- `--exit_conf_type [str]`: Can now also be set to <i>contrastive_decoding </i>, <i> reweight_contrastive_decoding </i>, or <i>JSD_contrastive_confidence</i>.
+- `--exit_conf_type [str]`: Can now also be set to <i>contrastive_decoding</i>, <i>reweight_contrastive_decoding</i>, or <i>JSD_contrastive_confidence</i>.
 
 
 ### Model Checkpoints
 
-
-The finetuned models are available at [jveila](https://huggingface.co/jvelja) on HuggingFace.
+The non-finetuned and finetuned models are available at  [google](https://huggingface.co/google-t5) and [jveila](https://huggingface.co/jvelja) respectively on HuggingFace. 
 
 ## Contact
 - Karim Abdel Sadek: karim.abdel.sadek@student.uva.nl
