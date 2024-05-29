@@ -980,9 +980,7 @@ class DeployT5Stack(T5Stack):
                         prev_probits[i] = probits
                         self.block_op[i] += 1
 
-                        if self.config.count_flops:
-                                self.flop_counter += (self.config.d_model**2)* self.config.vocab_size * 1 # Seq length is always one
-
+                        
 
                     else:
                         if self.config.use_synchronize: torch.cuda.synchronize()
