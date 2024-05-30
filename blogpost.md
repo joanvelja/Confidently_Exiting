@@ -66,7 +66,7 @@ is the linear classifier of block L responsible for mapping back the output of t
 
 Our approach incorporates an early-exiting strategy, wherein the generation of the next token can occur at any layer $`\ell`$ if the computed confidence score $`c_\ell`$ exceeds a specified threshold $`\tau`$.
 <p>
-When an early exit is triggered at layer $`\ell`$, it necessitates updating the key and value pairs in subsequent layers to ensure proper attention mechanisms for future tokens. To efficiently manage this, a state copying technique is employed, where the hidden states from the early-exited layer i.e. $ h^{\ell}_{t+1}$ are duplicated across subsequent layers ($`h^i_{t+1} = h^{\ell}_{t+1}`$ for every $i$ such that $ i = \ell + 1$, ... , $L$). This process maintains computational efficiency and model performance, even in compact - for today's standards - model configurations like T5.
+When an early exit is triggered at layer $`\ell`$, it necessitates updating the key and value pairs in subsequent layers to ensure proper attention mechanisms for future tokens. To efficiently manage this, a state copying technique is employed, where the hidden states from the early-exited layer i.e. $h^{\ell}_{t+1}$ are duplicated across subsequent layers ($h^i_{t+1} = h^{\ell}_{t+1}$ for every $i$ such that $i = \ell + 1, ... , L$). This process maintains computational efficiency and model performance, even in compact - for today's standards - model configurations like T5.
 </p>
 ### Experimental Setting
 
