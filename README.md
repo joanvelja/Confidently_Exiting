@@ -4,7 +4,9 @@
 
 # Optimizing Predictions: Vocabulary Reduction and Contrastive Decoding in LLMs
 
-This repository is cloned from the code-base <a href="https://github.com/raymin0223/fast_robust_early_exit" target="_blank" rel="noopener noreferrer">  Fast_Robust_Early_Exit</a> (their [paper](https://arxiv.org/abs/2310.05424)) . We further extend their work by implementing our two proposed approaches: Softmax Exiting with reduced voabulary size, and implemented Contrastive Decoding. Our discussion and findings can be found in our [blogpost](blogpost.md) file.
+### K.A. Abdel Sadek, G. Desimini, M. Nulli, J. Velja, J. Vincenti
+
+This repository is cloned from the code-base <a href="https://github.com/raymin0223/fast_robust_early_exit" target="_blank" rel="noopener noreferrer">  Fast_Robust_Early_Exit</a> (their [paper](https://arxiv.org/abs/2310.05424)). Our research aims to further extend their work by implementing two approaches: Softmax Exiting with reduced vocabulary size, and Contrastive Decoding. Our discussion and findings can be found in our [blogpost](blogpost.md) file. Refer to it for the details of our work and the precise setting of the experiments. This README file will mainly address the codebase and reproduction of our results. 
 
 
 ## Requirements
@@ -21,27 +23,35 @@ The codebase handles automatically model and dataset downloading. Beware of this
 
 ## Models and Checkpoints
 
-We use t5-large as baseline model for our experiments. The code implementation is available at [models/deploying_t5](src/models/deploying_t5.py).
-The non-finetuned and finetuned model weights are available at  [google](https://huggingface.co/google-t5) and [jvelja](https://huggingface.co/jvelja) respectively on HuggingFace. 
+We use T5-large as the baseline model for our experiments. 
+The non-finetuned and finetuned model weights are available on HuggingFace, respectively at [google](https://huggingface.co/google-t5) and [jvelja](https://huggingface.co/jvelja). 
+
+The code implementation of the model is available at [models/deploying_t5](src/models/deploying_t5.py).
 
 ## Evaluation
-We perform evaluation experiments on one summarization (SamSum) and one question answering task (SQuAD). 
+We perform evaluation experiments on two different NLP tasks: Summarization -SamSum dataset-  and Question Answering -SQuAD dataset-. 
 
-To reproduce the experiments you can follow the guide below. All the files in scripts can be ran with the command below:
+To reproduce the experiments you can follow the guide below. Each individual file in the scripts can be run, by selecting the appropriate name, with the command below:
 
 ```bash
 sh jobname.run > jobname.out
 ```
 
-#### Softmax Vocabulary Prunning
-Here we explain how to reproduce the experiments from section `Softmax Vocabulary Prunning` of our [blogpost](blogpost.md). 
-Please see the main [folder](src/scripts/softmax_experiments) for a total overview of the experiments to reproduce this section.
+If you wish to run all the scripts at once - for example if you want to reproduce all results in one go, you can use the following command: 
+
+```bash
+for job in *.job; do sbatch $job; done
+```
+
+#### Softmax Vocabulary Pruning
+Here we explain how to reproduce the experiments from the Section `Softmax Vocabulary Prunning` of our [blogpost](blogpost.md). 
+Please see the main [folder](src/scripts/softmax_experiments) for a total overview of the files you need to reproduce this section.
 
 The plots obtained for [Figure 2](./blogpost_images/plots/figure2.png), [3](./blogpost_images/plots/figure3.png), and [4](./blogpost_images/plots/figure4.png) can be obtained by running this [folder](src\scripts\softmax_experiments\plotting_graphs). Regarding the full runs for plots [7](/blogpost_images/plots/figure5.png) and [8](/blogpost_images/plots/figure6.png) they can be obtained by running the folders for [baseline](src\scripts\softmax_experiments\final_jobs_results_no_reduct), [fixed](src\scripts\softmax_experiments\final_jobs_results_fixed), and [decaying](src\scripts\softmax_experiments\final_jobs_results_decaying) and logging their respective results.
 
 
 #### Contrastive Decoding
-Here we explain how to reproduce the experiments from section `Contrastive Decoding` of our [blogpost](blogpost.md). 
+Here we explain how to reproduce the experiments from the Section `Contrastive Decoding` of our [blogpost](blogpost.md). 
 
 The experiments of Figures [Figure 8a](./blogpost_images/plots/squadexit.png), [Figure 8b](./blogpost_images/plots/squadf1.png), [Figure 9a](./blogpost_images/plots/sam_avg.png), [Figure 9b](./blogpost_images/plots/samsum_intermediate.png) and Table 1 are carried out across 100 samples. To reproduce these results it is enough to run the files in both folders  [F1](src/scripts/contrastive_decoding_experiments/SQuAD) and [F2](src/scripts/contrastive_decoding_experiments/SamSum) by adding an extra parameter namely:
 
@@ -53,9 +63,9 @@ Similarly, [Figure 10b](./blogpost_images/plots/squad_flops.png),  [Figure 11b](
   
 Differently, the results of the last plots [Figure 10a](./blogpost_images/plots/squad_f1.png) and [Figure 11a](./blogpost_images/plots/rougesamsam.png) are made by running the .job files of [SQuAD](src/scripts/contrastive_decoding_experiments/SQuAD) and [SamSum](src/scripts/contrastive_decoding_experiments/SamSum) without any additional change
 
-### Example Case
+### Illustration of an Example Case
 
-An example for running Jansen-Shannon Divergence contrastive confidence with adaptive pruning is
+Here below you can find the explicit command to run the experiments for Jansen-Shannon Divergence Contrastive Decoding with adaptive pruning approach
 
 ```bash
 srun python run_question_answering.py \
@@ -81,7 +91,7 @@ srun python run_question_answering.py \
     --type_vocab_reduct adaptive \
 ```
 
-Additionally, the actual plots are done with the `plots_mn.ipynb` file in (folder you put the plots folder in.) by manually inserting the numbers we obtain from the runs. 
+Additionally, the actual plots are produce with the `plots_mn.ipynb` file in (folder you put the plots folder in.). We manually insert the numbers we obtain from the runs of the models just mentioned. 
 
 ### Parameters Explanation
 
@@ -89,7 +99,7 @@ In addition to the parameters previously implemented, we have introduced new one
 
 #### Essential Parameters:
 ##### Method agnostic parameters
-- `-m`: the file responsible for the task. The structure of it is `run_$TASK`. Possible choices: `question_answering`, `summarization`.
+- `-m`: the file responsible for the task. Its structure is `run_$TASK`. Possible choices: `question_answering`, `summarization`.
 - `--model_name_or_path`: the model to be used for the task. Possible choices: `google-t5/t5-large`, `jvelja/t5-squad`, `jvelja/t5-samsum`.
 - `--do_eval` True: this should be always True for evals.
 - `--deploy_scenario` True: this should be always True to use deploying_[MODEL_NAME].py for our implementation.
@@ -114,12 +124,12 @@ Sample task-specific bash files can be found in the `src/scripts` directory.
 
 ### W&B logging
 
-To enable wandb logging of results you can follow the standaard procedure explained in [wandb login infos](https://docs.wandb.ai/ref/cli/wandb-login) and uncomment the following lines of code   
+To enable wandb logging of your results, you can follow the standard procedure explained in [wandb login infos](https://docs.wandb.ai/ref/cli/wandb-login). In our code, you should uncomment the following lines of code   
 and set the statement to "false"
 
 `os.environ["WANDB_DISABLED"] = "true" ---> os.environ["WANDB_DISABLED"] = "false"`
 
-This, together with the usual `wandb.init()` will save every evaluation metric to into your wandb project.
+This, together with the usual `wandb.init()`, will save every evaluation metric into your wandb project.
 This line of code can be found within [run_question_answering](src/run_question_answering.py) / [run_summarization](src/run_summarization.py).
 
 
