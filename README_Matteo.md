@@ -82,7 +82,7 @@ In addition to the parameters previously implemented, we have introduced new one
 The bash files to run the evals look as follows:
 
 ```
-CUDA_VISIBLE_DEVICES=0 python -m run_question_answering \
+srun python run_question_answering.py \
     --model_name_or_path google-t5/t5-large \
     --do_eval \
     --dataset_name squad \
