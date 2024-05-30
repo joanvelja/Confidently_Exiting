@@ -90,7 +90,7 @@ CUDA_VISIBLE_DEVICES=0 python -m run_question_answering \
 
 Sample task-specific bash files can be found in the `src/scripts` directory. 
 
-## Experiments on Contrastive Decoding
+
 
 ### W&B logging
 
