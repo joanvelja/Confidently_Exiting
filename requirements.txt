@@ -15,3 +15,4 @@ matplotlib
 peft
 einops
 seaborn
+wandb
