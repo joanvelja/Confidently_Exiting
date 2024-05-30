@@ -423,7 +423,7 @@ Evaluation on SamSum dataset, [Figure 10](#figure-9), shows notable results. Whi
             <div style="margin-top: 10px;"><b> a) </b> Average exit block across different minimum exit layers</div>
         </td>
         <td style="text-align: center; padding: 10px;">
-            <img src="./blogpost_images/plots/sam_rouge.png" style="max-width: 100%; height: auto;">
+            <img src="./blogpost_images/plots/samsum_intermediate.png" style="max-width: 100%; height: auto;">
             <br>
             <div style="margin-top: 10px;"><b> b)</b> Rouge-L score across different minimum exit layers </div>
         </td>
