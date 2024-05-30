@@ -407,7 +407,7 @@ Results from [Figure 9](#figure-8) show Weighted contrastive decoding achieving 
     </tr>
     <tr>
         <td colspan="2" style="text-align: left; padding: 10px; font-size: 14px;">
-             <a id='figure-8'><b>Figure 9:</b></a> <b> Results are reported on t5-large non-finetuned model on SQuAD dataset. Due to time and compute constraints, the results displayed are computed on 100 samples.
+             <a id='figure-8'><b>Figure 9:</b></a> <b>SQuAD Average Exit and F1</b>. Results are reported on t5-large non-finetuned model on SQuAD dataset. Due to time and compute constraints, the results displayed are computed on 100 samples.
         </td>
     </tr>
 </table>
