@@ -21,7 +21,7 @@ Constraining on textual consistency with the original $`Y_{full}`$, however, can
 We analyze the early exiting paradigm for LLMs, conducting a preliminary analysis covering challenges associated with this framework. First, we study a phenomenon of non-finetuned LMs, where the confidence at early layers is deemed to be high, but where accuracy is not satisfactory, thus resulting in poor calibration ([Mielke et al., 2022](#reducing-overconfidence-2022); [Band et al., 2024](#linguistic-calibration-2024)). This gives us grounds to implement some heuristics for the minimum exit layer in our experiments. We repeat the same analysis for fine-tuned models, observing that the phenomena is not as prominent.
 
 We first present a method (**Vocabulary Pruning**) for increasing model efficiency while remaining confident in the quality of the resulting predictions. Specifically, drawing from [Schuster et al. (2022)](#confident-adaptive-language-modeling-2022), we modify their Softmax approach, by pruning the vocabulary size across layers. This allows us to speed-up the inference time of our predictions, with a negligible loss in performance.
-However, in order to offset the decrease in performance, we thus propose within-model contrastive decoding ([Li et al., 2023](#contrastive-decoding-2023)). 
+However, in order to offset the decrease in performance, we thus propose within-model **Contrastive Decoding** ([Li et al., 2023](#contrastive-decoding-2023)) as an alternative means for confidence.
 
 
 Our methods are validated empirically on different NLP tasks, including text summarization and question answering. Our experiments demonstrate that, combining the two aforementioned approaches, we attain a Pareto improvement with respect to FLOPS efficiency and performance.
@@ -443,7 +443,7 @@ We will report the average exit block, the performance score,  and the computed 
 
 We perform a series of experiments aimed at understanding the best possible vocabulary pruning method for the best CD confidence measure.
 
-Following the argument in [Section "Contrastive Decoding"](#contrastive-decoding), we observe that the model is most performan when minimum exit layer is selected to be among the latest ones. Keeping this in mind, Table 1 shows the average exit layer and score of the model. Both are averaged across these sensible minimum exit layers. We note that combining Adaptive Pruning with JSD beats the performance of JSD combined either with Fixed or Decaying pruning. It also obtains an average gain of 1.2 blocks against Fixed pruning on SamSum. However, JSD+Fixed achieves the highest Rouge-L score in SamSum. Given the considerations above, we choose Adaptive to be the most fitting pruning method to combine with the JSD confidence measure. We defer to Appendix A a series of detailed plots indicating all minimum exit layers in this setting.
+Following the argument in ["Contrastive Decoding"](#contrastive-decoding), we observe that the model is most performan when minimum exit layer is selected to be among the latest ones. Keeping this in mind, Table 1 shows the average exit layer and score of the model. Both are averaged across these sensible minimum exit layers. We note that combining Adaptive Pruning with JSD beats the performance of JSD combined either with Fixed or Decaying pruning. It also obtains an average gain of 1.2 blocks against Fixed pruning on SamSum. However, JSD+Fixed achieves the highest Rouge-L score in SamSum. Given the considerations above, we choose Adaptive to be the most fitting pruning method to combine with the JSD confidence measure. We defer to Appendix A a series of detailed plots indicating all minimum exit layers in this setting.
 
 
 | **Model**                | **SQuAD Avg Exit** | **SQuAD F1 Score** | **SamSum Avg Exit** | **SamSum Rouge-L Score** |
@@ -457,23 +457,27 @@ Following the argument in [Section "Contrastive Decoding"](#contrastive-decoding
 
 #### Comparison with Baseline Models
 
-Given the results of [Section "Speedup and Contrastive Decoding"](#speedup-and-contrastive-decoding), and our analysis of the best minimum exit layer parameters to use in the Contrastive Decoding setting, we now compare the most performing pruning method of [Section "Best JSD Pruning Combination"](#best-jsd-pruning-combination) with the baselines from Sections ["Contrastive Decoding"](#contrastive-decoding) and ["Softmax Speed-Up"](#softmax-speedup). We set the minimum exit layer of 19 for all the experiments below. The choice is made by comparing the performance of each metric and selecting the best for each of them.
+Given the results of ["Speedup and Contrastive Decoding"](#speedup-and-contrastive-decoding), together with our analysis of the best minimum exit layer to use in CD, we now compare the most performing pruning method of ["Best JSD Pruning Combination"](#best-jsd-pruning-combination) with the baselines from ["Contrastive Decoding"](#contrastive-decoding) and ["Softmax Speed-Up"](#softmax-speedup). We set the minimum exit layer at 19 for all the experiments below. 
 
-As explained in [Section "Early Exiting via the Softmax Approach"](#early-exiting-via-the-softmax-approach), pruning was introduced to speed-up the softmax approach by reducing the un-embedding operations. In [Section "Addressing the trade-off via Contrastive Decoding"](#addressing-the-trade-off-via-contrastive-decoding) we show the considerable impact this has on FLOPs. Similarly, Figures [10](#figure-8) and [11](#figure-9) show that removing a large number of tokens has a notable effect on compute, reducing it by almost 250 times on SQuAD and 190 on SamSum between JSD baseline and JSD with adaptive pruning. This gap is also more noteworthy when looking at the amount of performance retained. On both fine-tuned and non-finetuned models the decrease in performance between the techniques is never more than 2%, with JSD with adaptive even achieving a 1.9% increase on softmax baseline on SQuAD.
+ In ["Softmax Speed-Up"](#softmax-speed-up) we show the considerable impact the pruning approach has on FLOPs. Similarly, Figures [10](#figure-10) and [11](#figure-11) show that removing a large number of tokens has a notable effect on compute, reducing it by almost 250 times on SQuAD and 190 on SamSum between JSD baseline and JSD with adaptive pruning. This gap is also more noteworthy when looking at the amount of performance retained. On both fine-tuned and non-finetuned models the decrease in performance between the techniques is never more than 2%, with JSD with adaptive even achieving a 1.9% increase on softmax baseline on SQuAD.
 
-Lastly, we highlight that the difference in results between Figures [4](#figure-4), [5](#figure-5), and Figures [8](#figure-8), [9](#figure-9) are due to the different number of samples we perform evaluation on. While in [Section "Addressing the trade-off via Contrastive Decoding"](#addressing-the-trade-off-via-contrastive-decoding) we use the whole dataset, here we only employ 100 samples due to compute constraints. However, in both cases, our results are consistent both in terms of performance and FLOPs reduction.
+Lastly, we highlight that the difference in results between Figure [7](#figure-6), [8](#figure-7), and Figure [10](#figure-10), [11](#figure-11), due to a higher minimum exit layer selected for the former experiments. However, in both cases, our results are consistent both in trend of terms and performance and FLOPs reduction.
+
+Concluding, combining a vocabulary reduction approach, together with a confidence measure metod, allows to compute considerable fewer FLOPs, while retaining or improving the performance over the Softmax and JSD baselines. 
+
+
 
 
 
 <table align="center" style="width: 100%; border-collapse: collapse; margin: 20px auto;">
     <tr>
         <td style="text-align: center; padding: 10px;">
-            <img src="./blogpost_images/plots/finalf1qa.png" style="max-width: 100%; height: auto;">
+            <img src="./blogpost_images/plots/squad_f1.png" style="max-width: 100%; height: auto;">
             <br>
             <div style="margin-top: 10px;"><b>F1 Metric</b> for T5-Large and T5-Finetuned with <i>No</i>, <i>Fixed</i>, or <i>Decaying</i> reduction applied to the matrix</div>
         </td>
         <td style="text-align: center; padding: 10px;">
-            <img src="./blogpost_images/plots/qa_no_log.png" style="max-width: 100%; height: auto;">
+            <img src="./blogpost_images/plots/suqad_flops.png" style="max-width: 100%; height: auto;">
             <br>
             <div style="margin-top: 10px;"><b>FLOPs per sample during confidence estimation</b> for T5-Large and T5-Finetuned with <i>No</i>, <i>Fixed</i>, or <i>Decaying</i> reduction applied to the matrix</div>
         </td>
@@ -488,12 +492,12 @@ Lastly, we highlight that the difference in results between Figures [4](#figure-
 <table align="center" style="width: 100%; border-collapse: collapse; margin: 20px auto;">
     <tr>
         <td style="text-align: center; padding: 10px;">
-            <img src="./blogpost_images/plots/rouge_final.png" style="max-width: 100%; height: auto;">
+            <img src="./blogpost_images/plots/rougesamsam.png" style="max-width: 100%; height: auto;">
             <br>
             <div style="margin-top: 10px;"><b>F1 Metric</b> for T5-Large and T5-Finetuned with <i>No</i>, <i>Fixed</i>, or <i>Decaying</i> reduction applied to the matrix</div>
         </td>
         <td style="text-align: center; padding: 10px;">
-            <img src="./blogpost_images/plots/sam_no_log.png" style="max-width: 100%; height: auto;">
+            <img src="./blogpost_images/plots/sam_flops.png" style="max-width: 100%; height: auto;">
             <br>
             <div style="margin-top: 10px;"><b>FLOPs per sample during confidence estimation</b> for T5-Large and T5-Finetuned with <i>No</i>, <i>Fixed</i>, or <i>Decaying</i> reduction applied to the matrix</div>
         </td>
@@ -508,12 +512,14 @@ Lastly, we highlight that the difference in results between Figures [4](#figure-
 
 ## Conclusion and Future Work
 
-In this study, we have explored the application of early exiting strategies within Large Language Models (LLMs) to address the challenge of computational efficiency during inference. Our research integrates traditional early exiting mechanisms with concrete gains in efficiency obtained from vocabulary pruning. Additionally, we apply the idea of Contrastive Decoding to the early exiting setting, showing that sensible improvements can be achieved by imposing a clever heuristic on the choice of the layer to contrast. Lastly, we combine the aforementioned techniques and demonstrate that we can both retain almost all performance, while still performing a considerably lower number of FLOPs during inference. This results in a solution that satisfies both efficiency and score performances we aim for. 
+In this study, we have explored the application of early exiting strategies within Large Language Models (LLMs) to address the challenge of computational efficiency during inference. Our research integrates traditional early exiting mechanisms with concrete gains in efficiency obtained from vocabulary pruning. Additionally, we apply the idea of Contrastive Decoding to the early exiting setting, showing how this approach can be used as a confidence measure, by imposing a clever heuristic on the choice of the layer to contrast to. Lastly, we combine the aforementioned techniques and demonstrate that we can both retain almost all performance, while still carrying out a considerably lower number of FLOPs during inference. This results in a solution that satisfies both efficiency and score performances we aimed for. 
 
 
-In future work, we aim to expand our analysis to include a wider array of tasks - machine translation, open ended generation and long context tasks - and evaluation on larger datasets to further validate our proposal. 
-Another limitation is given by the fact that the overall runtime performance has not yet matched the improvements seen in FLOPs. This discrepancy is largely due to the hyper-optimization of the PyTorch library, which optimizes matrix multiplications, thereby reducing overall runtime, though it is worth noting that our gains in FLOPs should increase as a function of model scale. We also plan on addressing scaling laws in future works. Additionally, since we are working with pre-trained tokenizers, reducing the $W_j$ matrix leads to incorrect predictions, necessitating a remapping back to the original vocabulary size. This process introduces an overhead that further worsens runtime, as we are forced to apply the same operation twice (reducing first, and then expanding again). Several engineering reliant optimizations are still possible in this direction, which were not explored due to the previously mentioned constraints. 
-With regards to vocabulary reduction, the function that shrinks the $k$ values is based on the worst-case scenario observed in the data (see [Figure 3](#figure-3)). This function could be adjusted depending on both the problem type or the LM employed. For instance, a finetuned model, as depicted in [Figure 2b](#figure-2b), might benefit from more aggressive shrinkage compared to its non-finetuned counterpart.
+In future work, a natural follow-up is the use of the Contrastive Decoding output as the resulting output to perform the prediction on. Moreover, sensible investigations about the distributional distance and specific intervations on the computation of the contrastive distribution can be considered.  
+
+On an empirical note, we aim to expand our analysis to include a wider array of tasks - machine translation, open ended generation and long context tasks - and evaluation on larger datasets to further validate our proposal. 
+Another limitation is that the overall runtime performance does not always match the improvements seen in FLOPs. This discrepancy is largely due to the hyper-optimization of the PyTorch library, which optimizes matrix multiplications, thereby reducing overall runtime, though it is worth noting that our gains in FLOPs should increase as a function of model scale. Additionally, since we are working with pre-trained tokenizers, reducing the $W_j$ matrix leads to incorrect predictions, necessitating a remapping back to the original vocabulary size. This process introduces an overhead that further worsens runtime, as we are forced to apply the same operation twice (reducing first, and then expanding again). Several engineering reliant optimizations are still possible in this direction, which were not explored due to the previously mentioned constraints. 
+With regards to vocabulary reduction, the function that shrinks the $k$ values is based on the worst-case scenario observed in the data (see [Figure 3](#figure-3)). This function could be adjusted depending on both the problem type or the LM employed. For instance, a finetuned model as depicted in [Figure 2b](#figure-2b) might benefit from more aggressive shrinkage compared to its non-finetuned counterpart.
 Additionally, we plan on further refining the integration of the vocabulary pruning method with Contrastive Decoding. We hypothesize that, by leveraging the list of top-k tokens within Contrastive Decoding, we can get rid of the plausibility constraint, overall reducing further reliance on hyperparameter settings and tuning. 
 All these reasons inspire us to further work in this promising direction, and we hope the same applies to the reader. 
 
