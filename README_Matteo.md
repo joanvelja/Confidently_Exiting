@@ -136,7 +136,7 @@ and set the statement to "false"
 
 `os.environ["WANDB_DISABLED"] = "true" ---> os.environ["WANDB_DISABLED"] = "false"`
 
-This will cause every evaluation metric to be saved into wandb. 
+This, together with the usual `wandb.init()` will save every evaluation metric to into your wandb project.
 This line of code can be found within [run_question_answering](src/run_question_answering.py) / [run_summarization](src/run_summarization.py).
 
 
