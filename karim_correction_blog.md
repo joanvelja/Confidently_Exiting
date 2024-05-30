@@ -310,7 +310,7 @@ Consider the current expert layer $\ell$, and set of plausible amateur layer $J 
 <p>
 $$
 \large
-m = \underset{j \in J}{\text{argmax}} \frac{1}{\ell - j} \text{JSD} (p^{\ell}_{\text}(x_t | x_{< t}),p^{j}_{\text}(x_t | x_{< t}))
+m = \underset{j\in J}{\text{argmax}} \frac{1}{\ell - j} \text{JSD} (p_{\ell}(x_t | x_{< t}),p_{j}(x_t | x_{< t}))
 $$
 </p>
 
