@@ -19,33 +19,46 @@ conda env create --name environment_name -f environment.yml
 
 The codebase handles automatically model and dataset downloading. Beware of this when running the code for the first time! 
 
+## Models and Checkpoints
+
+We use t5-large as baseline model for our experiments. The code implementation is available at [models/deploying_t5](src/models/deploying_t5.py).
+The non-finetuned and finetuned model weights are available at  [google](https://huggingface.co/google-t5) and [jvelja](https://huggingface.co/jvelja) respectively on HuggingFace. 
 
 ## Evaluation
-We perform evaluation experiments on 1 summarization and 1 question answering task. 
-Please see the [scripts/softmax_experiments](src/scripts/softmax_experiments) shell files to reproduce the Softmax experiments on each dataset.    
+We perform evaluation experiments on one summarization (SamSum) and one question answering task (SQuAD). 
+
+To reproduce the experiments you can follow the guide below. All the files in scripts can be ran with the command below:
+
 ```bash
 sh jobname.run > jobname.out
 ```
 
-### Experiments
-To reproduce the experiments with or without a cuda device you can follow the guide below.
+#### Softmax Vocabulary Prunning
+Here we explain how to reproduce the experiments from section `Softmax Vocabulary Prunning` of our [blogpost](blogpost.md). 
+Please see the main [folder](src/scripts/softmax_experiments) for a total overview of the experiments to reproduce this section.
 
-#### Softmax Pruning
-...
+The plots obtained for [Figure 2](./blogpost_images/plots/squadexit.png), [3](./blogpost_images/plots/squadf1.png), and [4](./blogpost_images/plots/sam_avg.png) can be obtained by running this [folder](src\scripts\softmax_experiments\plotting_graphs). Regarding the full runs for plots [7]() and [8]() they can be obtained by running the folders for [baseline](src\scripts\softmax_experiments\final_jobs_results_no_reduct), [fixed](src\scripts\softmax_experiments\final_jobs_results_fixed), and [decaying](src\scripts\softmax_experiments\final_jobs_results_decaying) and logging their respective results.
+
+
 #### Contrastive Decoding
-...
+Here we explain how to reproduce the experiments from section `Contrastive Decoding` of our [blogpost](blogpost.md). 
 
+The experiments of Figures [Figure 8a](./blogpost_images/plots/squadexit.png), [Figure 8b](./blogpost_images/plots/squadf1.png), [Figure 9a](./blogpost_images/plots/sam_avg.png), [Figure 9b](./blogpost_images/plots/samsum_intermediate.png) and Table 1 are carried out across 100 samples. To reproduce these results it is enough to run the files in both folders  [f1](src/scripts/contrastive_decoding_experiments/SQuAD) and [f2](src/scripts/contrastive_decoding_experiments/SamSum) by adding an extra parameter namely:
 
-### Methods
+- `--max_eval_samples 100`
+  
+Similarly, [Figure 10b](./blogpost_images/plots/squad_flops.png),  [Figure 11b](./blogpost_images/plots/sam_flops.png) are performed over 100 samples with the additional need of the `count_flops` parameter
 
-In addition to the parameters previously implemented, we have introduced new ones specific to our tasks. For further details, please refer to the [additional_args](src/util/additional_args.py)  documentation. For convenience, we will also highlight the essential parameters from the previous implementation that are utilized in our current setup.
+- `--count_flops True`
+  
+Differently, the results of the last plots [Figure 10a](./blogpost_images/plots/squad_f1.png) and [Figure 11a](./blogpost_images/plots/rougesamsam.png) are made by running the .job files of [SQuAD](src/scripts/contrastive_decoding_experiments/SQuAD) and [SamSum](src/scripts/contrastive_decoding_experiments/SamSum) without any additional change
 
-#### Essential Parameters:
+### Example Case
 
-The bash files to run the evals look as follows:
+An example for running Jansen-Shannon Divergence contrastive confidence with adaptive pruning is
 
-```
-CUDA_VISIBLE_DEVICES=0 python -m run_question_answering \
+```bash
+srun python run_question_answering.py \
     --model_name_or_path google-t5/t5-large \
     --do_eval \
     --dataset_name squad \
@@ -60,14 +73,21 @@ CUDA_VISIBLE_DEVICES=0 python -m run_question_answering \
     --predict_with_generate \
     --max_seq_length 512 \
     --use_early_exit True \
-    --exit_conf_type softmax \
+    --exit_conf_type JSD_contrastive_confidence \
     --exit_conf_threshold 0.9 \
-    --exit_min_layer 16 \
-    --include_inputs_for_metrics True \
-    --max_eval_samples 100 \
+    --exit_min_layer 19 \
+    --include_inputs_for_metrics False \
     --use_auth_token True \
+    --type_vocab_reduct adaptive \
 ```
 
+Additionally, the actual plots are done with the `plots_mn.ipynb` file in (folder you put the plots folder in.) by manually inserting the numbers we obtain from the runs. 
+
+### Parameters Explanation
+
+In addition to the parameters previously implemented, we have introduced new ones specific to our tasks. For further details, please refer to the [additional_args](src/util/additional_args.py) documentation. For convenience, we will also highlight the essential parameters from the previous implementation that are utilized in our current setup.
+
+#### Essential Parameters:
 ##### Method agnostic parameters
 - `-m`: the file responsible for the task. The structure of it is `run_$TASK`. Possible choices: `question_answering`, `summarization`.
 - `--model_name_or_path`: the model to be used for the task. Possible choices: `google-t5/t5-large`, `jvelja/t5-squad`, `jvelja/t5-samsum`.
@@ -87,12 +107,6 @@ CUDA_VISIBLE_DEVICES=0 python -m run_question_answering \
 ##### Contrastive Decoding
 - `--exit_conf_type [str]`: Can now also be set to <i>contrastive_decoding</i>, <i>reweight_contrastive_decoding</i>, or <i>JSD_contrastive_confidence</i>.
 - `--type_vocab_reduct [str]`: Can be either fixed, decaying, or adaptive. This will prune the vocabulary matrix. This parameter is needed to combine <i>reweight_contrastive_decoding</i>, or <i>JSD_contrastive_confidence</i> with the pruning method.
-- `--render_jsds [bool]`: Toggle to reproduce Figure 6 of the [blogpost](blogpost.md). This option should be toggled only when using `JSD_contrastive_confidence`. In order to render the JSDs, run the script as follows:
-  ```
-  bash scripts run_$TASK_$DATASET.sh > output.txt
-  ```
-
-  This will render a .txt with the jsds. Copy the path of the created output, and follow the instructions of the notebook `plots/plots_jsds.ipynb`.
 
 Sample task-specific bash files can be found in the `src/scripts` directory. 
 
@@ -100,14 +114,15 @@ Sample task-specific bash files can be found in the `src/scripts` directory.
 
 ### W&B logging
 
+To enable wandb logging of results you can follow the standaard procedure explained in [wandb login infos](https://docs.wandb.ai/ref/cli/wandb-login) and uncomment the following lines of code   
+and set the statement to "false"
+
+`os.environ["WANDB_DISABLED"] = "true" ---> os.environ["WANDB_DISABLED"] = "false"`
+
+This, together with the usual `wandb.init()` will save every evaluation metric to into your wandb project.
+This line of code can be found within [run_question_answering](src/run_question_answering.py) / [run_summarization](src/run_summarization.py).
 
 
-
-
-
-### Model Checkpoints
-
-The non-finetuned and finetuned models are available at  [google](https://huggingface.co/google-t5) and [jvelja](https://huggingface.co/jvelja) respectively on HuggingFace. 
 
 ## Contact
 - Karim Abdel Sadek: karim.abdel.sadek@student.uva.nl
