@@ -25,7 +25,7 @@ We use t5-large as baseline model for our experiments. The code implementation i
 The non-finetuned and finetuned model weights are available at  [google](https://huggingface.co/google-t5) and [jvelja](https://huggingface.co/jvelja) respectively on HuggingFace. 
 
 ## Evaluation
-We perform evaluation experiments on one summarization and one question answering task. 
+We perform evaluation experiments on one summarization (SamSum) and one question answering task (SQuAD). 
 
 To reproduce the experiments you can follow the guide below.
 
