@@ -65,9 +65,9 @@ is the linear classifier of block L responsible for mapping back the output of t
 
 
 Our approach incorporates an early-exiting strategy, wherein the generation of the next token can occur at any layer $`\ell`$ if the computed confidence score $`c_\ell`$ exceeds a specified threshold $`\tau`$.
-
+<p>
 When an early exit is triggered at layer $`\ell`$, it necessitates updating the key and value pairs in subsequent layers to ensure proper attention mechanisms for future tokens. To efficiently manage this, a state copying technique is employed, where the hidden states from the early-exited layer i.e. $ h^{\ell}_{t+1}$ are duplicated across subsequent layers ($`h^i_{t+1} = h^{\ell}_{t+1}`$ for every $i$ such that $ i = \ell + 1$, ... , $L$). This process maintains computational efficiency and model performance, even in compact - for today's standards - model configurations like T5.
-
+</p>
 ### Experimental Setting
 
 In this section, we introduce the experimental setting used in both ["Methodology"](#methodology) and ["Experiments"](#experiments). We evaluate the encoder-decoder T5 model ([Raffel et al., 2020](#exploring-limits-2020)) on two different datasets and two different downstream tasks:
@@ -270,7 +270,9 @@ $$
 \nu_{\text{head}}(x_{< t}) = \{x_t \in V : p_{\text{EXP}}(x_t|x_{< t}) \geq \alpha \cdot \underset{x'_t \in V}{{max}} (p_{\text{EXP}}(x'_t|x_{< t}))\}
 $$
 </p>
+<p>
 where $V$ is our vocabulary.
+</p>
 
 It’s important to recognize that smaller LMs, despite their limitations, do reliably capture basic elements of English grammar, such as subject-verb agreement. Applying the CD objective indiscriminately could penalize these correct linguistic behaviors, leading to false negatives. It might also erroneously reward implausible token choices, resulting in false positives. To address these potential pitfalls, we incorporate the plausibility constraint $\nu_{\text{head}}$ into our framework. Given a preceding context $`x_{< t}`$, this constraint selects a subset of plausible next tokens, out of the vocabulary $V$, whose probabilities are above a threshold. The threshold is a fraction $\alpha$ of the max probability token in the vocabulary. We set the hyperparameter $\alpha \in[0, 1]$ to 0.1, as done by [Li et al. (2023)](#contrastive-decoding-2023). Borrowing from [Gera et al. (2023)](#auto-contrastive-decoding-2023), the  contrastive objective, called Log Contrastive Difference (LCD), is defined as:
 
