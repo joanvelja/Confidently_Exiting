@@ -310,9 +310,11 @@ Consider the current expert layer $\ell$, and set of plausible amateur layer $J 
 <p>
 $$
 \large
-m = \text{argmax}_{j \in J} \frac{1}{\ell - j}JSD(p^{\ell}_{\text{DCD}}, p^{j}_{\text{DCD}} )
+m = \arg\max_{j \in J} \frac{1}{\ell - j} \text{JSD}(p^{\ell}_{\text}(x_t | x_{< t}),p^{j}_{\text}(x_t | x_{< t}) )
 $$
 </p>
+
+
 
 
 We will call this technique "Jensen-Shannon Divergence (JSD) contrastive decoding".
