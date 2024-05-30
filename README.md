@@ -43,7 +43,7 @@ The plots obtained for [Figure 2](./blogpost_images/plots/figure2.png), [3](./bl
 #### Contrastive Decoding
 Here we explain how to reproduce the experiments from section `Contrastive Decoding` of our [blogpost](blogpost.md). 
 
-The experiments of Figures [Figure 8a](./blogpost_images/plots/squadexit.png), [Figure 8b](./blogpost_images/plots/squadf1.png), [Figure 9a](./blogpost_images/plots/sam_avg.png), [Figure 9b](./blogpost_images/plots/samsum_intermediate.png) and Table 1 are carried out across 100 samples. To reproduce these results it is enough to run the files in both folders  [f1](src/scripts/contrastive_decoding_experiments/SQuAD) and [f2](src/scripts/contrastive_decoding_experiments/SamSum) by adding an extra parameter namely:
+The experiments of Figures [Figure 8a](./blogpost_images/plots/squadexit.png), [Figure 8b](./blogpost_images/plots/squadf1.png), [Figure 9a](./blogpost_images/plots/sam_avg.png), [Figure 9b](./blogpost_images/plots/samsum_intermediate.png) and Table 1 are carried out across 100 samples. To reproduce these results it is enough to run the files in both folders  [F1](src/scripts/contrastive_decoding_experiments/SQuAD) and [F2](src/scripts/contrastive_decoding_experiments/SamSum) by adding an extra parameter namely:
 
 - `--max_eval_samples 100`
   
