@@ -478,7 +478,7 @@ Concluding, combining a vocabulary reduction approach, together with a confidenc
             <div style="margin-top: 10px;"><b>F1 Metric</b> for T5-Large and T5-Finetuned with <i>No</i>, <i>Fixed</i>, or <i>Decaying</i> reduction applied to the matrix</div>
         </td>
         <td style="text-align: center; padding: 10px;">
-            <img src="./blogpost_images/plots/suqad_flops.png" style="max-width: 100%; height: auto;">
+            <img src="./blogpost_images/plots/squad_flops.png" style="max-width: 100%; height: auto;">
             <br>
             <div style="margin-top: 10px;"><b>FLOPs per sample during confidence estimation</b> for T5-Large and T5-Finetuned with <i>No</i>, <i>Fixed</i>, or <i>Decaying</i> reduction applied to the matrix</div>
         </td>
