@@ -19,6 +19,8 @@ conda env create --name environment_name -f environment.yml
 
 The codebase handles automatically model and dataset downloading. Beware of this when running the code for the first time! 
 
+## Models
+We use t5-large as base model for our experiments. The code implementation is available in [models/deploying_t5](src/models/deploying_t5.py).
 
 ## Evaluation
 We perform evaluation experiments on one summarization and one question answering task. 
