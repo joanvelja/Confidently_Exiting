@@ -34,8 +34,6 @@ sh jobname.run > jobname.out
 #### Contrastive Decoding
 Here we explain how to reproduce the experiments from section `Contrastive Decoding` of our [blogpost](blogpost.md). 
 
-<!-- The folder [scripts/contrastive_decoding_experiments](src/scripts/contrastive_decoding_experiments) contains  -->
-
 The experiments of Figures [Figure 8a](./blogpost_images/plots/squadexit.png), [Figure 8b](./blogpost_images/plots/squadf1.png), [Figure 9a](./blogpost_images/plots/sam_avg.png), [Figure 9b](./blogpost_images/plots/samsum_intermediate.png) and Table 1 are carried out across 100 samples. To reproduce these results it is enough to run the files of [scripts/contrastive_decoding_experiments/SQuAD](src/scripts/contrastive_decoding_experiments/SQuAD) and [scripts/contrastive_decoding_experiments/SamSum](src/scripts/contrastive_decoding_experiments/SamSum) by adding an extra parameter namely:
 
 - `--max_eval_samples 100`
@@ -45,12 +43,33 @@ Similarly, [Figure 10b](./blogpost_images/plots/squad_flops.png),  [Figure 11b](
 - `--count_flops True`
   
 Differently, the results of the last plots [Figure 10a](./blogpost_images/plots/squad_f1.png) and [Figure 11a](./blogpost_images/plots/rougesamsam.png) are made by running the .job files of [scripts/contrastive_decoding_experiments/SQuAD](src/scripts/contrastive_decoding_experiments/SQuAD) and [scripts/contrastive_decoding_experiments/SamSum](src/scripts/contrastive_decoding_experiments/SamSum) without any additional change. 
+An example for running Jansen-Shannon Divergence contrastive confidence with adaptive pruning is
 
 ```bash
-sh jobname.run > jobname.out
+srun python run_question_answering.py \
+    --model_name_or_path google-t5/t5-large \
+    --do_eval \
+    --dataset_name squad \
+    --context_column context \
+    --question_column question \
+    --answer_column answers \
+    --output_dir ./save/squad_t5-large/ \
+    --per_device_eval_batch_size 1 \
+    --deploy_scenario True \
+    --use_synchronize True \
+    --overwrite_output_dir \
+    --predict_with_generate \
+    --max_seq_length 512 \
+    --use_early_exit True \
+    --exit_conf_type JSD_contrastive_confidence \
+    --exit_conf_threshold 0.9 \
+    --exit_min_layer 19 \
+    --include_inputs_for_metrics False \
+    --use_auth_token True \
+    --type_vocab_reduct adaptive \
 ```
- 
-The actual plots are done with the `plots_mn.ipynb` file in (folder you put the plots folder in.) by manually inserting the numbers we obtain from the runs. 
+
+Additionally, the actual plots are done with the `plots_mn.ipynb` file in (folder you put the plots folder in.) by manually inserting the numbers we obtain from the runs. 
 
 
 
