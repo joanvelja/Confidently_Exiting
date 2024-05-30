@@ -265,7 +265,7 @@ Naturally, this captures the dynamical change of the token's distribution when c
 Following [Li et al. (2023)](#contrastive-decoding-2023), we first implement the CD adaptive plausibility constraint, $`\nu_{\text{head}}(x_{< t})`$, defined as:
 
 <p align='center'>
-$\nu_{\text{head}}(x_{< t}) = \{x_t \in V : p_{\text{EXP}}(x_t|x_{< t}) \geq \alpha \underset{x'_t \in V}{{max}} p_{\text{EXP}}(x'_t|x_{< t})\}$
+$\nu_{\text{head}}(x_{< t}) = \{x_t \in V : p_{\text{EXP}}(x_t|x_{< t}) \geq \alpha \cdot \underset{x'_t \in V}{{max}} (p_{\text{EXP}}(x'_t|x_{< t}))\}$
 </p>
 where $V$ is our vocabulary.
 
