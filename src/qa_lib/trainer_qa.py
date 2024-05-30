@@ -66,6 +66,7 @@ class QATrainer(Seq2SeqTrainer):
         eval_dataset: Optional[Dataset] = None,
         ignore_keys: Optional[List[str]] = None,
         metric_key_prefix: str = "eval",
+        render_jsds: bool = False,
         **gen_kwargs,
     ) -> Dict[str, float]:
         """
@@ -103,6 +104,7 @@ class QATrainer(Seq2SeqTrainer):
             gen_kwargs["num_beams"] if gen_kwargs.get("num_beams") is not None else self.args.generation_num_beams
         )
         self._gen_kwargs = gen_kwargs
+        self.render_jsds = render_jsds
 
         # memory metrics - must set up as early as possible
         self._memory_tracker.start()
@@ -269,9 +271,11 @@ class QATrainer(Seq2SeqTrainer):
             loss, logits, labels = self.prediction_step(model, inputs, prediction_loss_only, ignore_keys=ignore_keys)
             inputs_decode = self._prepare_input(inputs["input_ids"]) if args.include_inputs_for_metrics else None
 
-            # print(self.tokenizer.decode(inputs["input_ids"][0], skip_special_tokens=True))
-            # print("-END CONTEXT-")
-    
+
+            if self.render_jsds:
+                print(self.tokenizer.decode(inputs["input_ids"][0], skip_special_tokens=True))
+                print("-END CONTEXT-")
+        
 
             if is_torch_tpu_available():
                 xm.mark_step()

@@ -19,6 +19,10 @@ class AdditionalArguments:
         default=False, metadata={"help": ("Counting the number of FLOPs for each block.")},
     )
 
+    render_jsds: Optional[bool] = field(
+        default=False, metadata={"help": ("Print the JSDs across blocks.")},
+    )
+
     # deployment scenario
     deploy_scenario: Optional[bool] = field(
         default=False, metadata={"help": ("Assume a deploying scneario for the accurate measurement.")},
@@ -159,7 +163,8 @@ def update_autoconfig(config, additional_args, **kwargs):
         'max_answer_length': kwargs.get('max_answer_length', None),
         'type_vocab_reduct': additional_args.type_vocab_reduct,
         'plotting_logits': additional_args.plotting_logits,
-        'count_flops': additional_args.count_flops
+        'count_flops': additional_args.count_flops,
+        'render_jsds': additional_args.render_jsds,
     }
     config.update(early_exit_config)
     

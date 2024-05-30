@@ -596,8 +596,8 @@ class DeployT5Stack(T5Stack):
             self._reset_time_measure()
         else: self.deploy_time = None
         
-        plot = False
-        if plot:
+        self.render = config.render_jsds
+        if self.render:
             self.tokenizer = T5Tokenizer.from_pretrained("google-t5/t5-large")
         
     def _reset_time_measure(self):
@@ -1099,7 +1099,6 @@ class DeployT5Stack(T5Stack):
                                 alpha = 0.1,
                                 return_jsds=False,
                                 return_conf=True if self.config.type_vocab_reduct == "adaptive" else False,
-                                #shrunk_vocab = True if self.config.type_vocab_reduct else False,
                                 )
                             if self.config.type_vocab_reduct == "adaptive":
                                 skip_mask, conf = out
@@ -1119,16 +1118,21 @@ class DeployT5Stack(T5Stack):
                                 prev_probits = prev_probits, 
                                 layer_am = i//2,
                                 alpha = 0.1,
-                                return_jsds=True,
+                                return_jsds=self.render,
                                 return_conf=True if self.config.type_vocab_reduct == "adaptive" else False,
-                                #shrunk_vocab = True if self.config.type_vocab_reduct else False,
                                 )
                             if self.config.type_vocab_reduct == "adaptive":
-                                skip_mask, jsds, conf = out
+                                if self.render:
+                                    skip_mask, jsds, conf = out
+                                else:
+                                    skip_mask, conf = out
                                 prev_confidences[i] = conf
                             else:
-                                skip_mask, jsds = out
-        
+                                if self.render:
+                                    skip_mask, jsds = out
+                                else:
+                                    skip_mask = out
+
                         else:
                             out = get_skip_mask(
                                 lm_logits,
@@ -1136,8 +1140,7 @@ class DeployT5Stack(T5Stack):
                                 cm_head,
                                 config=self.config,
                                 pos_time=past_key_values[i][0].shape[2] + 1 if past_key_values[i] is not None else 1,
-                                return_conf=True if self.config.type_vocab_reduct == "adaptive" else False,
-                                #shrunk_vocab = True if self.config.type_vocab_reduct else False,
+                                return_conf=True if self.config.type_vocab_reduct == "adaptive" else False
                             )
                             if self.config.type_vocab_reduct == "adaptive":
                                 skip_mask, conf = out
@@ -1151,20 +1154,14 @@ class DeployT5Stack(T5Stack):
                             
                             self.lm_logits = lm_logits # This is where the logits are sent to do the predictions.
     
-                            plot = False
-                            if plot: #and len(jsds) >= 23 : # When we have all the jdss values, we can use them to check jsds between layers
-
+                            if self.render: #and len(jsds) >= 23 : # When we have all the jdss values, we can use them to check jsds between layers
                                 print("JSDS: ", jsds)
-                                # Plot the probits distribution
                                 probits = torch.softmax(lm_logits, dim=-1)
                                 argmax_index = torch.argmax(probits).item()
                                 # Tokenizer to get the words
                                 word = self.tokenizer.decode(argmax_index)
-
                                 print("Word: ", word, " Token_id: ", argmax_index)
-
                     
-
                         if self.config.use_synchronize: torch.cuda.synchronize()
                         self.deploy_time['time_confidence'] += (datetime.datetime.now() - start)
 

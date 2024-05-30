@@ -106,6 +106,8 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
     if training_args.should_log:
         # The default of training_args.log_level is passive, so we set log level at info here to have that default.
         transformers.utils.logging.set_verbosity_info()
+    
+    model_args
 
     log_level = training_args.get_process_log_level()
     logger.setLevel(log_level)
@@ -209,6 +211,7 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
         revision=model_args.model_revision,
         use_auth_token=True if model_args.use_auth_token else None,
     )
+
 
     model = model_cls.from_pretrained(
         model_name,
@@ -625,7 +628,7 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
         # evaluation metrics could be differ from evaluation during training
         # refer to https://discuss.huggingface.co/t/evaluation-results-metric-during-training-is-different-from-the-evaluation-results-at-the-end/15401/3
         if training_args.include_inputs_for_metrics:
-            output = trainer.evaluate(max_length=max_length, num_beams=num_beams, metric_key_prefix="eval")
+            output = trainer.evaluate(max_length=max_length, num_beams=num_beams, metric_key_prefix="eval", render_jsds=additional_args.render_jsds)
             metrics = output.metrics
             if additional_args.count_flops:
                 final_flops = model.decoder.flop_counter/len(eval_dataset)
