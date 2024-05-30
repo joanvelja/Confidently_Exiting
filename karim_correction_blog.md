@@ -302,17 +302,19 @@ We  (you did not , dola did...)therefore thought of a simple, yet effective way 
 --> 
 We tackle this problem drawing from [Chuang et al., 2024](#dola-contrasting-layers-2024). The authors suggest selection via distance-in-distribution through Jensen-Shannon Divergence. 
 
-This way, they claim, it is possible to find the most fit amateur layer for the contrastive objective. They do so by contrasting the final distribution against a set of candidate layers for premature layer selection $J = \{ 2, ..., L-1 \}$. Consider we are The selected layer $m$ is obtained by 
+This way, they claim, it is possible to find the most fit amateur layer for the contrastive objective. They do so by contrasting the final distribution against a set of candidate layers for premature layers. The layer selected is the one with highest JSD w.r.t. the expert one. 
+They also divide the layers into 2 to 4 buckets of $J$ based on the total number of layers, relying on a validation set to choose the best bucket for each task. Our claim is that the bucketing strategy is suboptimal for several reasons. First, it requires task-specific selection, which is undesirable since these models are utilized by end users for open-ended generation. Second, bucketing does not address the implicit bias JSD will have towards the lower layers of the distribution. Earlier representations are necessarily more diverse, since the set of plausible tokens for autoregressive generation gets narrower as one goes deeper into the stack. For this reason, we discount the JSD value between two distributions $i, j$ by the layer distance between the two distributions $\ell_j - \ell_i$. The discounting allows to capture the layers at which there is a more significant distribution change w.r.t. the layer $\ell_j$ we find ourselves at, thus obtaining meaningful signal from the chosen contrastive distribution 
+
+Consider the current expert layer $\ell$, and set of plausible amateur layer $J = \{ 2, ..., L-1 \}$. The selected layer $m$ is obtained by 
 
 <p>
 $$
 \large
-m = \text{argmax}_{j \in J} JSD(p^{\ell}_{\text{DCD}}, p^{j}_{\text{DCD}} )
+m = \text{argmax}_{j \in J} \frac{1}{\ell - j}JSD(p^{\ell}_{\text{DCD}}, p^{j}_{\text{DCD}} )
 $$
 </p>
 
-The layer selected is the one with highest JSD w.r.t. the expert one. ADD HEURISTIC AND FORMULA
- They also divide the layers into 2 to 4 buckets of $J$ based on the total number of layers, relying on a validation set to choose the best bucket for each task. Our claim is that the bucketing strategy is suboptimal for several reasons. First, it requires task-specific selection, which is undesirable since these models are utilized by end users for open-ended generation. Second, bucketing does not address the implicit bias JSD will have towards the lower layers of the distribution. Earlier representations are necessarily more diverse, since the set of plausible tokens for autoregressive generation gets narrower as one goes deeper into the stack. For this reason, we discount the JSD value between two distributions $i, j$ by the layer distance between the two distributions $\ell_j - \ell_i$. The discounting allows to capture the layers at which there is a more significant distribution change w.r.t. the layer $\ell_j$ we find ourselves at, thus obtaining meaningful signal from the chosen contrastive distribution. 
+
 We will call this technique "Jensen-Shannon Divergence (JSD) contrastive decoding".
 
 Finally, to get the best of both worlds, we experiment with a mixed approach between Contrastive Decoding and Softmax pruning. The rationale here is that we can use CD with the relevant top-k tokens in the logits we find with the pruning done for the Softmax approach.
