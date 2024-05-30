@@ -242,7 +242,7 @@ To summarize, our final predicted token is often highly ranked across all layers
 </table>
 
 
-### Addressing the Trade-Off Via Contrastive Decoding
+### Measuring Confidence Via Contrastive Decoding
 
 <table align="center">
   <tr align="center">
@@ -254,7 +254,7 @@ To summarize, our final predicted token is often highly ranked across all layers
 </table>
 
 The second approach ([Figure 5](#figure-5)) is inspired by [Li et al. (2023)](#contrastive-decoding-2023).
-We propose to apply their framework to address one of the limitations of (Schulter). Namely, as introduced in previous sections, the Softmax response approach relies on a static notion of confidence, which depends only on the probability distribution computed at the current layer. Such approach may ignore the evolution of the probits' magnitudes across the model. 
+We propose to apply their framework to address one of the limitations of [Schuster et al., 2022](#confident-adaptive-language-modeling-2022). Namely, as introduced in previous sections, the Softmax response approach relies on a static notion of confidence, which depends only on the probability distribution computed at the current layer. Such approach may ignore the evolution of the probits' magnitudes across the model. 
 
 By contrasting outputs of smaller LMs with larger ones, Contrastive Decoding (CD) accounts for the difference in representations computed by amateur and mature layers. 
 The core goal of this method is to refine the output distribution by filtering through the lens of larger models, retaining only their superior linguistic predictions. 
@@ -265,7 +265,10 @@ Naturally, this captures the dynamical change of the token's distribution when c
 Following [Li et al. (2023)](#contrastive-decoding-2023), we first implement the CD adaptive plausibility constraint, $`\nu_{\text{head}}(x_{< t})`$, defined as:
 
 <p align='center'>
-$\nu_{\text{head}}(x_{< t}) = \{x_t \in V : p_{\text{EXP}}(x_t|x_{< t}) \geq \alpha \cdot \underset{x'_t \in V}{{max}} (p_{\text{EXP}}(x'_t|x_{< t}))\}$
+$$
+\large
+\nu_{\text{head}}(x_{< t}) = \{x_t \in V : p_{\text{EXP}}(x_t|x_{< t}) \geq \alpha \cdot \underset{x'_t \in V}{{max}} (p_{\text{EXP}}(x'_t|x_{< t}))\}
+$$
 </p>
 where $V$ is our vocabulary.
 
@@ -289,23 +292,22 @@ p_{\text{EXP}}(x_t | x_{< t}) & \text{otherwise}
 $$
 
 
-We utilize this defined distribution to compute the new confidence $c^{\ell}_t$. On the other hand, we remind that our approach is based on the use of one single model.
+We utilize this defined distribution to compute the new confidence $c^{\ell}_t$. By doing so, we overcome the static nature of the confidence measure usually considered in the Early-Exiting literature.
+
+On the other hand, we remind that our approach is based on the use of one single model.
 
 Building up on [Gera et al., 2023](#auto-contrastive-decoding-2023), we include their variant of auto-contrastive decoding into our early-exiting framework. Here, $p_{\text{EXP}}$ and $p_{\text{AMA}}$ are respectively proxied by the current layer $\ell$ and by the layer $\lfloor{\frac{\ell}{2}}\rfloor$. This intuition is aligned with findings by [Elbayad et al. (2019)](#contrastive-decoding-2019) and [Geva et al. (2021)](#transformer-key-value-memories-2021); [Geva et al. (2022)](#transformer-promoting-concepts-2022).
 We will refer to this auto-contrastive decoding strategy as "Weighted Contrastive Decoding". 
-
 One question that arises from this idea is previous layer selection. Clearly, this choice of the amateur layer is very arbitrary. 
 
 <!--
 We take the original approach by [Li et al. (2023)](#contrastive-decoding-2023) a step further: instead of running inference on parallel models, thus requiring significant compute overhead, we substitute the amateur model. We do this by proxying it with the distribution obtained at earlier layers of the attention stack. The expert model distribution is substituted with the layer $\ell$ we find ourselves at.
 We  (you did not , dola did...)therefore thought of a simple, yet effective way of addressing this choice. 
 --> 
-We tackle this problem drawing from [Chuang et al., 2024](#dola-contrasting-layers-2024). The authors suggest selection via distance-in-distribution through Jensen-Shannon Divergence. 
+We tackle this problem drawing from [Chuang et al., 2024](#dola-contrasting-layers-2024). The authors suggest selection via distance-in-distribution through Jensen-Shannon Divergence. This way, they claim, it is possible to find the most fit amateur layer. They do so by contrasting the final distribution against a set of candidate possible premature layers. The layer selected as the one with highest JSD w.r.t. the expert one. 
+They also divide the layers into 2 to 4 buckets of $J$ based on the total number of layers, relying on a validation set to choose the best bucket for each task. Our claim is that the bucketing strategy is suboptimal for several reasons. First, it requires task-specific selection, which is undesirable since these models are utilized by end users for open-ended generation. Second, bucketing does not address the implicit bias JSD will have towards the lower layers of the distribution. Earlier representations are necessarily more diverse, since the set of plausible tokens for autoregressive generation gets narrower as one goes deeper into the stack. For this reason, we discount the JSD value between two distributions $i, j$ by the layer distance $\ell_j - \ell_i$. The discounting allows to capture the layers at which there is a more significant distribution change w.r.t. the one we find ourselves at, thus obtaining meaningful signal from the chosen contrastive distribution.
 
-This way, they claim, it is possible to find the most fit amateur layer for the contrastive objective. They do so by contrasting the final distribution against a set of candidate layers for premature layers. The layer selected is the one with highest JSD w.r.t. the expert one. 
-They also divide the layers into 2 to 4 buckets of $J$ based on the total number of layers, relying on a validation set to choose the best bucket for each task. Our claim is that the bucketing strategy is suboptimal for several reasons. First, it requires task-specific selection, which is undesirable since these models are utilized by end users for open-ended generation. Second, bucketing does not address the implicit bias JSD will have towards the lower layers of the distribution. Earlier representations are necessarily more diverse, since the set of plausible tokens for autoregressive generation gets narrower as one goes deeper into the stack. For this reason, we discount the JSD value between two distributions $i, j$ by the layer distance between the two distributions $\ell_j - \ell_i$. The discounting allows to capture the layers at which there is a more significant distribution change w.r.t. the layer $\ell_j$ we find ourselves at, thus obtaining meaningful signal from the chosen contrastive distribution 
-
-Consider the current expert layer $\ell$, and set of plausible amateur layer $J = \{ 2, ..., L-1 \}$. The selected layer $m$ is obtained by 
+Consider the current expert layer $\ell$, and set of plausible amateur layer $J = \{ 2, ..., L-1 \}$. The selected layer $m$ is obtained as 
 
 <p>
 $$
@@ -314,17 +316,27 @@ m = \underset{j\in J}{\text{argmax}} \frac{1}{\ell - j} \text{JSD} (p_{\ell}(x_t
 $$
 </p>
 
+To illustrate the above method, in ([Figure 6](#jsds)) we show the JSD contrast on a given sample. 
+
+<table align="center">
+  <tr align="center">
+      <th><img src="./blogpost_images/plots/jsds.png" alt="Evolution in  <i>JSD</i> distribution. T5-model, SQuAD Dataset." style="width:90%; display:inline-block; margin: 0 2.5%;" /></th>
+  </tr>
+  <tr align="left">
+    <td colspan=2><b id='jsds'>Figure 6:</b> Evolution in  <i>JSD</i> distribution. T5-model, SQuAD Dataset</td>
+  </tr>
+</table>
 
 
+We will call this technique "Jensen-Shannon Divergence (JSD) Contrastive Decoding". 
 
-We will call this technique "Jensen-Shannon Divergence (JSD) contrastive decoding".
 
-Finally, to get the best of both worlds, we experiment with a mixed approach between Contrastive Decoding and Softmax pruning. The rationale here is that we can use CD with the relevant top-k tokens in the logits we find with the pruning done for the Softmax approach.
+Finally, to get the best of both worlds, we experiment with a mixed approach between Contrastive Decoding and Softmax pruning. The rationale here is that we can combine the CD confidence measure together with the relevant top-k tokens in the logits we find with the pruning done for the Softmax vocabulary pruning approach. 
 ## Experiments
 
 ### Softmax Speed-Up
-In this section, we report the results of the different Softmax reductions applied to the $`\textbf{W}_{j}`$ matrix. The aim is to achieve similar performance with regards to the evaluation metrics, while significantly reducing the amount of FLOPs required.
-We implement the proposed approaches and perform our experiments by building on the available <a href="https://github.com/raymin0223/fast_robust_early_exit" target="_blank" rel="noopener noreferrer">  codebase implementation</a>. The minimum exit layer is based on the lowest confidence level found in ([Figure 2](#figure-2)) and ([Figure 3](#figure-3)). We then compare these results with our proposed vocabulary reductions, either fixed or decaying, as presented in [Section "Early Exiting via the Softmax Approach"](#early-exiting-via-the-softmax-approach). We evaluate the models based on their respective performance metrics and the number of floating point operations (FLOPs). The evaluation is conducted for both the Question-Answering (see [Figure 4](#figure-4)) and Summarization task (see [Figure 5](#figure-5)).
+In this section, we report the results of the different Softmax vocabulary reductions applied to the $`\textbf{W}_{j}`$ matrix. The aim is to achieve similar performance with regards to the evaluation metrics, while significantly reducing the amount of FLOPs required.
+We implement the previously proposed approaches and perform our experiments by building on the available <a href="https://github.com/raymin0223/fast_robust_early_exit" target="_blank" rel="noopener noreferrer">  codebase implementation</a>. The minimum exit layer is based on the lowest confidence level found in [Figure 3](#figure-3) and [Figure 4](#figure-4). We run experiments, either with the Fixed or Decaying approaches, as presented in [Section "Early Exiting via the Softmax Approach"](#early-exiting-via-the-softmax-approach). We evaluate the models based on their respective performance metrics and the number of floating point operations (FLOPs). The evaluation is conducted for both the Question-Answering (see [Figure 7](#figure-6)) and Summarization task (see [Figure 8](#figure-7)).
 <!---
 generated by one sample during confidence estimation due to its primary role in the forward pass [Bae et al. (2023)](#fast-robust-early-exiting-2023)
 -->
@@ -343,7 +355,7 @@ generated by one sample during confidence estimation due to its primary role in 
     </tr>
     <tr>
         <td colspan="2" style="text-align: left; padding: 10px; font-size: 14px;">
-            <a id='figure-6'> <b>Figure 6:</a></b> Performance on Question-Answering Task: Comparison of model performance in terms of F1 score and the amount of FLOPs generated per sample during confidence estimation. The minimum exit layer was set to 7 for T5-Large (which sets <i>k=842</i> for fixed) and 2 for T5-Large Finetuned (which sets <i>k=2781</i> for fixed), with the confidence set to 0.9. The amount of FLOPs represents the average from 100 samples and is only calculated during confidence estimation. <a href="#fast-robust-early-exiting-2023"> Bae et al. (2023)</a>.
+            <a id='figure-6'> <b>Figure 7:</a></b> Performance on Question-Answering Task: Comparison of model performance in terms of F1 score and the amount of FLOPs generated per sample during confidence estimation. The minimum exit layer was set to 7 for T5-Large (which sets <i>k=842</i> for fixed) and 2 for T5-Large Finetuned (which sets <i>k=2781</i> for fixed), with the confidence set to 0.9. The amount of FLOPs represents the average from 100 samples and is only calculated during confidence estimation. <a href="#fast-robust-early-exiting-2023"> Bae et al. (2023)</a>.
         </td>
     </tr>
 </table>
@@ -362,12 +374,12 @@ generated by one sample during confidence estimation due to its primary role in 
     </tr>
     <tr>
         <td colspan="2" style="text-align: left; padding: 10px; font-size: 14px;">
-             <a id='figure-7'><b>Figure 7:</b></a> <b>Performance on Summarization Task</b>: Comparison of model performance in terms of ROUGE-L score and the amount of FLOPs generated per sample. The minimum exit layer was set to 7 for T5-Large (which sets <i>k=842</i> for fixed) and 2 for T5-Large Finetuned (which sets <i>k=2781</i> for fixed), with the confidence set at 0.9 for both. The amount of FLOPs represents the average from 100 samples and is only calculated during confidence estimation. <a href="fast-robust-early-exiting-2023">Bae et al. (2023)</a>.
+             <a id='figure-7'><b>Figure 8:</b></a> <b>Performance on Summarization Task</b>: Comparison of model performance in terms of ROUGE-L score and the amount of FLOPs generated per sample. The minimum exit layer was set to 7 for T5-Large (which sets <i>k=842</i> for fixed) and 2 for T5-Large Finetuned (which sets <i>k=2781</i> for fixed), with the confidence set at 0.9 for both. The amount of FLOPs represents the average from 100 samples and is only calculated during confidence estimation. <a href="fast-robust-early-exiting-2023">Bae et al. (2023)</a>.
         </td>
     </tr>
 </table>
-  The overall performance displays the following trend: similar performance is achieved across the evaluation metrics, but the amount of FLOPs decreases by a factor of 100x. Additionally, comparing fixed and decaying reduction, half of the FLOPs are utilized by the latter, causing a  2% loss in performance. This illustrates the trade-off: choosing a smaller $k$ reduces the number of FLOPs but at the cost of a degrading performance. Additionally, due to fine-tuned models exiting at earlier stages, fewer FLOPs are computed overall. However, the same trade-off remains. We set the minimum confidence 
-  $`c^{\ell}_{t}`$ required forexiting at 0.9 across all layers. It is important to note that if this value would be lowered our model would exit earlier, producing faster but more inaccurate and less confident predictions.
+  Both plots display the following trend: similar performance is achieved across the evaluation metrics, but the amount of FLOPs decreases by a factor of 100x. Additionally, comparing Fixed and Decaying reduction, half of the FLOPs are utilized by the latter, which however incurs a 2% loss in performance. This illustrates the trade-off: choosing a smaller $k$ reduces the number of FLOPs but at the cost of a degrading performance. Additionally, due to fine-tuned models exiting at earlier stages, fewer FLOPs are computed overall. However, the same trade-off remains. We set the threshold
+  $`\tau^{\ell}_{t}`$ required for exiting at 0.9 across all layers. It is important to note that if this value would be lowered, our model would exit earlier,hence producing faster but more inaccurate and less confident predictions.
 
 ### Contrastive Decoding
 
