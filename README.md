@@ -6,7 +6,7 @@
 
 ### K.A. Abdel Sadek, G. Desimini, M. Nulli, J. Velja, J. Vincenti
 
-This repository is cloned from the code-base <a href="https://github.com/raymin0223/fast_robust_early_exit" target="_blank" rel="noopener noreferrer">  Fast_Robust_Early_Exit</a> (their [paper](https://arxiv.org/abs/2310.05424)). Our research aims to further extend their work by implementing two approaches: Softmax Exiting with reduced vocabulary size, and Contrastive Decoding. Our discussion and findings can be found in our [blogpost](blogpost.md) file. Refer to it for the details of our work and the precise setting of the experiments. This README file will mainly address the codebase and reproduction of our results. 
+This repository is cloned from the code-base <a href="https://github.com/raymin0223/fast_robust_early_exit" target="_blank" rel="noopener noreferrer">  Fast_Robust_Early_Exit</a> (here their [paper](https://arxiv.org/abs/2310.05424)). Our research aims to further extend their work by implementing two approaches: Softmax Exiting with reduced vocabulary size, and Contrastive Decoding. Our discussion and findings can be found in our [blogpost](blogpost.md) file. Refer to it for the details of our work and the precise setting of the experiments. This README file will mainly address the codebase and reproduction of our results. 
 
 
 ## Requirements
