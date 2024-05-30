@@ -38,9 +38,13 @@ Here we explain how to reproduce the experiments from section `Contrastive Decod
 
 The experiments of Figures [Figure 8a](./blogpost_images/plots/squadexit.png), [Figure 8b](./blogpost_images/plots/squadf1.png), [Figure 9a](./blogpost_images/plots/sam_avg.png), [Figure 9b](./blogpost_images/plots/samsum_intermediate.png) and Table 1 are carried out across 100 samples. To reproduce these results it is enough to run the files of [scripts/contrastive_decoding_experiments/SQuAD](src/scripts/contrastive_decoding_experiments/SQuAD) and [scripts/contrastive_decoding_experiments/SamSum](src/scripts/contrastive_decoding_experiments/SamSum) by adding an extra parameter namely:
 
-- `--max_eval_samples 100` 
+- `--max_eval_samples 100`
+- 
+Similarly, [Figure 10b](./blogpost_images/plots/squad_flops.png),  [Figure 11b](./blogpost_images/plots/sam_flops.png) are performed over 100 samples with the additional need of the `count_flops` parameter
 
-Differently, the results of the last plots [Figure 10a](./blogpost_images/plots/squad_f1.png), [Figure 10b](./blogpost_images/plots/squad_flops.png), [Figure 11a](./blogpost_images/plots/rougesamsam.png), [Figure 11b](./blogpost_images/plots/sam_flops.png) are made by running the .job files of [scripts/contrastive_decoding_experiments/SQuAD](src/scripts/contrastive_decoding_experiments/SQuAD) and [scripts/contrastive_decoding_experiments/SamSum](src/scripts/contrastive_decoding_experiments/SamSum) without any additional change. 
+- `--count_flops True \`
+  
+Differently, the results of the last plots [Figure 10a](./blogpost_images/plots/squad_f1.png) and [Figure 11a](./blogpost_images/plots/rougesamsam.png) are made by running the .job files of [scripts/contrastive_decoding_experiments/SQuAD](src/scripts/contrastive_decoding_experiments/SQuAD) and [scripts/contrastive_decoding_experiments/SamSum](src/scripts/contrastive_decoding_experiments/SamSum) without any additional change. 
 
 ```bash
 sh jobname.run > jobname.out
