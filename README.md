@@ -61,7 +61,9 @@ Similarly, [Figure 10b](./blogpost_images/plots/squad_flops.png),  [Figure 11b](
 
 - `--count_flops True`
   
-Differently, the results of the last plots [Figure 10a](./blogpost_images/plots/squad_f1.png) and [Figure 11a](./blogpost_images/plots/rougesamsam.png) are made by running the .job files of [SQuAD](src/scripts/contrastive_decoding_experiments/SQuAD) and [SamSum](src/scripts/contrastive_decoding_experiments/SamSum) without any additional change
+Differently, the results of the last plots [Figure 10a](./blogpost_images/plots/squad_f1.png) and [Figure 11a](./blogpost_images/plots/rougesamsam.png) are made by running the .job files of [SQuAD](src/scripts/contrastive_decoding_experiments/SQuAD) and [SamSum](src/scripts/contrastive_decoding_experiments/SamSum) without any additional change.
+
+Additionally, the actual plots of Figure 6 and all figures of Section `Contrastive Decoding` are produced with the files [plots1](src/plots/plots_mn.ipynb) and [plots2](src/plots/plots_jsds.ipynb). 
 
 ### Illustration of an Example Case
 
@@ -90,8 +92,6 @@ srun python run_question_answering.py \
     --use_auth_token True \
     --type_vocab_reduct adaptive \
 ```
-
-Additionally, the actual plots are produce with the `plots_mn.ipynb` file in (folder you put the plots folder in.). We manually insert the numbers we obtain from the runs of the models just mentioned. 
 
 ### Parameters Explanation
 
