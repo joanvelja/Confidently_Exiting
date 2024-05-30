@@ -61,7 +61,9 @@ Similarly, [Figure 10b](./blogpost_images/plots/squad_flops.png),  [Figure 11b](
 
 - `--count_flops True`
   
-Differently, the results of the last plots [Figure 10a](./blogpost_images/plots/squad_f1.png) and [Figure 11a](./blogpost_images/plots/rougesamsam.png) are made by running the .job files of [SQuAD](src/scripts/contrastive_decoding_experiments/SQuAD) and [SamSum](src/scripts/contrastive_decoding_experiments/SamSum) without any additional change
+Differently, the results of the last plots [Figure 10a](./blogpost_images/plots/squad_f1.png) and [Figure 11a](./blogpost_images/plots/rougesamsam.png) are made by running the .job files of [SQuAD](src/scripts/contrastive_decoding_experiments/SQuAD) and [SamSum](src/scripts/contrastive_decoding_experiments/SamSum) without any additional change.
+
+Additionally, the actual plots of Figure 6 and all figures of Section `Contrastive Decoding` are produced with the files [plots1](src/plots/plots_mn.ipynb) and [plots2](src/plots/plots_jsds.ipynb). 
 
 ### Illustration of an Example Case
 
@@ -91,8 +93,6 @@ srun python run_question_answering.py \
     --type_vocab_reduct adaptive \
 ```
 
-Additionally, the actual plots are produce with the `plots_mn.ipynb` file in (folder you put the plots folder in.). We manually insert the numbers we obtain from the runs of the models just mentioned. 
-
 ### Parameters Explanation
 
 In addition to the parameters previously implemented, we have introduced new ones specific to our tasks. For further details, please refer to the [additional_args](src/util/additional_args.py) documentation. For convenience, we will also highlight the essential parameters from the previous implementation that are utilized in our current setup.
@@ -105,7 +105,8 @@ In addition to the parameters previously implemented, we have introduced new one
 - `--deploy_scenario` True: this should be always True to use deploying_[MODEL_NAME].py for our implementation.
 - `--use_early_exit` True: use conventional early-exiting framework.
 - `--exit_conf_threshold` [float]: threshold value to decide whether to exit or not. Our experiments were made with 0.9.
-- `--exit_min_layer` [int]: the minimum number of layers to forward to decide the exiting. 
+- `--exit_min_layer` [int]: the minimum number of layers to forward to decide the exiting.
+- `--include_inputs_for_metrics`. Always to be set to True to avoid mismatch in output metrics.
 
 
 ##### Softmax
