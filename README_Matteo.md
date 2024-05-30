@@ -108,9 +108,11 @@ Sample task-specific bash files can be found in the `src/scripts` directory.
 
 ### W&B logging
 
-
-
-
+To enable wandb logging of results you can follow the standaard procedure explained in [wandb login infos](https://docs.wandb.ai/ref/cli/wandb-login) and uncomment the following lines of code   
+and set the statement to "false"
+`os.environ["WANDB_DISABLED"] = "true" ---> os.environ["WANDB_DISABLED"] = "false"`
+This will cause every evaluation metric to be saved into wandb. 
+This line of code can be found within [run_question_answering](src/run_question_answering.py) / [run_summarization](src/run_summarization.py).
 
 
 ### Model Checkpoints
