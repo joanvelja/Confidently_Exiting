@@ -23,7 +23,7 @@ The codebase handles automatically model and dataset downloading. Beware of this
 ## Evaluation
 We perform evaluation experiments on one summarization and one question answering task. 
 
-To reproduce the experiments with or without a cuda device you can follow the guide below.
+To reproduce the experiments you can follow the guide below.
 
 #### Softmax Pruning
 Please see the [scripts/softmax_experiments](src/scripts/softmax_experiments) shell files to reproduce the Softmax experiments on each dataset.    
