@@ -19,8 +19,10 @@ conda env create --name environment_name -f environment.yml
 
 The codebase handles automatically model and dataset downloading. Beware of this when running the code for the first time! 
 
-## Models
-We use t5-large as base model for our experiments. The code implementation is available in [models/deploying_t5](src/models/deploying_t5.py).
+## Models and Checkpoints
+
+We use t5-large as baseline model for our experiments. The code implementation is available at [models/deploying_t5](src/models/deploying_t5.py).
+The non-finetuned and finetuned model weights are available at  [google](https://huggingface.co/google-t5) and [jvelja](https://huggingface.co/jvelja) respectively on HuggingFace. 
 
 ## Evaluation
 We perform evaluation experiments on one summarization and one question answering task. 
@@ -142,9 +144,6 @@ This, together with the usual `wandb.init()` will save every evaluation metric t
 This line of code can be found within [run_question_answering](src/run_question_answering.py) / [run_summarization](src/run_summarization.py).
 
 
-### Model Checkpoints
-
-The non-finetuned and finetuned models are available at  [google](https://huggingface.co/google-t5) and [jvelja](https://huggingface.co/jvelja) respectively on HuggingFace. 
 
 ## Contact
 - Karim Abdel Sadek: karim.abdel.sadek@student.uva.nl
