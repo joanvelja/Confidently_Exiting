@@ -11,7 +11,7 @@
 module purge
 module load 2022
 module load Anaconda3/2022.05
-cd $HOME/Confidently_Exiting_Matteo/src/
+cd $HOME/Confidently_Exiting/src/
 source activate dl2
 
 pip install wandb
