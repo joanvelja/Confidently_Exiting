@@ -1,7 +1,6 @@
 # Optimizing Predictions: Vocabulary Reduction and Contrastive Decoding in LLMs
 
-### J. Velja, J. Vincenti, M. Nulli, G. Desimini, K.A. Abdel Sadek
-
+### K.A. Abdel Sadek, G. Desimini,  M. Nulli, J. Velja, J. Vincenti
 ---
 
 ## Introduction
@@ -530,13 +529,13 @@ All these reasons inspire us to further work in this promising direction, and we
 
 ## Authors' Contributions
 
-- Joan worked mainly on contrastive decoding, focusing on Jensen-Shannon Divergence by implementing the code together with Matteo, collecting material for the implementation. He wrote the introduction, the methodology on contrastive decoding and the conclusion and Future Work section. 
+- Joan worked mainly on contrastive decoding, focusing on Jensen-Shannon Divergence by implementing the code together with Matteo, collecting material for the implementation. He wrote the introduction, the Transformers preliminaries, the methodology on contrastive decoding and the conclusion and Future Work section. 
 
 - Jort worked on Softmax pruning. He worked on the code implementation of the pruning part of the code together with Karim. He was responsible for runnning experiments on Softmax pruning, and wrote the results section of softmax pruning. He wrote together with Matteo the Experimental Set up section.
 
 - Matteo worked mainly on contrastive decoding, focusing on the code implementation together with Joan of Weighted and Jensen-Shannon Divergence. He ran experiments on contrastive decoding wrote the Related Work, contrastive decoding results section, and the Experimental Set up section with Jort. 
 
-- Karim worked primarly on Softmax pruning. He implemented the code for that part together with Jort. He wrote the methodology section on Softmax pruning, and the Transfomers section in Preliminaries and Experimental Set up. 
+- Karim worked primarly on Softmax pruning. He implemented the code for that part together with Jort. He wrote the methodology section on Softmax pruning, and the Transfomers section in Preliminaries and Experimental Set up. He also heavily contributed to the writing of the CD methodology, the introduction, and the mathematical correctness of our framework.
 
 - Gabriele wrote the Related work section with Matteo and worked on Adaptive Pruning. He also curated the blogpost reduction.
 
