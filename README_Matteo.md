@@ -42,7 +42,7 @@ The experiments of Figures [Figure 8a](./blogpost_images/plots/squadexit.png), [
   
 Similarly, [Figure 10b](./blogpost_images/plots/squad_flops.png),  [Figure 11b](./blogpost_images/plots/sam_flops.png) are performed over 100 samples with the additional need of the `count_flops` parameter
 
-- `--count_flops True \`
+- `--count_flops True`
   
 Differently, the results of the last plots [Figure 10a](./blogpost_images/plots/squad_f1.png) and [Figure 11a](./blogpost_images/plots/rougesamsam.png) are made by running the .job files of [scripts/contrastive_decoding_experiments/SQuAD](src/scripts/contrastive_decoding_experiments/SQuAD) and [scripts/contrastive_decoding_experiments/SamSum](src/scripts/contrastive_decoding_experiments/SamSum) without any additional change. 
 
