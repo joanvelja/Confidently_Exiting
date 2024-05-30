@@ -37,7 +37,7 @@ sh jobname.run > jobname.out
 Here we explain how to reproduce the experiments from section `Softmax Vocabulary Prunning` of our [blogpost](blogpost.md). 
 Please see the main [folder](src/scripts/softmax_experiments) for a total overview of the experiments to reproduce this section.
 
-The plots obtained for [Figure 2](./blogpost_images/plots/squadexit.png), [3](./blogpost_images/plots/squadf1.png), and [4](./blogpost_images/plots/sam_avg.png) can be obtained by running this [folder](src\scripts\softmax_experiments\plotting_graphs). Regarding the full runs for plots [7]() and [8]() they can be obtained by running the folders for [baseline](src\scripts\softmax_experiments\final_jobs_results_no_reduct), [fixed](src\scripts\softmax_experiments\final_jobs_results_fixed), and [decaying](src\scripts\softmax_experiments\final_jobs_results_decaying) and logging their respective results.
+The plots obtained for [Figure 2](./blogpost_images/plots/figure2.png), [3](./blogpost_images/plots/figure3.png), and [4](./blogpost_images/plots/figure4.png) can be obtained by running this [folder](src\scripts\softmax_experiments\plotting_graphs). Regarding the full runs for plots [7](/blogpost_images/plots/figure5.png) and [8](/blogpost_images/plots/figure6.png) they can be obtained by running the folders for [baseline](src\scripts\softmax_experiments\final_jobs_results_no_reduct), [fixed](src\scripts\softmax_experiments\final_jobs_results_fixed), and [decaying](src\scripts\softmax_experiments\final_jobs_results_decaying) and logging their respective results.
 
 
 #### Contrastive Decoding
@@ -102,7 +102,7 @@ In addition to the parameters previously implemented, we have introduced new one
 - `--exit_conf_type softmax`: set the confidence measure to softmax values
 - `--type_vocab_reduct [str]`: Can be either fixed, decaying, or adaptive. This will prune the vocabulary matrix.
 - `--plotting_logits False`: if set to True this will plot the confidence, f1, and boxplots (Figure 2,3, and 4 of the [blogpost](blogpost.md)).
-- `--final_flops False`: if set to True this will showcase the amount of flops calculated during confidence estimation (Figure 6 and 7 of the [blogpost](blogpost.md)).
+- `--final_flops False`: if set to True this will showcase the amount of flops calculated during confidence estimation (Figure 7 and 8 of the [blogpost](blogpost.md)).
 
 ##### Contrastive Decoding
 - `--exit_conf_type [str]`: Can now also be set to <i>contrastive_decoding</i>, <i>reweight_contrastive_decoding</i>, or <i>JSD_contrastive_confidence</i>.
