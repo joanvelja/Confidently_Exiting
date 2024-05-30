@@ -105,7 +105,8 @@ In addition to the parameters previously implemented, we have introduced new one
 - `--deploy_scenario` True: this should be always True to use deploying_[MODEL_NAME].py for our implementation.
 - `--use_early_exit` True: use conventional early-exiting framework.
 - `--exit_conf_threshold` [float]: threshold value to decide whether to exit or not. Our experiments were made with 0.9.
-- `--exit_min_layer` [int]: the minimum number of layers to forward to decide the exiting. 
+- `--exit_min_layer` [int]: the minimum number of layers to forward to decide the exiting.
+- `--include_inputs_for_metrics`. Always to be set to True to avoid mismatch in output metrics.
 
 
 ##### Softmax
