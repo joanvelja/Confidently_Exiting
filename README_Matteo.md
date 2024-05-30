@@ -40,7 +40,7 @@ The experiments of Figures [Figure 8a](./blogpost_images/plots/squadexit.png), [
 
 - `--max_eval_samples 100` 
 
-Differently, the results of the last plots [Figure 10a](./blogpost_images/plots/squad_f1.png), [Figure 10b](./blogpost_images/plots/suqad_flops.png), [Figure 11a](./blogpost_images/plots/rougesamsam.png), [Figure 11b](./blogpost_images/plots/sam_flops.png) are made by running the .job files of [scripts/contrastive_decoding_experiments/SQuAD](src/scripts/contrastive_decoding_experiments/SQuAD) and [scripts/contrastive_decoding_experiments/SamSum](src/scripts/contrastive_decoding_experiments/SamSum) without any additional change. 
+Differently, the results of the last plots [Figure 10a](./blogpost_images/plots/squad_f1.png), [Figure 10b](./blogpost_images/plots/squad_flops.png), [Figure 11a](./blogpost_images/plots/rougesamsam.png), [Figure 11b](./blogpost_images/plots/sam_flops.png) are made by running the .job files of [scripts/contrastive_decoding_experiments/SQuAD](src/scripts/contrastive_decoding_experiments/SQuAD) and [scripts/contrastive_decoding_experiments/SamSum](src/scripts/contrastive_decoding_experiments/SamSum) without any additional change. 
 
 ```bash
 sh jobname.run > jobname.out
