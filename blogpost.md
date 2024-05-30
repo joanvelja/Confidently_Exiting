@@ -505,7 +505,7 @@ Concluding, combining a vocabulary reduction approach, together with a confidenc
     </tr>
     <tr>
         <td colspan="2" style="text-align: left; padding: 10px; font-size: 14px;">
-          <a id='figure-11'><b>Figure 11:</b></a> <b>Performance on Summarization Task</b>: Comparison of model performance in terms of ROUGE-L score and the amount of FLOPs generated per sample. The minimum exit layer was set to 19 across both T5-Large and T5-Large Finetuned, with the confidence set at 0.9 for both. Results are reported across 100 samples on SamSum.</p>
+          <a id='figure-11'><b>Figure 11:</b></a> <b>Performance on Summarization Task</b>: Comparison of model performance in terms of ROUGE-L score and the amount of FLOPs generated per sample. The minimum exit layer was set to 19 across both T5-Large and T5-Large Finetuned, with the confidence set at 0.9 for both.</p>
         </td>
     </tr>
 </table>
