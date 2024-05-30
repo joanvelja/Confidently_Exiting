@@ -20,12 +20,21 @@ conda env create --name environment_name -f environment.yml
 The codebase handles automatically model and dataset downloading. Beware of this when running the code for the first time! 
 
 
-## Experiments
-We experimented with 1 summarization and 1 question answering task. 
+## Evaluation
+We perform evaluation experiments on 1 summarization and 1 question answering task. 
 Please see the [scripts/softmax_experiments](src/scripts/softmax_experiments) shell files to reproduce the Softmax experiments on each dataset.    
 ```bash
 sh jobname.run > jobname.out
 ```
+
+### Experiments
+To reproduce the experiments with or without a cuda device you can follow the guide below.
+
+#### Softmax Pruning
+...
+#### Contrastive Decoding
+...
+
 
 ### Methods
 
