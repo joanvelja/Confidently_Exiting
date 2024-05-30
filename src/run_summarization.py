@@ -432,7 +432,7 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
 
     def compute_metrics(eval_preds, compute_metrics=True):
         if compute_metrics:
-            preds, labels = eval_preds
+            preds, labels, _ = eval_preds
         else:
             preds, labels = eval_preds
         if isinstance(preds, tuple):

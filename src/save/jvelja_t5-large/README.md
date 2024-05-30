@@ -42,7 +42,7 @@ The following hyperparameters were used during training:
 
 ### Framework versions
 
-- Transformers 4.28.1
-- Pytorch 2.1.2
+- Transformers 4.30.0
+- Pytorch 2.3.0
 - Datasets 2.19.0
 - Tokenizers 0.13.3
