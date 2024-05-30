@@ -78,9 +78,17 @@ CUDA_VISIBLE_DEVICES=0 python -m run_question_answering \
 ##### Contrastive Decoding
 - `--exit_conf_type [str]`: Can now also be set to <i>contrastive_decoding</i>, <i>reweight_contrastive_decoding</i>, or <i>JSD_contrastive_confidence</i>.
 - `--type_vocab_reduct [str]`: Can be either fixed, decaying, or adaptive. This will prune the vocabulary matrix. This parameter is needed to combine <i>reweight_contrastive_decoding</i>, or <i>JSD_contrastive_confidence</i> with the pruning method.
-  
 
 Sample task-specific bash files can be found in the `src/scripts` directory. 
+
+## Experiments on Contrastive Decoding
+
+### W&B logging
+
+
+
+
+
 
 ### Model Checkpoints
 
