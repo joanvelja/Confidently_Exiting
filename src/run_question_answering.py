@@ -729,7 +729,7 @@ if __name__ == "__main__":
         model_cls = T5ForConditionalGeneration if not additional_args.deploy_scenario \
             else DeployT5ForConditionalGeneration
     trainer_cls = QATrainer
-    
+    training_args.include_inputs_for_metrics = True
     if not additional_args.plotting_logits:
         main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
     else:

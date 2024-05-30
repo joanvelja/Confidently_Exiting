@@ -641,6 +641,7 @@ if __name__ == "__main__":
             else DeployT5ForConditionalGeneration
 
     trainer_cls = SumTrainer
+    training_args.include_inputs_for_metrics = True
 
     if not additional_args.plotting_logits:
         main(model_args, data_args, training_args, additional_args, model_cls, trainer_cls)
