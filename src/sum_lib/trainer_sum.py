@@ -28,7 +28,7 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 
 from transformers import Seq2SeqTrainer, AutoTokenizer
-from transformers.utils import is_torch_tpu_available
+from transformers.utils import is_torch_xla_available
 from transformers.deepspeed import deepspeed_init, is_deepspeed_zero3_enabled
 from transformers.debug_utils import DebugOption
 from transformers.trainer_utils import (
@@ -62,6 +62,7 @@ class SumTrainer(Seq2SeqTrainer):
         eval_dataset: Optional[Dataset] = None,
         ignore_keys: Optional[List[str]] = None,
         metric_key_prefix: str = "eval",
+        render_jsds: bool = False,
         **gen_kwargs,
     ) -> Dict[str, float]:
         """
@@ -99,6 +100,7 @@ class SumTrainer(Seq2SeqTrainer):
             gen_kwargs["num_beams"] if gen_kwargs.get("num_beams") is not None else self.args.generation_num_beams
         )
         self._gen_kwargs = gen_kwargs
+        self.render_jsds = render_jsds
 
         # memory metrics - must set up as early as possible
         self._memory_tracker.start()
@@ -211,7 +213,7 @@ class SumTrainer(Seq2SeqTrainer):
         # Do this before wrapping.
         eval_dataset = getattr(dataloader, "dataset", None)
 
-        if is_torch_tpu_available():
+        if is_torch_xla_available():
             dataloader = pl.ParallelLoader(dataloader, [args.device]).per_device_loader(args.device)
 
         if args.past_index >= 0:
@@ -247,10 +249,11 @@ class SumTrainer(Seq2SeqTrainer):
 
             inputs_decode = self._prepare_input(inputs["input_ids"]) if args.include_inputs_for_metrics else None
 
-            # print(self.tokenizer.decode(inputs["input_ids"][0], skip_special_tokens=True))
-            # print("-END CONTEXT-")
+            if self.render_jsds:
+                print(self.tokenizer.decode(inputs["input_ids"][0], skip_special_tokens=True))
+                print("-END CONTEXT-")
 
-            if is_torch_tpu_available():
+            if is_torch_xla_available():
                 xm.mark_step()
 
             # Update containers on host

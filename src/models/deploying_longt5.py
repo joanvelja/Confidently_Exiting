@@ -45,8 +45,6 @@ from util import (
     BetaMixture1D,
 )
 
-from util.skip_conf import get_skip_mask_cd
-
 logger = logging.get_logger(__name__)
 __HEAD_MASK_WARNING_MSG = """
 The input argument `head_mask` was split into two arguments `head_mask` and `decoder_head_mask`. Currently,
@@ -552,6 +550,7 @@ class DeployLongT5Stack(LongT5Stack):
         self.lm_logits = None  # to prevent calculating logits twice
 
         prev_probits = {}
+        prev_confidences = {}
 
         if self.is_decoder and self.config.plotting_logits:
             previous_logits = []
@@ -747,69 +746,79 @@ class DeployLongT5Stack(LongT5Stack):
 
 
 
-                        if self.config.exit_conf_type == "contrastive_decoding":
-                            skip_mask = get_skip_mask_cd(
+                        # END OF SHRINKING VOCAB PART                        
+                        if self.config.exit_conf_type == "reweight_contrastive_decoding":
+                            
+                            out = get_skip_mask(
                                 lm_logits,
                                 _hidden_states,
                                 cm_head,
                                 config=self.config,
                                 pos_time=past_key_values[i][0].shape[2] + 1 if past_key_values[i] is not None else 1,
-                                layer_exp = i,
-                                prev_probits = prev_probits, 
-                                layer_am = i//2,
-                                alpha = 0.1,
-                                )
-                        
-                        elif self.config.exit_conf_type == "reweight_contrastive_decoding":
-                            
-                            skip_mask = get_skip_mask_cd(
-                                lm_logits,
-                                _hidden_states,
-                                cm_head,
-                                config=self.config,
-                                pos_time=past_key_values[i][0].shape[2] + 1 if past_key_values[i] is not None else 1,
-                                layer_exp = i,
-                                prev_probits = prev_probits, 
-                                layer_am = i//2,
-                                alpha = 0.1,
-                                )
-                            
+                                layer_exp=i,
+                                prev_probits=prev_probits, 
+                                layer_am=i//2,
+                                alpha=0.1,
+                                return_jsds=False,
+                                return_conf=True if self.config.type_vocab_reduct == "adaptive" else False,
+                            )
+                            skip_mask = out['mask']
+                            if self.config.type_vocab_reduct == "adaptive":
+                                prev_confidences[i] = out['conf']
+
                         elif self.config.exit_conf_type == "JSD_contrastive_confidence":
                             
-                            skip_mask, jsds = get_skip_mask_cd(
+                            out = get_skip_mask(
                                 lm_logits,
                                 _hidden_states,
                                 cm_head,
                                 config=self.config,
                                 pos_time=past_key_values[i][0].shape[2] + 1 if past_key_values[i] is not None else 1,
-                                layer_exp = i,
-                                prev_probits = prev_probits, 
-                                layer_am = i//2,
-                                alpha = 0.1,
-                                return_jsds=True
-                                )
+                                layer_exp=i,
+                                prev_probits=prev_probits, 
+                                layer_am=i//2,
+                                alpha=0.1,
+                                return_jsds=self.render,
+                                return_conf=True if self.config.type_vocab_reduct == "adaptive" else False,
+                                return_logits=True
+                            )
+                            skip_mask = out['mask']
+                            if self.config.type_vocab_reduct == "adaptive":
+                                prev_confidences[i] = out['conf']
+                            if self.render:
+                                jsds = out['jsds']
+                            cd_logits = out['logits']
+
                         else:
-                            skip_mask = get_skip_mask(
+                            out = get_skip_mask(
                                 lm_logits,
                                 _hidden_states,
                                 cm_head,
                                 config=self.config,
-                                pos_time=past_key_values[i][0].shape[2] + 1 if past_key_values[i] is not None else 1
+                                pos_time=past_key_values[i][0].shape[2] + 1 if past_key_values[i] is not None else 1,
+                                return_conf=True if self.config.type_vocab_reduct == "adaptive" else False
                             )
-                        if not skip_mask: self.block_op[i] += 1                    
-                        if skip_mask: 
-                            self.lm_logits = lm_logits
-                            plot = False
-                            if plot: #and len(jsds) >= 23 : # When we have all the jdss values, we can use them to check jsds between layers
+                            skip_mask = out['mask']
+                            if self.config.type_vocab_reduct == "adaptive":
+                                prev_confidences[i] = out['conf']
 
+                        if not skip_mask:
+                            self.block_op[i] += 1                    
+                        if skip_mask:
+                            if self.config.exit_conf_type == "JSD_contrastive_confidence":
+                                self.lm_logits = cd_logits
+                            else:
+                                self.lm_logits = lm_logits  # This is where the logits are sent to do the predictions.
+
+                            if self.render:
                                 print("JSDS: ", jsds)
-                                # Plot the probits distribution
                                 probits = torch.softmax(lm_logits, dim=-1)
                                 argmax_index = torch.argmax(probits).item()
                                 # Tokenizer to get the words
                                 word = self.tokenizer.decode(argmax_index)
-
                                 print("Word: ", word, " Token_id: ", argmax_index)
+
+                    
                         if self.config.use_synchronize: torch.cuda.synchronize()
                         self.deploy_time['time_confidence'] += (datetime.datetime.now() - start)
                     

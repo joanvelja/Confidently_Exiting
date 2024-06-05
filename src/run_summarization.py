@@ -515,13 +515,13 @@ def main(model_args, data_args, training_args, additional_args, model_cls, train
     if training_args.do_eval:
         logger.info("*** Evaluate ***")
         if training_args.include_inputs_for_metrics:
-            output = trainer.evaluate(metric_key_prefix="eval")
+            output = trainer.evaluate(metric_key_prefix="eval", render_jsds=additional_args.render_jsds)
             metrics = output.metrics
             if additional_args.count_flops:
                 final_flops = model.decoder.flop_counter/len(eval_dataset)
                 print(f"Final FLOPS: {final_flops}")
         else:
-            metrics = trainer.evaluate(metric_key_prefix="eval")
+            metrics = trainer.evaluate(metric_key_prefix="eval", render_jsds=additional_args.render_jsds)
 
         if additional_args.plotting_logits:
             data = model.decoder.graph_top_k_list

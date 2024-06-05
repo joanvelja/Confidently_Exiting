@@ -45,11 +45,11 @@ CUDA_VISIBLE_DEVICES=0 python -m run_question_answering \
     --use_early_exit True \
     --exit_conf_type JSD_contrastive_confidence \
     --exit_conf_threshold 0.9 \
-    --exit_min_layer 7 \
+    --exit_min_layer 15 \
     --include_inputs_for_metrics True \
-    --max_eval_samples 10 \
     --use_auth_token True \
     --count_flops False \
+    --render_jsds True
 
 
 

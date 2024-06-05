@@ -27,7 +27,7 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 
 from transformers import Seq2SeqTrainer
-from transformers.utils import is_torch_tpu_available
+from transformers.utils import is_torch_xla_available
 from transformers.deepspeed import deepspeed_init, is_deepspeed_zero3_enabled
 from transformers.debug_utils import DebugOption
 from transformers.trainer_utils import (
@@ -204,7 +204,7 @@ class TransTrainer(Seq2SeqTrainer):
         # Do this before wrapping.
         eval_dataset = getattr(dataloader, "dataset", None)
 
-        if is_torch_tpu_available():
+        if is_torch_xla_available():
             dataloader = pl.ParallelLoader(dataloader, [args.device]).per_device_loader(args.device)
 
         if args.past_index >= 0:
@@ -239,7 +239,7 @@ class TransTrainer(Seq2SeqTrainer):
             loss, logits, labels = self.prediction_step(model, inputs, prediction_loss_only, ignore_keys=ignore_keys)
             inputs_decode = self._prepare_input(inputs["input_ids"]) if args.include_inputs_for_metrics else None
 
-            if is_torch_tpu_available():
+            if is_torch_xla_available():
                 xm.mark_step()
 
             # Update containers on host
@@ -247,11 +247,12 @@ class TransTrainer(Seq2SeqTrainer):
                 losses = self._nested_gather(loss.repeat(batch_size))
                 losses_host = losses if losses_host is None else torch.cat((losses_host, losses), dim=0)
             if labels is not None:
-                labels = self._pad_across_processes(labels)
+                #labels = self.pad_across_processes(labels)
+                labels = accelerate.pad_across_processes(labels)
                 labels = self._nested_gather(labels)
                 labels_host = labels if labels_host is None else nested_concat(labels_host, labels, padding_index=-100)
             if inputs_decode is not None:
-                inputs_decode = self._pad_across_processes(inputs_decode)
+                inputs_decode = self.pad_across_processes(inputs_decode)
                 inputs_decode = self._nested_gather(inputs_decode)
                 inputs_host = (
                     inputs_decode
@@ -259,7 +260,7 @@ class TransTrainer(Seq2SeqTrainer):
                     else nested_concat(inputs_host, inputs_decode, padding_index=-100)
                 )
             if logits is not None:
-                logits = self._pad_across_processes(logits)
+                logits = self.pad_across_processes(logits)
                 logits = self._nested_gather(logits)
                 if self.preprocess_logits_for_metrics is not None:
                     logits = self.preprocess_logits_for_metrics(logits, labels)

@@ -1,14 +1,12 @@
 """
 T5: https://github.com/huggingface/transformers/blob/main/src/transformers/models/t5/modeling_t5.py#L19
 """
-from typing import Optional, Tuple, Union, List, Callable
-import time
+from typing import Optional, Tuple, Union, List
 import copy
 import datetime
 import warnings
 import numpy as np
 import torch
-import math
 from einops import rearrange
 import torch.distributed as dist
 from torch import nn
@@ -40,8 +38,7 @@ from transformers.utils import logging
 from util import (
     get_skip_mask,
     BetaMixture1D,
-) 
-from util.skip_conf import get_skip_mask_cd
+)
 
 
 
@@ -1084,54 +1081,48 @@ class DeployT5Stack(T5Stack):
                                 else:
                                     raise("Please provide a valid type_vocab_reduct argument. Either use fixed, decaying, or adaptive.")
 
-                        # END OF SHRINKING VOCAB PART                        
+                        # END OF SHRINKING VOCAB PART
                         if self.config.exit_conf_type == "reweight_contrastive_decoding":
                             
-                            out = get_skip_mask_cd(
+                            out = get_skip_mask(
                                 lm_logits,
                                 _hidden_states,
                                 cm_head,
                                 config=self.config,
                                 pos_time=past_key_values[i][0].shape[2] + 1 if past_key_values[i] is not None else 1,
-                                layer_exp = i,
-                                prev_probits = prev_probits, 
-                                layer_am = i//2,
-                                alpha = 0.1,
+                                layer_exp=i,
+                                prev_probits=prev_probits, 
+                                layer_am=i//2,
+                                alpha=0.1,
                                 return_jsds=False,
                                 return_conf=True if self.config.type_vocab_reduct == "adaptive" else False,
-                                )
+                            )
+                            skip_mask = out['mask']
                             if self.config.type_vocab_reduct == "adaptive":
-                                skip_mask, conf = out
-                                prev_confidences[i] = conf
-                            else:
-                                skip_mask = out
-                            
+                                prev_confidences[i] = out['conf']
+
                         elif self.config.exit_conf_type == "JSD_contrastive_confidence":
                             
-                            out = get_skip_mask_cd(
+                            out = get_skip_mask(
                                 lm_logits,
                                 _hidden_states,
                                 cm_head,
                                 config=self.config,
                                 pos_time=past_key_values[i][0].shape[2] + 1 if past_key_values[i] is not None else 1,
-                                layer_exp = i,
-                                prev_probits = prev_probits, 
-                                layer_am = i//2,
-                                alpha = 0.1,
+                                layer_exp=i,
+                                prev_probits=prev_probits, 
+                                layer_am=i//2,
+                                alpha=0.1,
                                 return_jsds=self.render,
                                 return_conf=True if self.config.type_vocab_reduct == "adaptive" else False,
-                                )
+                                return_logits=True
+                            )
+                            skip_mask = out['mask']
                             if self.config.type_vocab_reduct == "adaptive":
-                                if self.render:
-                                    skip_mask, jsds, conf = out
-                                else:
-                                    skip_mask, conf = out
-                                prev_confidences[i] = conf
-                            else:
-                                if self.render:
-                                    skip_mask, jsds = out
-                                else:
-                                    skip_mask = out
+                                prev_confidences[i] = out['conf']
+                            if self.render:
+                                jsds = out['jsds']
+                            cd_logits = out['logits']
 
                         else:
                             out = get_skip_mask(
@@ -1142,19 +1133,20 @@ class DeployT5Stack(T5Stack):
                                 pos_time=past_key_values[i][0].shape[2] + 1 if past_key_values[i] is not None else 1,
                                 return_conf=True if self.config.type_vocab_reduct == "adaptive" else False
                             )
+                            skip_mask = out['mask']
                             if self.config.type_vocab_reduct == "adaptive":
-                                skip_mask, conf = out
-                                prev_confidences[i] = conf
-                            else:
-                                skip_mask = out
-                        
+                                prev_confidences[i] = out['conf']
 
-                        if not skip_mask: self.block_op[i] += 1                    
-                        if skip_mask: 
-                            
-                            self.lm_logits = lm_logits # This is where the logits are sent to do the predictions.
-    
-                            if self.render: #and len(jsds) >= 23 : # When we have all the jdss values, we can use them to check jsds between layers
+                        if not skip_mask:
+                            self.block_op[i] += 1                    
+                        if skip_mask:
+                            if self.config.exit_conf_type == "JSD_contrastive_confidence":
+                                #self.lm_logits = cd_logits.unsqueeze(0).unsqueeze(0)
+                                self.lm_logits = cd_logits[None, None]
+                            else:
+                                self.lm_logits = lm_logits  # This is where the logits are sent to do the predictions.
+
+                            if self.render:
                                 print("JSDS: ", jsds)
                                 probits = torch.softmax(lm_logits, dim=-1)
                                 argmax_index = torch.argmax(probits).item()

@@ -49,10 +49,9 @@ CUDA_VISIBLE_DEVICES=0 python -m run_summarization \
     --exit_conf_type JSD_contrastive_confidence \
     --exit_conf_threshold 0.9 \
     --exit_min_layer 19 \
-    --max_eval_samples 1 \
     --include_inputs_for_metrics True \
     --use_auth_token True \
-    --count_flops True \
+    --count_flops False \
     --render_jsds True
     # --type_vocab_reduct decaying \
     
